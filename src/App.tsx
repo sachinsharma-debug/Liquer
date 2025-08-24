@@ -1,0 +1,99 @@
+import { Toaster } from 'react-hot-toast';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { Layout } from "./components/layout/Layout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Settings from "./pages/Settings";
+import Organization from "./pages/Organization";
+import Accounts from "./pages/Accounts";
+import Inventory from "./pages/Inventory";
+import Indents from "./pages/inward/Indents";
+import PurchaseOrders from "./pages/inward/PurchaseOrders";
+import Depot from "./pages/inward/Depot";
+import Ledger from "./pages/inward/Ledger";
+import GRN from "./pages/inward/GRN";
+import Returns from "./pages/inward/Returns";
+import MaterialTransfer from "./pages/store/MaterialTransfer";
+import Wastage from "./pages/store/Wastage";
+import StockAdjustment from "./pages/store/StockAdjustment";
+import SalesOrders from "./pages/sales/Orders";
+import DeliveryNotes from "./pages/sales/DeliveryNotes";
+import Invoices from "./pages/sales/Invoices";
+import Receipts from "./pages/sales/Receipts";
+import Reports from "./pages/Reports";
+import NotFound from "./pages/NotFound";
+import IndentReport from "./pages/IndentReports/IndentReport";
+import Genral_Setting from "./pages/GenralSetting";
+import Master_setting from "./pages/Master_setting";
+import Inventory_setting from "./pages/Inventory_data";
+
+const queryClient = new QueryClient();
+
+function AppRoutes() {
+
+
+  const { user, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+ 
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+       <Route path="/genral_setting" element={<Genral_Setting />} />
+          <Route path="/master_setting" element={<Master_setting />} />
+           <Route path="/inventory_setting" element={<Inventory_setting />} />
+          
+        <Route path="/organization" element={<Organization />} />
+        <Route path="/accounts" element={<Accounts />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/inward/indents" element={<Indents />} />
+        <Route path="/inward/purchase-orders" element={<PurchaseOrders />} />
+         <Route path="/inward/depot" element={<Depot />} />
+         <Route path="/inward/ledger" element={<Ledger />} />
+         <Route path="/indent-report" element={<IndentReport />} />
+        <Route path="/inward/grn" element={<GRN />} />
+        <Route path="/inward/returns" element={<Returns />} />
+        <Route path="/store/transfer" element={<MaterialTransfer />} />
+        <Route path="/store/wastage" element={<Wastage />} />
+        <Route path="/store/adjustment" element={<StockAdjustment />} />
+        <Route path="/sales/orders" element={<SalesOrders />} />
+        <Route path="/sales/delivery" element={<DeliveryNotes />} />
+        <Route path="/sales/invoices" element={<Invoices />} />
+        <Route path="/sales/receipts" element={<Receipts />} />
+        <Route path="/reports" element={<Reports />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster position='top-right' />
+      {/* <Sonner /> */}
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;
