@@ -32,6 +32,7 @@ import IndentReport from "./pages/IndentReports/IndentReport";
 import Genral_Setting from "./pages/GenralSetting";
 import Master_setting from "./pages/Master_setting";
 import Inventory_setting from "./pages/Inventory_data";
+import IndentRegister from './pages/IndentReports/IndentRegister';
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="/sales/invoices" element={<Invoices />} />
         <Route path="/sales/receipts" element={<Receipts />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/indent-register" element={<IndentRegister />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
