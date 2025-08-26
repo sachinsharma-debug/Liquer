@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,6 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import * as XLSX from 'xlsx';
 import { BASE_URL } from '@/api/BaseUrl';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 export default function Indents() {
   const { toast } = useToast();
@@ -93,7 +102,7 @@ export default function Indents() {
   const handleCreateOrUpdateIndent = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const url = isEditing 
+      const url = isEditing
         ? `${BASE_URL}/update_indent/${currentIndent.id}`
         : '${BASE_URL}/create_indent';
       const method = isEditing ? 'PUT' : 'POST';
@@ -124,7 +133,7 @@ export default function Indents() {
 
       toast({
         title: isEditing ? "Indent Updated" : "Indent Created",
-        description: data.message || (isEditing 
+        description: data.message || (isEditing
           ? 'Indent updated successfully'
           : 'New indent created successfully'),
       });
@@ -197,123 +206,123 @@ export default function Indents() {
 
 
 
-  
 
-const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
 
-  try {
-    const token = localStorage.getItem('authToken');
-    const reader = new FileReader();
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    reader.onload = async (e) => {
-      const data = new Uint8Array(e.target.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+    try {
+      const token = localStorage.getItem('authToken');
+      const reader = new FileReader();
 
-      // Map Excel columns to API fields with better parsing and validation
-      const mappedData = jsonData.map((item) => {
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-        let indentDateRaw = item['SOF DATE'];
-        let indentDate = new Date(indentDateRaw);
+        // Map Excel columns to API fields with better parsing and validation
+        const mappedData = jsonData.map((item) => {
 
-        // If date is invalid or empty string, set to empty string to filter out later
-        if (!indentDateRaw || isNaN(indentDate.getTime())) {
-          indentDate = null;
-        }
+          let indentDateRaw = item['SOF DATE'];
+          let indentDate = new Date(indentDateRaw);
 
-        const indent_date = indentDate ? indentDate.toISOString().split('T')[0] : '';
-
-        // Parse indent_qty safely
-        const indent_qty = Number(item['Indent QTY(In Case)']);
-        const qty = isNaN(indent_qty) ? 0 : indent_qty;
-
-        // Clean pack size - handle empty strings and normalize
-        const rawPackSize = item['Pack Size']?.toString().trim() || '';
-        const pack_size = rawPackSize === '000 ML' ? '' : rawPackSize;
-
-        return {
-          soft_date:item['SOF DATE'],
-          // sofNo:item['SOF NO'],
-          depot_id: (item['Depot'] || '').toString().trim(),
-          product_id: (item['Product Name'] || '').toString().trim(),
-          pack_size,
-          indent_qty: qty,
-          status: 'pending',
-        };
-      });
-
-      // console.log('Mapped Data:', mappedData);
-
-      const validData = mappedData.filter(item => {
-        // Validation based on sample data - pack_size can be empty for some products
-        const valid = 
-          item.depot_id &&
-          item.product_id &&
-          item.soft_date &&
-          // item.sofNo &&
-          (item.pack_size || item.product_id.includes("20000 ML")) && // Some products don't need pack_size
-          !isNaN(item.indent_qty); // Only validate that it's a number (can be 0)
-
-        if (!valid) {
-          console.warn('Filtered out invalid row:', item);
-        }
-        return valid;
-      });
-
-      console.log('Valid Data:', validData);
-
-      if (validData.length === 0) {
-        throw new Error('No valid indents found in the Excel file');
-      }
-
-      // Confirmation before import
-      if (confirm(`Import ${validData.length} indents?`)) {
-        setLoading(true);
-        const response = await fetch(
-          '${BASE_URL}/import_indents_excel',
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ indents: validData }),
+          // If date is invalid or empty string, set to empty string to filter out later
+          if (!indentDateRaw || isNaN(indentDate.getTime())) {
+            indentDate = null;
           }
-        );
 
-        const result = await response.json();
+          const indent_date = indentDate ? indentDate.toISOString().split('T')[0] : '';
 
-        if (!response.ok) {
-          throw new Error(result.message || 'Import failed');
-        }
+          // Parse indent_qty safely
+          const indent_qty = Number(item['Indent QTY(In Case)']);
+          const qty = isNaN(indent_qty) ? 0 : indent_qty;
 
-        toast({
-          title: "Import Successful",
-          description: `${validData.length} indents imported successfully`,
+          // Clean pack size - handle empty strings and normalize
+          const rawPackSize = item['Pack Size']?.toString().trim() || '';
+          const pack_size = rawPackSize === '000 ML' ? '' : rawPackSize;
+
+          return {
+            soft_date: item['SOF DATE'],
+            // sofNo:item['SOF NO'],
+            depot_id: (item['Depot'] || '').toString().trim(),
+            product_id: (item['Product Name'] || '').toString().trim(),
+            pack_size,
+            indent_qty: qty,
+            status: 'pending',
+          };
         });
 
-        // Reset file input
-        e.target.value = '';
+        // console.log('Mapped Data:', mappedData);
 
-        fetchIndents();
-        setCurrentPage(1);
-      }
-    };
+        const validData = mappedData.filter(item => {
+          // Validation based on sample data - pack_size can be empty for some products
+          const valid =
+            item.depot_id &&
+            item.product_id &&
+            item.soft_date &&
+            // item.sofNo &&
+            (item.pack_size || item.product_id.includes("20000 ML")) && // Some products don't need pack_size
+            !isNaN(item.indent_qty); // Only validate that it's a number (can be 0)
 
-    reader.readAsArrayBuffer(file);
-  } catch (err: any) {
-    toast({
-      title: "Import Failed",
-      description: err.message,
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+          if (!valid) {
+            console.warn('Filtered out invalid row:', item);
+          }
+          return valid;
+        });
+
+        console.log('Valid Data:', validData);
+
+        if (validData.length === 0) {
+          throw new Error('No valid indents found in the Excel file');
+        }
+
+        // Confirmation before import
+        if (confirm(`Import ${validData.length} indents?`)) {
+          setLoading(true);
+          const response = await fetch(
+            '${BASE_URL}/import_indents_excel',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ indents: validData }),
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || 'Import failed');
+          }
+
+          toast({
+            title: "Import Successful",
+            description: `${validData.length} indents imported successfully`,
+          });
+
+          // Reset file input
+          e.target.value = '';
+
+          fetchIndents();
+          setCurrentPage(1);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    } catch (err: any) {
+      toast({
+        title: "Import Failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const resetForm = () => {
@@ -346,65 +355,65 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
         <div className="flex flex-col sm:flex-row gap-2">
           <button type="button" className="btn-primary btn" onClick={() => setIsDialogOpen1(true)}>Import</button>
           <Dialog open={isDialogOpen1} onOpenChange={setIsDialogOpen1}>
-            <DialogContent style={{display:'block'}}>
+            <DialogContent style={{ display: 'block' }}>
               <DialogHeader>
                 <DialogTitle>Import</DialogTitle>
               </DialogHeader>
-                <div className="flex items-center gap-2 mt-3 border-t pt-3">
-                  <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
-                    File Path :
-                  </Label>
-                  <Input
-                    id="minStockLevel"
-                    type="text"
-                    min="0"
-                    className="h-6 text-xs flex-1"
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <Label htmlFor="myfile" className='text-xs w-40 text-start'>Select a file:</Label>
-                  <input className='text-xs ' type="file" id="myfile" name="myfile" />
-                  {/* <Input type="submit" /> */}
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
-                    Worksheet Name :
-                  </Label>
-                  <Input
-                    id="minStockLevel"
-                    type="text"
-                    min="0"
-                    className="h-6 text-xs flex-1"
-                  />
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <Label htmlFor="standardRate" className="text-xs w-60">
-                    Preview Import Summary :
-                  </Label>
-                  <Select>
-                    <SelectTrigger className="h-6 text-xs ">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <Label htmlFor="standardRate" className="text-xs w-60">
-                    Backup Company Data Before Import :
-                  </Label>
-                  <Select>
-                    <SelectTrigger className="h-6 text-xs ">
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="yes">Yes</SelectItem>
-                      <SelectItem value="no">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="flex items-center gap-2 mt-3 border-t pt-3">
+                <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
+                  File Path :
+                </Label>
+                <Input
+                  id="minStockLevel"
+                  type="text"
+                  min="0"
+                  className="h-6 text-xs flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="myfile" className='text-xs w-40 text-start'>Select a file:</Label>
+                <input className='text-xs ' type="file" id="myfile" name="myfile" />
+                {/* <Input type="submit" /> */}
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
+                  Worksheet Name :
+                </Label>
+                <Input
+                  id="minStockLevel"
+                  type="text"
+                  min="0"
+                  className="h-6 text-xs flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="standardRate" className="text-xs w-60">
+                  Preview Import Summary :
+                </Label>
+                <Select>
+                  <SelectTrigger className="h-6 text-xs ">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="standardRate" className="text-xs w-60">
+                  Backup Company Data Before Import :
+                </Label>
+                <Select>
+                  <SelectTrigger className="h-6 text-xs ">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </DialogContent>
           </Dialog>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -413,104 +422,167 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 Create Indent
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] md:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>{isEditing ? 'Edit Indent' : 'Create New Indent'}</DialogTitle>
+            <DialogContent className="max-w-[95vw] md:max-w-[1200px]" style={{maxHeight:600,overflowY:'auto'}}>
+              <DialogHeader className='border-b pb-3'>
+                <DialogTitle className='text-start'>{isEditing ? 'Edit Indent' : 'Create New Indent'}</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="indent_date" className="sm:text-right">
-                    Indent Date
-                  </Label>
-                  <Input
-                    id="indent_date"
-                    name="indent_date"
-                    type="date"
-                    value={currentIndent.indent_date}
-                    onChange={handleInputChange}
-                    className="sm:col-span-3"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="depot_id" className="sm:text-right">
-                    Depot
-                  </Label>
-                  <Input
-                    id="depot_id"
-                    name="depot_id"
-                    value={currentIndent.depot_id}
-                    onChange={handleInputChange}
-                    className="sm:col-span-3"
-                    placeholder="Enter depot"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="product_id" className="sm:text-right">
-                    Product
-                  </Label>
-                  <Input
-                    id="product_id"
-                    name="product_id"
-                    value={currentIndent.product_id}
-                    onChange={handleInputChange}
-                    className="sm:col-span-3"
-                    placeholder="Enter product"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="pack_size" className="sm:text-right">
-                    Pack Size
-                  </Label>
-                  <Input
-                    id="pack_size"
-                    name="pack_size"
-                    value={currentIndent.pack_size}
-                    onChange={handleInputChange}
-                    className="sm:col-span-3"
-                    placeholder="e.g., 750ml"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="indent_qty" className="sm:text-right">
-                    Quantity
-                  </Label>
-                  <Input
-                    id="indent_qty"
-                    name="indent_qty"
-                    type="number"
-                    value={currentIndent.indent_qty}
-                    onChange={handleInputChange}
-                    className="sm:col-span-3"
-                    placeholder="Enter quantity"
-                  />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="sm:text-right">
-                    Status
-                  </Label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={currentIndent.status}
-                    onChange={handleStatusChange}
-                    className="sm:col-span-3 border rounded p-2"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
+              <div className='space-y-3 pb-4 border-b'>
+                <div className="grid grid-cols-4 gap-2 ">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-2">
+                    <Label htmlFor="Indent_Voucher" className="text-xs w-32 ">
+                      Indent Voucher No
+                    </Label>
+                    <Input
+                      id="Indent_Voucher"
+                      name="Indent_Voucher"
+                      type="text"
+                      className="sm:col-span-2 text-xs h-6 "
+                      style={{ marginLeft: 25}}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
+                    <Label htmlFor="indent_date" className="text-xs text-right">
+                      Date
+                    </Label>
+                    <Input
+                      id="indent_date"
+                      name="indent_date"
+                      type="date"
+                      className="sm:col-span-2 text-xs h-6"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
+                    <Label htmlFor="sof_date" className="text-xs text-right">
+                      SOF Date
+                    </Label>
+                    <Input
+                      id="sof_date"
+                      name="sof_date"
+                      type="date"
+                      className="sm:col-span-2 text-xs h-6"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
+                    <Label htmlFor="sof_no" className="text-xs text-right">
+                      SOF No
+                    </Label>
+                    <Input
+                      id="sof_no"
+                      name="sof_no"
+                      type="text"
+                      className="sm:col-span-2 text-xs h-6"
+                    />
+                  </div>
                 </div>
               </div>
+
+              <div className='d-flex mb-5'>
+                <div className=''>
+                  <div className='border-b pb-3' style={{width:50}}>Sl No.</div>
+                  <div className='pt-3'>1</div>
+                </div>
+                <div>
+                  <div className='border-b px-3 pb-3'>Depot</div>
+                  <div className='px-3 pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b pb-3'>Product Name</div>
+                  <div className='pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b px-3 pb-3'>Pack Size</div>
+                  <div className='px-3 pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b pb-3'>Qty</div>
+                  <div className='pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b px-3 pb-3'>Uom1</div>
+                  <div className='px-3 pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b pb-3'>Qty</div>
+                  <div className='pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className='border-b px-3 pb-3'>Uom</div>
+                  <div className='px-3 pt-3'>
+                    <Input
+                      id="Depot"
+                      name="Depot"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className='mt-2'>
+                <div className='d-flex'>
+                  <div className='my-auto'>Narration</div>
+                  <div className='px-3 my-auto'>
+                    <Input
+                      id="Narration"
+                      name="Narration"
+                      type="text"
+                      className=" text-xs h-6"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => {
                   setIsDialogOpen(false);
                   resetForm();
                 }}>
-                  Cancel
+                  Quite
                 </Button>
                 <Button onClick={handleCreateOrUpdateIndent} disabled={loading}>
-                  {isEditing ? 'Update' : 'Create'}
+                  {isEditing ? 'Update' : 'Accept'}
                 </Button>
               </div>
             </DialogContent>
@@ -581,18 +653,17 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       <td className="p-2">{indent.pack_size || indent.packSize}</td>
                       <td className="p-2">{indent.indent_qty || indent.indentQty}</td>
                       <td className="p-2">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          indent.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          indent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          indent.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${indent.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            indent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              indent.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                          }`}>
                           {indent.status || 'draft'}
                         </span>
                       </td>
                       <td className="p-2 space-x-1 sm:space-x-2">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleEditIndent(indent)}
                           disabled={loading || indent.status === 'approved'}
@@ -600,8 +671,8 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         >
                           Edit
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleViewIndent(indent)}
                           disabled={loading}
@@ -609,8 +680,8 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         >
                           View
                         </Button>
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteIndent(indent._id || indent.id)}
                           disabled={loading || indent.status === 'approved'}
@@ -720,12 +791,11 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
                 <Label className="sm:text-right font-medium">Status</Label>
                 <div className="sm:col-span-3">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    viewingIndent.status === 'approved' ? 'bg-green-100 text-green-800' :
-                    viewingIndent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    viewingIndent.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-full text-xs ${viewingIndent.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      viewingIndent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        viewingIndent.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                    }`}>
                     {viewingIndent.status || 'draft'}
                   </span>
                 </div>
