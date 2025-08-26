@@ -47,6 +47,14 @@ interface TransactionType {
 export function TransactionType() {
   const [isNumberingModalOpen, setIsNumberingModalOpen] = useState(false);
   const [transactionTypes, setTransactionTypes] = useState<TransactionType[]>([]);
+const [voucherTypealteration,setVouchertypealteration]=useState({
+ starting_number:"",
+width_of_numerical_part:"",
+prefill_with_zero:"",
+restarting_numbering:[{applicable_from:"",starting_number:"",periodicity:""}],
+prefix_details:[{applicable_from:"",particulars:""}],
+suffix_details:[{applicable_from:"",particulars:""}],
+})
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -241,6 +249,30 @@ export function TransactionType() {
     });
   };
 
+  function funaddnew(type){
+    switch(type){
+      case "restarting_numbering":
+                              voucherTypealteration.restarting_numbering.push({applicable_from:"",starting_number:"",periodicity:""})
+       break;
+     case "prefix_details":
+     voucherTypealteration.prefix_details.push({applicable_from:"",particulars:""})
+       break;
+        case "suffix_details":
+     voucherTypealteration.suffix_details.push({applicable_from:"",particulars:""})
+       break;
+    default:
+      console.log("")
+    
+ }                          
+                              
+                              setVouchertypealteration({...voucherTypealteration})
+  }
+
+
+           function fundelete(i,type){
+                              voucherTypealteration[type].splice(i,1)
+                               setVouchertypealteration({...voucherTypealteration})
+          }
   return (
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex items-center justify-between">
@@ -621,17 +653,35 @@ export function TransactionType() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Label className="w-40 text-right text-xs">Starting Number</Label>
-                <Input placeholder="e.g. INV-" className="h-6 text-xs flex-1" />
+                <Input placeholder="e.g. INV-" className="h-6 text-xs flex-1"  onChange={(e)=>{
+                   voucherTypealteration.starting_number=e.target.value
+                   setVouchertypealteration({...voucherTypealteration})
+
+                }}/>
               </div>
               <div className="flex items-center gap-2">
                 <Label className="w-40 text-right text-xs">Width of Numerical Part</Label>
-                <Input placeholder="e.g. 1000" className="h-6 text-xs flex-1" />
+                <Input placeholder="e.g. 1000" className="h-6 text-xs flex-1" 
+                   onChange={(e)=>{
+                    voucherTypealteration.width_of_numerical_part=e.target.value
+                   setVouchertypealteration({...voucherTypealteration})
+
+
+                   }}
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Label htmlFor="preventDuplicate" className="text-xs w-40 text-right">
                   Prefill with zero
                 </Label>
-                <Select value={formData.preventDuplicate ? "yes" : "no"} onValueChange={(value) => setFormData({ ...formData, preventDuplicate: value === "yes",})}>
+                <Select 
+                value={formData.preventDuplicate ? "yes" : "no"} 
+                onValueChange={(value) =>{ 
+                  
+                  setFormData({ ...formData, preventDuplicate: value === "yes",})
+                      voucherTypealteration.prefill_with_zero =value
+                      setVouchertypealteration({...voucherTypealteration})
+                }}>
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
@@ -651,11 +701,41 @@ export function TransactionType() {
                     <div>Starting Number</div>
                     <div>Periodicity</div>
                   </div>
+
+
+              {voucherTypealteration.restarting_numbering.map((val,i)=><>
                   <div className="d-flex justify-content-between mt-3">
-                    <div><Input  className="h-6 text-xs" /></div>
-                    <div><Input  className="h-6 text-xs" /></div>
+                    <div><Input  className="h-6 text-xs"  value={val.applicable_from} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.restarting_numbering[i].applicable_from=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    
+                    /></div>
+                    <div><Input  className="h-6 text-xs" 
+                     value={val.starting_number} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.restarting_numbering[i].starting_number=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    /></div>
                     <div>
-                      <Select>
+                      <Select    
+                            onValueChange={(valuee)=>{
+                                voucherTypealteration.restarting_numbering[i].starting_number =valuee
+                               setVouchertypealteration({...voucherTypealteration})
+
+                            }}
+
+                            value={ voucherTypealteration.restarting_numbering[i].starting_number}
+                      
+                      >
                         <SelectTrigger className="h-6 text-xs flex-1">
                           <SelectValue placeholder="Select option" />
                         </SelectTrigger>
@@ -665,20 +745,99 @@ export function TransactionType() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="my-auto" style={{marginLeft: "4px"}}><img src="/src/Assets/add.png" width={30}/></div>
+                    <div className="my-auto" style={{marginLeft: "4px"}}><img 
+                    
+                    src={"/src/Assets/"+(i+1==voucherTypealteration.restarting_numbering.length?"add.png":"minus.png")} 
+                    
+                    
+                    width={30}
+                        
+                        onClick={()=>{
+                          i+1==voucherTypealteration.restarting_numbering.length?funaddnew("restarting_numbering"): fundelete(i,"restarting_numbering")
+                        }}
+
+                        
+
+
+                    /></div>
                   </div>
+                  </>)}
+
+
+
+
                 </div>
+
+
+
+
+
+
                 <div className="col-4 border-r">
                   <div className="text-center py-3">Prefix Details</div>
                   <div className="d-flex justify-content-between border-t border-b py-2">
                     <div>Applicable From</div>
                     <div>Particulars</div>
                   </div>
+
+
+
+
+                  {voucherTypealteration.prefix_details.map((val,i)=><>
+                  
+                  
+                
                   <div className="d-flex justify-content-between mt-3">
-                    <div><Input  className="h-6 text-xs" /></div>
-                    <div><Input  className="h-6 text-xs" /></div>
-                    <div className="my-auto" style={{marginLeft: "4px"}}><img src="/src/Assets/add.png" width={30}/></div>
+                    <div><Input  className="h-6 text-xs" 
+                    
+                     value={val.applicable_from} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.prefix_details[i].applicable_from=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    
+                    
+                    /></div>
+                    <div><Input  className="h-6 text-xs"  
+                    
+                     value={val.particulars} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.prefix_details[i].particulars=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    
+                    /></div>
+                    <div className="my-auto" style={{marginLeft: "4px"}}><img 
+                    
+                    
+                    src={"/src/Assets/"+(i+1==voucherTypealteration.prefix_details.length?"add.png":"minus.png")} 
+                    
+                    
+                    
+                     onClick={()=>{
+                          i+1==voucherTypealteration.prefix_details.length?funaddnew("prefix_details"): fundelete(i,"prefix_details")
+                        }}
+
+                    
+                    
+                    width={24}
+                    
+                     
+                    
+                    /></div>
                   </div>
+                    </>)}
+
+
+
+
+
                 </div>
                 <div className="col-4 border-r">
                   <div className="text-center py-3">Suffix Details</div>
@@ -686,16 +845,71 @@ export function TransactionType() {
                     <div>Applicable From</div>
                     <div>Particulars</div>
                   </div>
+
+
+
+
+
+                  {voucherTypealteration.suffix_details.map((val,i)=><>
+
+
                   <div className="d-flex justify-content-between mt-3">
-                    <div><Input  className="h-6 text-xs" /></div>
-                    <div><Input  className="h-6 text-xs" /></div>
-                    <div className="my-auto" style={{marginLeft: "4px"}}><img src="/src/Assets/add.png" width={30}/></div>
+                    <div><Input  className="h-6 text-xs"  
+                    
+                     value={val.applicable_from} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.suffix_details[i].applicable_from=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    
+                    /></div>
+                    <div><Input  className="h-6 text-xs"
+                    
+                     value={val.particulars} 
+                  
+                    onChange={(e)=>{
+                        voucherTypealteration.suffix_details[i].particulars=e.target.value
+                        setVouchertypealteration({...voucherTypealteration})
+
+                    }}
+                    
+                    
+                    
+                    /></div>
+                    <div className="my-auto" style={{marginLeft: "4px"}}><img
+                    
+                    src={"/src/Assets/"+(i+1==voucherTypealteration.suffix_details.length?"add.png":"minus.png")} 
+                    
+                    
+                    onClick={()=>{
+                          i+1==voucherTypealteration.suffix_details.length?funaddnew("suffix_details"): fundelete(i,"suffix_details")
+                        }}
+                    
+                    width={24}
+                     
+                       
+                    
+                    />
+                    </div>
                   </div>
+                  </>)}
+
+
+
+
+
                 </div>
               </div>
             </div>
             <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
-              <Button variant="outline" onClick={() => setIsNumberingModalOpen(false)}>
+              <Button variant="outline" onClick={() => {
+                
+                 setFormData({ ...formData, additionalNumberingMethod: false,})
+                
+                setIsNumberingModalOpen(false)}}>
                 Cancel
               </Button>
               <Button onClick={() => setIsNumberingModalOpen(false)}>Save</Button>

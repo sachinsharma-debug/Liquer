@@ -696,11 +696,11 @@ export function UserManagement() {
                 <option value="Purchase">Purchase</option>
                 <option value="Inventory">Inventory</option>
                 <option value="Finance">Finance</option>
-              </select>
+              </select> 
             </div>
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
-                variant="outline" 
+                variant="outline"  
                 onClick={() => {
                   setIsCreateModalOpen(false);
                   resetForm();
