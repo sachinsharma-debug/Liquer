@@ -22,6 +22,8 @@ export default function Indents() {
   const [indents, setIndents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fileobj, setfileobj] = useState({})
+  const [errorfile, seterrorfile] = useState("")
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +33,9 @@ export default function Indents() {
   // Form state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [excelviewerbox, Excelfileviewer] = useState(false);
+  const [showtabledata,setshowtabledata]=useState({data:{},showtab:[]})
+
   const [currentIndent, setCurrentIndent] = useState({
     indent_date: new Date().toISOString().split('T')[0],
     depot_id: '',
@@ -203,25 +208,112 @@ export default function Indents() {
     }
   };
 
+  function takeinput(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      clearTimeout(timeoutId); // Clear the previous timer
+      timeoutId = setTimeout(() => {
+        func.apply(this, args); // Call function with correct context and arguments
+      }, delay);
+    };
+  }
+  function excelDateToJSDate(serial) {
+  const excelEpoch = new Date(1899, 11, 30); // Excel's day 0
+  const jsDate = new Date(excelEpoch.getTime() + serial * 86400000); // 86400000 ms/day
+  return jsDate;
+}
+
+// Example:
+  function handleSearch(e) {
+    let namesearch = e.target.value
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+
+      const data = new Uint8Array(e.target.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      let checktmp = workbook.SheetNames.filter((val) => val == namesearch)
+
+      if (checktmp.length > 0) {
+        seterrorfile("")
+        const worksheet = workbook.Sheets[checktmp[0]];
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+        let datafil = {}
+        let checkitme = []
+        let storetmp=[]
+        const mappedData = jsonData.map((item) => {
+          if (!checkitme.includes(item["SOF NO"])) {
+            checkitme.push(item["SOF NO"])
+            datafil[item["SOF NO"]] = []
+            jsonData.map((item2) => {
+              if (item2["SOF NO"] == item["SOF NO"]) {
+                let valll = Object.values(item2)
+                const date = excelDateToJSDate(valll[1]);
+                storetmp.push({
+                  soft_date: (date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()), depot_id: valll[0],
+                  product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
+                  sof_no___:valll[2]
+
+                })
+                datafil[item["SOF NO"]].push({
+                  soft_date: (date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()), depot_id: valll[0],
+                  product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
+                })
+              }
+            })
+          }
+        })
+       setshowtabledata({data: datafil,showtab:storetmp})
+       
+
+      }
+      else {
+        seterrorfile("invalide sheet name")
+      }
+
+
+
+      // Map Excel columns to API fields with better parsing and validation
 
 
 
 
 
-  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
+
+
+
+    };
+
+    reader.readAsArrayBuffer(fileobj);
+
+
+
+
+
+
+
+
+  }
+  let takeinputfrom = takeinput(handleSearch, 500)
+
+// console.log(showtabledata)
+
+  async function uploadexcel() {
+    if (!fileobj) return;
     try {
       const token = localStorage.getItem('authToken');
       const reader = new FileReader();
 
       reader.onload = async (e) => {
+        console.log(e.target.result);
+
         const data = new Uint8Array(e.target.result as ArrayBuffer);
+        console.log(data)
         const workbook = XLSX.read(data, { type: 'array' });
+        console.log(workbook.SheetNames)
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-
         // Map Excel columns to API fields with better parsing and validation
         const mappedData = jsonData.map((item) => {
 
@@ -272,11 +364,14 @@ export default function Indents() {
           return valid;
         });
 
-        console.log('Valid Data:', validData);
+        // console.log('Valid Data:', validData);
 
         if (validData.length === 0) {
           throw new Error('No valid indents found in the Excel file');
         }
+
+
+
 
         // Confirmation before import
         if (confirm(`Import ${validData.length} indents?`)) {
@@ -305,14 +400,18 @@ export default function Indents() {
           });
 
           // Reset file input
-          e.target.value = '';
+          // e.target.value = '';
 
           fetchIndents();
           setCurrentPage(1);
         }
+
+
+
+
       };
 
-      reader.readAsArrayBuffer(file);
+      reader.readAsArrayBuffer(fileobj);
     } catch (err: any) {
       toast({
         title: "Import Failed",
@@ -322,6 +421,16 @@ export default function Indents() {
     } finally {
       setLoading(false);
     }
+
+
+
+
+  }
+
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setfileobj(file)
   };
 
 
@@ -354,27 +463,70 @@ export default function Indents() {
         <h1 className="text-2xl md:text-3xl font-bold">Indents Management</h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <button type="button" className="btn-primary btn" onClick={() => setIsDialogOpen1(true)}>Import</button>
+
+          <Dialog open={excelviewerbox} onOpenChange={Excelfileviewer}>
+            <DialogContent className="max-w-[95vw] sm:max-w-[1500px]">
+              <DialogHeader>
+                <DialogTitle>Excel View</DialogTitle>
+              </DialogHeader>
+
+
+<div style={{maxHeight:"600px",overflowY:"scroll"}}>
+              <table>
+<thead><tr>
+  <th>Depot</th>
+<th className='px-2'>SOF DATE</th>
+<th>SOF NO</th>
+<th className='px-2'>Product Name</th>
+<th>Pack Size</th>
+<th className='px-2'>Indent QTY (In Case)</th>
+
+</tr></thead>
+<tbody>
+  {showtabledata.showtab.map((val)=><tr className='border-b'>
+    <td className='border-r'>{val.depot_id}</td>
+    <td className='border-r px-2'>{val.soft_date}</td>
+  <td className='border-r'>{val.sof_no___}</td>
+  <td className='border-r px-2'>{val.product_id}</td>
+  <td className='border-r'>{val.pack_size}</td>
+  <td className='px-2'>{val.indent_qty}</td>
+
+  </tr>)}
+
+</tbody>
+
+              </table>
+              </div>
+
+
+
+
+
+            </DialogContent>
+          </Dialog>
+
+
+
+
+
+
+
+
+
+
           <Dialog open={isDialogOpen1} onOpenChange={setIsDialogOpen1}>
             <DialogContent style={{ display: 'block' }}>
               <DialogHeader>
                 <DialogTitle>Import</DialogTitle>
               </DialogHeader>
-              <div className="flex items-center gap-2 mt-3 border-t pt-3">
-                <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
-                  File Path :
-                </Label>
-                <Input
-                  id="minStockLevel"
-                  type="text"
-                  min="0"
-                  className="h-6 text-xs flex-1"
-                />
-              </div>
+
               <div className="flex items-center gap-2 mt-3">
                 <Label htmlFor="myfile" className='text-xs w-40 text-start'>Select a file:</Label>
-                <input className='text-xs ' type="file" id="myfile" name="myfile" />
+                <input className='text-xs ' type="file" id="myfile" name="myfile" onChange={handleImportExcel} />
                 {/* <Input type="submit" /> */}
               </div>
+
+
               <div className="flex items-center gap-2 mt-3">
                 <Label htmlFor="minStockLevel" className="text-xs w-40 text-start">
                   Worksheet Name :
@@ -384,11 +536,38 @@ export default function Indents() {
                   type="text"
                   min="0"
                   className="h-6 text-xs flex-1"
+                  onInput={takeinputfrom}
                 />
+                <span>{errorfile}</span>
               </div>
               <div className="flex items-center gap-2 mt-3">
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Preview Import Summary :
+                </Label>
+                <Select onValueChange={(value) => {
+                  if (value == "yes") {
+                    Excelfileviewer(true)
+                  }
+                  else {
+                    Excelfileviewer(false)
+                  }
+
+
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs ">
+                    <SelectValue placeholder="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="standardRate" className="text-xs w-60">
+                  Due on:
                 </Label>
                 <Select>
                   <SelectTrigger className="h-6 text-xs ">
@@ -400,6 +579,9 @@ export default function Indents() {
                   </SelectContent>
                 </Select>
               </div>
+
+
+
               <div className="flex items-center gap-2 mt-3">
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Backup Company Data Before Import :
@@ -414,6 +596,13 @@ export default function Indents() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Button onClick={() => {
+
+                }} >
+                  Submit
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -422,7 +611,7 @@ export default function Indents() {
                 Create Indent
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] md:max-w-[1200px]" style={{maxHeight:600,overflowY:'auto'}}>
+            <DialogContent className="max-w-[95vw] md:max-w-[1200px]" style={{ maxHeight: 600, overflowY: 'auto' }}>
               <DialogHeader className='border-b pb-3'>
                 <DialogTitle className='d-flex justify-content-between'>
                   <div>New Indent</div>
@@ -448,7 +637,7 @@ export default function Indents() {
                       name="Indent_Voucher"
                       type="text"
                       className="sm:col-span-2 text-xs h-6 "
-                      style={{ marginLeft: 25}}
+                      style={{ marginLeft: 25 }}
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
@@ -489,7 +678,7 @@ export default function Indents() {
 
               <div className='d-flex mb-5 pb-5'>
                 <div className=''>
-                  <div className='border-b pb-3' style={{width:50}}>Sl No.</div>
+                  <div className='border-b pb-3' style={{ width: 50 }}>Sl No.</div>
                   <div className='pt-3'>1</div>
                 </div>
                 <div>
@@ -665,9 +854,9 @@ export default function Indents() {
                       <td className="p-2">{indent.indent_qty || indent.indentQty}</td>
                       <td className="p-2">
                         <span className={`px-2 py-1 rounded-full text-xs ${indent.status === 'approved' ? 'bg-green-100 text-green-800' :
-                            indent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              indent.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
+                          indent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            indent.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
                           }`}>
                           {indent.status || 'draft'}
                         </span>
@@ -803,9 +992,9 @@ export default function Indents() {
                 <Label className="sm:text-right font-medium">Status</Label>
                 <div className="sm:col-span-3">
                   <span className={`px-2 py-1 rounded-full text-xs ${viewingIndent.status === 'approved' ? 'bg-green-100 text-green-800' :
-                      viewingIndent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        viewingIndent.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
+                    viewingIndent.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      viewingIndent.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
                     }`}>
                     {viewingIndent.status || 'draft'}
                   </span>

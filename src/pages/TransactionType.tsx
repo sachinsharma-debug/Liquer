@@ -41,6 +41,7 @@ interface TransactionType {
   activateVoucherType?: boolean;
   voucherNumberingMethod?: string;
   preventDuplicate?: boolean;
+  voucherTypealteration:Object,
   additionalNumberingMethod?: boolean;
 }
 
@@ -73,6 +74,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
     voucherNumberingMethod: "",
     preventDuplicate: false,
     additionalNumberingMethod: false,
+    voucherTypealteration:{},
     isActive: true,
   });
 
@@ -118,6 +120,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
       voucherNumberingMethod: "",
       preventDuplicate: false,
       additionalNumberingMethod: false,
+      voucherTypealteration:{},
       isActive: true,
     });
     setIsEditing(false);
@@ -126,7 +129,15 @@ suffix_details:[{applicable_from:"",particulars:""}],
     setError(null);
   };
 
+
+  console.log(voucherTypealteration)
+
+
+
   const handleEdit = (transactionType: TransactionType) => {
+    
+   setVouchertypealteration((transactionType.additionalNumberingMethod?transactionType.voucherTypealteration:{}))
+
     setFormData({
       masterId: transactionType.masterId || "",
       alternateId: transactionType.alternateId || "",
@@ -135,8 +146,8 @@ suffix_details:[{applicable_from:"",particulars:""}],
       activateVoucherType: transactionType.activateVoucherType ?? true,
       voucherNumberingMethod: transactionType.voucherNumberingMethod || "",
       preventDuplicate: transactionType.preventDuplicate ?? false,
-      additionalNumberingMethod:
-        transactionType.additionalNumberingMethod ?? false,
+      additionalNumberingMethod:transactionType.additionalNumberingMethod ?? false,
+      voucherTypealteration:transactionType.additionalNumberingMethod?transactionType.voucherTypealteration:{},
       isActive: transactionType.isActive,
     });
     setIsEditing(true);
@@ -159,6 +170,12 @@ suffix_details:[{applicable_from:"",particulars:""}],
       setIsSubmitting(false);
       return;
     }
+
+
+ 
+
+
+
 
     try {
       const url = isEditing && currentId
@@ -653,7 +670,10 @@ suffix_details:[{applicable_from:"",particulars:""}],
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Label className="w-40 text-right text-xs">Starting Number</Label>
-                <Input placeholder="e.g. INV-" className="h-6 text-xs flex-1"  onChange={(e)=>{
+                <Input placeholder="e.g. INV-" className="h-6 text-xs flex-1"
+                 value={voucherTypealteration.starting_number}
+                
+                onChange={(e)=>{
                    voucherTypealteration.starting_number=e.target.value
                    setVouchertypealteration({...voucherTypealteration})
 
@@ -662,6 +682,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
               <div className="flex items-center gap-2">
                 <Label className="w-40 text-right text-xs">Width of Numerical Part</Label>
                 <Input placeholder="e.g. 1000" className="h-6 text-xs flex-1" 
+                value={voucherTypealteration.width_of_numerical_part}
                    onChange={(e)=>{
                     voucherTypealteration.width_of_numerical_part=e.target.value
                    setVouchertypealteration({...voucherTypealteration})
@@ -912,7 +933,13 @@ suffix_details:[{applicable_from:"",particulars:""}],
                 setIsNumberingModalOpen(false)}}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsNumberingModalOpen(false)}>Save</Button>
+              <Button onClick={() => { 
+
+                          formData.voucherTypealteration=(isNumberingModalOpen?voucherTypealteration:{})
+                
+                
+                setIsNumberingModalOpen(false)}
+                }>Save</Button>
             </div>
           </div>
         </DialogContent>

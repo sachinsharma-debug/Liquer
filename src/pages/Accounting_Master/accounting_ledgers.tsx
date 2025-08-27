@@ -10,10 +10,8 @@ import { BASE_URL } from '@/api/BaseUrl';
 interface AccountingLedger {
   _id: string;
   name: string;
-  code: string;
-  accountId: string;
+  
   groupId: string;
-  openingBalance: number;
   isActive: boolean;
 }
 
@@ -44,10 +42,10 @@ export default function AccountingLedgersPage() {
 
   const [formData, setFormData] = useState<Omit<AccountingLedger, '_id'>>({
     name: '',
-    code: '',
-    accountId: '',
+  
+  
     groupId: '',
-    openingBalance: 0,
+  
     isActive: true
   });
 
@@ -59,29 +57,34 @@ export default function AccountingLedgersPage() {
     setError(null);
     try {
       // Fetch ledgers
-      const ledgersResponse = await fetch(`${BASE_URL}account-ledger`);
+      const ledgersResponse = await fetch(`${BASE_URL}accountingledger`);
       const ledgersResult: ApiResponse = await ledgersResponse.json();
       if (!ledgersResponse.ok || ledgersResult.status !== 200) {
         throw new Error(ledgersResult.message || 'Failed to fetch accounting ledgers');
       }
 
-      // Fetch accounts
-      const accountsResponse = await fetch(`${BASE_URL}account`);
-      const accountsResult: ApiResponse = await accountsResponse.json();
-      if (!accountsResponse.ok || accountsResult.status !== 200) {
-        throw new Error(accountsResult.message || 'Failed to fetch accounts');
-      }
+      // // Fetch accounts
+      // const accountsResponse = await fetch(`${BASE_URL}account`);
+      // const accountsResult: ApiResponse = await accountsResponse.json();
+      // if (!accountsResponse.ok || accountsResult.status !== 200) {
+      //   throw new Error(accountsResult.message || 'Failed to fetch accounts');
+      // }
 
       // Fetch groups
-      const groupsResponse = await fetch(`${BASE_URL}account-group`);
+      const groupsResponse = await fetch(`${BASE_URL}accountig_group_list`);
       const groupsResult: ApiResponse = await groupsResponse.json();
       if (!groupsResponse.ok || groupsResult.status !== 200) {
         throw new Error(groupsResult.message || 'Failed to fetch accounting groups');
       }
 
-      setLedgers(ledgersResult.data || []);
-      setAccounts(accountsResult.data || []);
-      setGroups(groupsResult.data || []);
+
+
+
+      
+
+      setLedgers([...ledgersResult.data || []]);
+      // setAccounts(accountsResult.data || []);
+      setGroups([...groupsResult.data || []]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
@@ -96,10 +99,9 @@ export default function AccountingLedgersPage() {
   const resetForm = () => {
     setFormData({
       name: '',
-      code: '',
-      accountId: '',
+    
       groupId: '',
-      openingBalance: 0,
+    
       isActive: true
     });
     setIsEditing(false);
@@ -109,7 +111,7 @@ export default function AccountingLedgersPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.code || !formData.accountId || !formData.groupId) {
+    if (!formData.name || !formData.groupId) {
       setError('All fields are required');
       return;
     }
@@ -117,18 +119,22 @@ export default function AccountingLedgersPage() {
     try {
       const payload = {
         name: formData.name,
-        code: formData.code,
-        accountId: formData.accountId,
+        
+  
         groupId: formData.groupId,
-        openingBalance: formData.openingBalance,
+        
         isActive: formData.isActive
       };
 
-      let url = `${BASE_URL}/account-ledger`;
+
+
+
+     
+      let url = `${BASE_URL}accountingledger`;
       let method: 'POST' | 'PUT' = 'POST';
 
       if (isEditing && currentId) {
-        url = `${BASE_URL}/account-ledger/${currentId}`;
+        url = `${BASE_URL}accountingledger/${currentId}`;
         method = 'PUT';
       }
 
@@ -157,10 +163,9 @@ export default function AccountingLedgersPage() {
   const handleEdit = (ledger: AccountingLedger) => {
     setFormData({
       name: ledger.name,
-      code: ledger.code,
-      accountId: ledger.accountId,
-      groupId: ledger.groupId,
-      openingBalance: ledger.openingBalance,
+      
+      groupId: ledger.groupId._id,
+    
       isActive: ledger.isActive
     });
     setIsEditing(true);
@@ -170,7 +175,7 @@ export default function AccountingLedgersPage() {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this accounting ledger?')) {
       try {
-        const response = await fetch(`${BASE_URL}account-ledger/${id}`, {
+        const response = await fetch(`${BASE_URL}accountingledger/${id}`, {
           method: 'DELETE',
         });
 
@@ -191,11 +196,11 @@ export default function AccountingLedgersPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">Accounting Ledgers</h1>
 
-      {error && (
+      {/* {error && (
         <div className="p-4 bg-red-100 text-red-700 rounded-md">
           Error: {error}
         </div>
-      )}
+      )} */}
 
       <Card>
         <CardHeader>
@@ -222,7 +227,7 @@ export default function AccountingLedgersPage() {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <Label htmlFor="code">Ledger Code*</Label>
                 <Input
                   id="code"
@@ -232,8 +237,8 @@ export default function AccountingLedgersPage() {
                   placeholder="e.g. CB-001"
                   required
                 />
-              </div>
-              <div>
+              </div> */}
+              {/* <div>
                 <Label htmlFor="accountId">Account*</Label>
                 <select
                   id="accountId"
@@ -250,7 +255,7 @@ export default function AccountingLedgersPage() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               <div>
                 <Label htmlFor="groupId">Group*</Label>
                 <select
@@ -269,7 +274,7 @@ export default function AccountingLedgersPage() {
                   ))}
                 </select>
               </div>
-              <div>
+              {/* <div>
                 <Label htmlFor="openingBalance">Opening Balance</Label>
                 <Input
                   id="openingBalance"
@@ -279,14 +284,16 @@ export default function AccountingLedgersPage() {
                   onChange={(e) => setFormData({...formData, openingBalance: Number(e.target.value)})}
                   placeholder="0.00"
                 />
-              </div>
+              </div> */}
             </div>
 
             <div className="flex items-center space-x-4">
               <Button
                 type="button"
                 variant={formData.isActive ? 'default' : 'outline'}
-                onClick={() => setFormData({...formData, isActive: !formData.isActive})}
+                onClick={() => {
+                  setFormData({...formData, isActive: !formData.isActive})}
+                }
               >
                 {formData.isActive ? 'Active' : 'Inactive'}
               </Button>
@@ -336,33 +343,28 @@ export default function AccountingLedgersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
+                  {/* <TableHead>Code</TableHead> */}
                   <TableHead>Name</TableHead>
-                  <TableHead>Account</TableHead>
+                  {/* <TableHead>Account</TableHead> */}
                   <TableHead>Group</TableHead>
-                  <TableHead>Opening Balance</TableHead>
+                  {/* <TableHead>Opening Balance</TableHead> */}
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {ledgers.map((ledger) => {
-                  const account = accounts.find(a => a._id === ledger.accountId);
+        
                   const group = groups.find(g => g._id === ledger.groupId);
-                  
                   return (
                     <TableRow key={ledger._id}>
-                      <TableCell className="font-medium">{ledger.code}</TableCell>
+                
                       <TableCell>{ledger.name}</TableCell>
+                  
                       <TableCell>
-                        {account ? `${account.name} (${account.code})` : '-'}
+                        {ledger.groupId.name}
                       </TableCell>
-                      <TableCell>
-                        {group ? `${group.name} (${group.code})` : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {ledger.openingBalance.toFixed(2)}
-                      </TableCell>
+                     
                       <TableCell>
                         <span className={`px-2 py-1 rounded text-xs ${
                           ledger.isActive 
