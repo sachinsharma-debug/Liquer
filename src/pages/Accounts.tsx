@@ -895,6 +895,9 @@ export default function AccountingManagement() {
 
   // Fetch data based on active tab
   useEffect(() => {
+
+
+    
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
