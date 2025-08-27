@@ -424,7 +424,18 @@ export default function Indents() {
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] md:max-w-[1200px]" style={{maxHeight:600,overflowY:'auto'}}>
               <DialogHeader className='border-b pb-3'>
-                <DialogTitle className='text-start'>{isEditing ? 'Edit Indent' : 'Create New Indent'}</DialogTitle>
+                <DialogTitle className='d-flex justify-content-between'>
+                  <div>New Indent</div>
+                  <div>
+                    <Input
+                      type="text"
+                      className="text-xs h-6 "
+                      style={{ width:'105px',marginRight:10}}
+                      value={'27-08-2025'}
+                      disabled
+                    />
+                  </div>
+                </DialogTitle>
               </DialogHeader>
               <div className='space-y-3 pb-4 border-b'>
                 <div className="grid grid-cols-4 gap-2 ">
@@ -476,7 +487,7 @@ export default function Indents() {
                 </div>
               </div>
 
-              <div className='d-flex mb-5'>
+              <div className='d-flex mb-5 pb-5'>
                 <div className=''>
                   <div className='border-b pb-3' style={{width:50}}>Sl No.</div>
                   <div className='pt-3'>1</div>
@@ -560,7 +571,7 @@ export default function Indents() {
                 </div>
               </div>
 
-              <div className='mt-2'>
+              <div className='mt-5 pt-5'>
                 <div className='d-flex'>
                   <div className='my-auto'>Narration</div>
                   <div className='px-3 my-auto'>

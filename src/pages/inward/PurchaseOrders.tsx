@@ -33,14 +33,36 @@ export default function PurchaseOrders() {
 
           <DialogContent className="sm:max-w-[900px]">
             <DialogHeader>
-              <DialogTitle>Add Order</DialogTitle>
+              <DialogTitle className='d-flex justify-content-between'>
+                <div>Add Order</div>
+                <div>
+                  <Input
+                    type="text"
+                    className="text-xs h-6 "
+                    style={{ width:'105px',marginRight:10}}
+                    value={'27-08-2025'}
+                    disabled
+                  />
+                </div>
+              </DialogTitle>
             </DialogHeader>
 
-            <div className="grid grid-cols-3 gap-4 py-4 border-b">
+            <div className="grid grid-cols-3 gap-4 py-4 border-b border-t">
               <div className="flex items-center gap-2">
                 <Label htmlFor="poNumber" className="text-xs w-32">Purchase Order No</Label>
                 <Input id="poNumber" className="h-6 text-xs flex-1" />
               </div>
+              
+              <div className="flex items-center gap-2">
+                <Label htmlFor="date" className="text-xs w-32">Date</Label>
+                <Input type="date" id="date" className="h-6 text-xs flex-1" style={{ width: 100, display:'block' }} />
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Party A/C Name</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
+              </div>
+
               <div className="flex items-center gap-2">
                 <Label className="text-xs w-32">Track From Indent</Label>
                 <Select>
@@ -52,16 +74,6 @@ export default function PurchaseOrders() {
                     <SelectItem value="no">No</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Label htmlFor="poNumber" className="text-xs w-32">Party A/C Name</Label>
-                <Input id="poNumber" className="h-6 text-xs flex-1" />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Label htmlFor="date" className="text-xs w-32">Date</Label>
-                <Input type="date" id="date" className="h-6 text-xs flex-1" style={{ width: 100, display:'block' }} />
               </div>
 
               <div className="flex items-center gap-2">

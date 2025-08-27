@@ -54,14 +54,16 @@ import { ProductPage } from '@/pages/Inventory_master/Products';
 import {StockGroupPage} from '@/pages/Inventory_master/Stock_Groups';
 import  {StockCategoryPage}  from '@/pages/Inventory_master/Stock_Category';
 import { StockUnitPage } from '@/pages/Inventory_master/Units';
+import { Brand } from './Inventory_master/Brand';
 
 export default function GeneralSettings() {
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState('units');
   const [keyMap, setKeyMap] = useState({
     products: Date.now(),
     stockgroups: Date.now(),
-    depot: Date.now(),
-    branch: Date.now()
+    stockcategory: Date.now(),
+    unit: Date.now(),
+    brand: Date.now()
   });
 
   const handleTabChange = (value: string) => {
@@ -84,26 +86,31 @@ export default function GeneralSettings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="products">Products</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="units">Units</TabsTrigger>
           <TabsTrigger value="stockgroups">Stock Groups</TabsTrigger>
           <TabsTrigger value="depot">Stock Category</TabsTrigger>
-          <TabsTrigger value="branch">Units</TabsTrigger>
+          <TabsTrigger value="brand">Brand</TabsTrigger>
+          <TabsTrigger value="products">Products</TabsTrigger>
         </TabsList>
         
         <div className="mt-6 border rounded-lg p-6">
-          <TabsContent value="products" key={`products-${keyMap.products}`}>
-            <ProductPage />
+          <TabsContent value="units" key={`units-${keyMap.unit}`}>
+            <StockUnitPage />
           </TabsContent>
           <TabsContent value="stockgroups" key={`stockgroups-${keyMap.stockgroups}`}>
             <StockGroupPage />
           </TabsContent>
-          <TabsContent value="depot" key={`depot-${keyMap.depot}`}>
+          <TabsContent value="depot" key={`depot-${keyMap.stockcategory}`}>
             <StockCategoryPage />
           </TabsContent>
-          <TabsContent value="branch" key={`branch-${keyMap.branch}`}>
-            <StockUnitPage />
+          <TabsContent value="brand" key={`brand-${keyMap.brand}`}>
+            <Brand />
           </TabsContent>
+          <TabsContent value="products" key={`products-${keyMap.products}`}>
+            <ProductPage />
+          </TabsContent>
+          
         </div>
       </Tabs>
     </div>
