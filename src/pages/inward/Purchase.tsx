@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function GRNManagement() {
+export default function Purchase() {
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openItemDialog, setOpenItemDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState('');
@@ -23,18 +23,18 @@ export default function GRNManagement() {
     <div className="space-y-6">
       {/* Header and Purchase Button */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Goods Receipt Notes (GRN)</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Purchase</h1>
 
         {/* Main Dialog for Creating PO */}
         <Dialog open={openMainDialog} onOpenChange={setOpenMainDialog}>
           <DialogTrigger asChild>
-            <Button onClick={() => setOpenMainDialog(true)}>Add GRN</Button>
+            <Button onClick={() => setOpenMainDialog(true)}>Purchase</Button>
           </DialogTrigger>
 
           <DialogContent className="sm:max-w-[900px]">
             <DialogHeader>
               <DialogTitle className='d-flex justify-content-between'>
-                <div>Add GRN</div>
+                <div>Purchase</div>
                 <div>
                   <Input
                     type="text"
@@ -48,12 +48,12 @@ export default function GRNManagement() {
 
             <div className="grid grid-cols-3 gap-4 py-4 border-b border-t">
               <div className="flex items-center gap-2">
-                <Label htmlFor="poNumber" className="text-xs w-32">Reciept Note No</Label>
+                <Label htmlFor="poNumber" className="text-xs w-32">Purchase No</Label>
                 <Input id="poNumber" className="h-6 text-xs flex-1" />
               </div>
 
               <div className="flex items-center gap-2">
-                <Label htmlFor="vendor" className="text-xs w-32">Reference No</Label>
+                <Label htmlFor="vendor" className="text-xs w-32">Supplier Invoice No</Label>
                 <Input id="vendor" className="h-6 text-xs flex-1" />
               </div>
 
@@ -201,7 +201,7 @@ export default function GRNManagement() {
       {/* Table showing the purchase list */}
       <Card>
         <CardHeader>
-          <CardTitle>GRN List</CardTitle>
+          <CardTitle>Purchase List</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

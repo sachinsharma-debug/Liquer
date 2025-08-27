@@ -56,9 +56,10 @@ const navigation = [
     children: [
       { name: 'Indents', href: '/inward/indents' },
       //  { name: 'Depot', href: '/inward/depot' },
-       {name:'Ledger',href:'/inward/ledger'},
+      //  {name:'Ledger',href:'/inward/ledger'},
       { name: 'Purchase Orders', href: '/inward/purchase-orders' },
       { name: 'GRN', href: '/inward/grn' },
+      { name: 'Purchase', href: '/inward/purchase' },
       { name: 'Returns', href: '/inward/returns' }
     ]
   },

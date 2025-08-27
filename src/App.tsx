@@ -33,6 +33,7 @@ import Genral_Setting from "./pages/GenralSetting";
 import Master_setting from "./pages/Master_setting";
 import Inventory_setting from "./pages/Inventory_data";
 import IndentRegister from './pages/IndentReports/IndentRegister';
+import Purchase from './pages/inward/Purchase';
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ function AppRoutes() {
          <Route path="/inward/ledger" element={<Ledger />} />
          <Route path="/indent-report" element={<IndentReport />} />
         <Route path="/inward/grn" element={<GRN />} />
+        <Route path="/inward/Purchase" element={<Purchase />} />
         <Route path="/inward/returns" element={<Returns />} />
         <Route path="/store/transfer" element={<MaterialTransfer />} />
         <Route path="/store/wastage" element={<Wastage />} />
