@@ -34,7 +34,12 @@ export default function Indents() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [excelviewerbox, Excelfileviewer] = useState(false);
-  const [showtabledata,setshowtabledata]=useState({data:{},showtab:[]})
+  const [showtabledata,setshowtabledata]=useState({data:[],showtab:[]})
+
+
+  const [dueon,setdueon]=useState("")
+  const [backup,setbackup]=useState("")
+
 
   const [currentIndent, setCurrentIndent] = useState({
     indent_date: new Date().toISOString().split('T')[0],
@@ -238,29 +243,32 @@ export default function Indents() {
         seterrorfile("")
         const worksheet = workbook.Sheets[checktmp[0]];
         const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-        let datafil = {}
+        let datafil = []
         let checkitme = []
         let storetmp=[]
+        let tmpind=0
         const mappedData = jsonData.map((item) => {
           if (!checkitme.includes(item["SOF NO"])) {
             checkitme.push(item["SOF NO"])
-            datafil[item["SOF NO"]] = []
+            // datafil[item["SOF NO"]] = []
+                let date = excelDateToJSDate(item["SOF DATE"]);
+               datafil.push({sofNo:item["SOF NO"],sofDate:(date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()),data:[]})
             jsonData.map((item2) => {
               if (item2["SOF NO"] == item["SOF NO"]) {
                 let valll = Object.values(item2)
-                const date = excelDateToJSDate(valll[1]);
+                 date = excelDateToJSDate(valll[1]);
                 storetmp.push({
                   soft_date: (date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()), depot_id: valll[0],
                   product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
                   sof_no___:valll[2]
-
                 })
-                datafil[item["SOF NO"]].push({
-                  soft_date: (date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()), depot_id: valll[0],
+                datafil[tmpind].data.push({
+                   depot_id: valll[0],
                   product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
                 })
               }
             })
+            tmpind++
           }
         })
        setshowtabledata({data: datafil,showtab:storetmp})
@@ -300,91 +308,16 @@ export default function Indents() {
 // console.log(showtabledata)
 
   async function uploadexcel() {
-    if (!fileobj) return;
-    try {
-      const token = localStorage.getItem('authToken');
-      const reader = new FileReader();
-
-      reader.onload = async (e) => {
-        console.log(e.target.result);
-
-        const data = new Uint8Array(e.target.result as ArrayBuffer);
-        console.log(data)
-        const workbook = XLSX.read(data, { type: 'array' });
-        console.log(workbook.SheetNames)
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-        // Map Excel columns to API fields with better parsing and validation
-        const mappedData = jsonData.map((item) => {
-
-          let indentDateRaw = item['SOF DATE'];
-          let indentDate = new Date(indentDateRaw);
-
-          // If date is invalid or empty string, set to empty string to filter out later
-          if (!indentDateRaw || isNaN(indentDate.getTime())) {
-            indentDate = null;
-          }
-
-          const indent_date = indentDate ? indentDate.toISOString().split('T')[0] : '';
-
-          // Parse indent_qty safely
-          const indent_qty = Number(item['Indent QTY(In Case)']);
-          const qty = isNaN(indent_qty) ? 0 : indent_qty;
-
-          // Clean pack size - handle empty strings and normalize
-          const rawPackSize = item['Pack Size']?.toString().trim() || '';
-          const pack_size = rawPackSize === '000 ML' ? '' : rawPackSize;
-
-          return {
-            soft_date: item['SOF DATE'],
-            // sofNo:item['SOF NO'],
-            depot_id: (item['Depot'] || '').toString().trim(),
-            product_id: (item['Product Name'] || '').toString().trim(),
-            pack_size,
-            indent_qty: qty,
-            status: 'pending',
-          };
-        });
-
-        // console.log('Mapped Data:', mappedData);
-
-        const validData = mappedData.filter(item => {
-          // Validation based on sample data - pack_size can be empty for some products
-          const valid =
-            item.depot_id &&
-            item.product_id &&
-            item.soft_date &&
-            // item.sofNo &&
-            (item.pack_size || item.product_id.includes("20000 ML")) && // Some products don't need pack_size
-            !isNaN(item.indent_qty); // Only validate that it's a number (can be 0)
-
-          if (!valid) {
-            console.warn('Filtered out invalid row:', item);
-          }
-          return valid;
-        });
-
-        // console.log('Valid Data:', validData);
-
-        if (validData.length === 0) {
-          throw new Error('No valid indents found in the Excel file');
-        }
-
-
-
-
-        // Confirmation before import
-        if (confirm(`Import ${validData.length} indents?`)) {
-          setLoading(true);
+    
           const response = await fetch(
-            '${BASE_URL}/import_indents_excel',
+            BASE_URL+'import_indents_excel',
             {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer `,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ indents: validData }),
+              body: JSON.stringify({ indents: showtabledata.data,dueon,backup }),
             }
           );
 
@@ -396,32 +329,8 @@ export default function Indents() {
 
           toast({
             title: "Import Successful",
-            description: `${validData.length} indents imported successfully`,
+            description: ` indents imported successfully`,
           });
-
-          // Reset file input
-          // e.target.value = '';
-
-          fetchIndents();
-          setCurrentPage(1);
-        }
-
-
-
-
-      };
-
-      reader.readAsArrayBuffer(fileobj);
-    } catch (err: any) {
-      toast({
-        title: "Import Failed",
-        description: err.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-
 
 
 
@@ -569,7 +478,7 @@ export default function Indents() {
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Due on:
                 </Label>
-                <Select>
+                <Select onValueChange={setdueon} value={dueon}>
                   <SelectTrigger className="h-6 text-xs ">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
@@ -586,7 +495,7 @@ export default function Indents() {
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Backup Company Data Before Import :
                 </Label>
-                <Select>
+                <Select onValueChange={setbackup} value={backup}>
                   <SelectTrigger className="h-6 text-xs ">
                     <SelectValue placeholder="" />
                   </SelectTrigger>
@@ -598,7 +507,7 @@ export default function Indents() {
               </div>
               <div className="flex items-center gap-2 mt-3">
                 <Button onClick={() => {
-
+                    uploadexcel()
                 }} >
                   Submit
                 </Button>
