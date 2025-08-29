@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import IntegrationSettings from "@/pages/inward/Depot";
+import IntegrationSettings from "@/pages/inward/Integration";
 import CompanySettings from "@/pages/Organization";
 import DepotSettings from "@/pages/inward/Depot";
 import BranchandDivision from "@/pages/BranchandDivision";

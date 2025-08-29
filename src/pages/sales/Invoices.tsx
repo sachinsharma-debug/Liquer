@@ -1,92 +1,199 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogTrigger,
+  DialogContent, DialogHeader, DialogTitle,
+  DialogFooter, DialogClose
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Invoices() {
-  const { toast } = useToast();
-  const [invoices, setInvoices] = useState([
-    {
-      id: 'INV001',
-      date: '2024-01-17',
-      customer: 'ABC Wines & Spirits',
-      dnNumber: 'DN001',
-      amount: '₹45,000',
-      status: 'Pending'
-    }
-  ]);
+  const [openMainDialog, setOpenMainDialog] = useState(false);
+  const [openItemDialog, setOpenItemDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
 
-  const handleCreateInvoice = () => {
-    const newInvoice = {
-      id: `INV${String(invoices.length + 1).padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      customer: 'New Customer',
-      dnNumber: `DN${String(Math.floor(Math.random() * 100) + 1).padStart(3, '0')}`,
-      amount: `₹${(Math.random() * 100000).toFixed(0)}`,
-      status: 'Draft'
-    };
-    
-    setInvoices([...invoices, newInvoice]);
-    toast({
-      title: "Invoice Created",
-      description: `New invoice ${newInvoice.id} has been created successfully.`,
-    });
-  };
-
-  const handleViewInvoice = (invoiceId: string) => {
-    toast({
-      title: "Viewing Invoice",
-      description: `Opening details for invoice ${invoiceId}`,
-    });
+  const handleItemSelect = (value) => {
+    setSelectedItem(value);
+    setOpenItemDialog(true); // Open item dialog when value is selected
   };
 
   return (
     <div className="space-y-6">
+      {/* Header and Purchase Button */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Sales Invoices</h1>
-        <Button onClick={handleCreateInvoice}>Create Invoice</Button>
+
+        {/* Main Dialog for Creating PO */}
+        <Dialog open={openMainDialog} onOpenChange={setOpenMainDialog}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setOpenMainDialog(true)}>Add Sales Invoices</Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-[900px]">
+            <DialogHeader>
+              <DialogTitle className='d-flex justify-content-between'>
+                <div>Sales Invoices</div>
+                <div>
+                  <Input
+                    type="text"
+                    className="text-xs h-6 "
+                    style={{ width:'105px',marginRight:10}}
+                    value={'27-08-2025'}
+                  />
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="grid grid-cols-3 gap-4 py-4 border-b border-t">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Purchase No</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="vendor" className="text-xs w-32">Supplier Invoice No</Label>
+                <Input id="vendor" className="h-6 text-xs flex-1" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="date" className="text-xs w-32">Date</Label>
+                <Input type="date" id="date" className="h-6 text-xs flex-1" style={{ width: 100, display:'block' }} />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Party A/C Name</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="amount" className="text-xs w-32">Sales Ledger</Label>
+                <Input id="amount" type="number" className="h-6 text-xs flex-1" />
+              </div>
+            </div>
+            <div className='container-fluid'>
+              <div className='row border-b space-y-0 pb-3'>
+                <div className='col-6'>Name Of Item</div>
+                <div className='col-2'>Quantity</div>
+                <div className='col-2'>Rate</div>
+                <div className='col-2'>Amount</div>
+              </div>
+              <div className='row mt-3'>
+                <div className='col-6'>
+                  <Select onValueChange={handleItemSelect}>
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="royal-green">Royal Green Premium</SelectItem>
+                      <SelectItem value="officer-choice">Officer's Choice Blue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Add</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Secondary Dialog for Item Details */}
+        <Dialog open={openItemDialog} onOpenChange={setOpenItemDialog}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle style={{textTransform:'uppercase'}}>{selectedItem}</DialogTitle>
+            </DialogHeader>
+
+            <div className='row border-t border-b py-2'>
+              <div className='col-2'>
+                <div className='text-xs'>Tracking No</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Order No</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Godown</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Quantity</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Rate</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Amount</div>
+              </div>
+            </div>
+
+            <div className='row'>
+              <div className='col-2'>
+                <Input type='text' className='h6 text-xs' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='h6 text-xs' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='h6 text-xs' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" onClick={() => setOpenItemDialog(false)}>Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-      
+
+      {/* Table showing the purchase list */}
       <Card>
         <CardHeader>
-          <CardTitle>Invoices List</CardTitle>
+          <CardTitle>Sales Invoices List</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2">Invoice No.</th>
-                  <th className="text-left p-2">Date</th>
-                  <th className="text-left p-2">Customer</th>
-                  <th className="text-left p-2">DN Number</th>
+                  <th className="text-left p-2" style={{ width: '60%'}}>Name Of Item</th>
+                  <th className="text-left p-2">Quantity</th>
+                  <th className="text-left p-2">Rate</th>
                   <th className="text-left p-2">Amount</th>
-                  <th className="text-left p-2">Payment Status</th>
-                  <th className="text-left p-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {invoices.map((invoice) => (
-                  <tr key={invoice.id} className="border-b">
-                    <td className="p-2">{invoice.id}</td>
-                    <td className="p-2">{invoice.date}</td>
-                    <td className="p-2">{invoice.customer}</td>
-                    <td className="p-2">{invoice.dnNumber}</td>
-                    <td className="p-2">{invoice.amount}</td>
-                    <td className="p-2"><Badge variant="secondary">{invoice.status}</Badge></td>
-                    <td className="p-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewInvoice(invoice.id)}
-                      >
-                        View
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                <tr className="border-b">
+                  <td className="p-2">Royal Green Premium</td>
+                  <td className="p-2">10</td>
+                  <td className="p-2">₹1,000</td>
+                  <td className="p-2">₹10,000</td>
+                </tr>
               </tbody>
             </table>
           </div>

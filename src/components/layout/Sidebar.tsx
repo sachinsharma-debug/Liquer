@@ -60,7 +60,7 @@ const navigation = [
       { name: 'Purchase Orders', href: '/inward/purchase-orders' },
       { name: 'GRN', href: '/inward/grn' },
       { name: 'Purchase', href: '/inward/purchase' },
-      { name: 'Returns', href: '/inward/returns' }
+      { name: 'Purchase Returns', href: '/inward/returns' }
     ]
   },
   
@@ -69,6 +69,9 @@ const navigation = [
     icon: BarChart3,//TrendingDown,
     children: [
       { name: 'Indents', href: '/indent-report' },
+      { name: 'Purchase Order Due', href: '/indent-purchase-report' },
+      { name: 'Purchase ', href: '/indent-purchase-reports' },
+      { name: 'Purchase Order', href: '/indent-purchase-order' },
       // { name: 'Purchase Orders', href: '/inward/purchase-orders' },
       // { name: 'GRN', href: '/inward/grn' },
       // { name: 'Returns', href: '/inward/returns' }
@@ -88,10 +91,10 @@ const navigation = [
     name: 'Sales Process',
     icon: TrendingUp,
     children: [
-      { name: 'Sales Orders', href: '/sales/orders' },
+      // { name: 'Sales Orders', href: '/sales/orders' },
       { name: 'Delivery Notes', href: '/sales/delivery' },
       { name: 'Invoices', href: '/sales/invoices' },
-      { name: 'Receipts', href: '/sales/receipts' }
+      // { name: 'Receipts', href: '/sales/receipts' }
     ]
   },
   { name: 'Reports', href: '/reports', icon: BarChart3 }

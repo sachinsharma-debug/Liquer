@@ -1,119 +1,188 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogTrigger,
+  DialogContent, DialogHeader, DialogTitle,
+  DialogFooter, DialogClose
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-export default function SalesOrders() {
-  const { toast } = useToast();
-  const [orders, setOrders] = useState([
-    {
-      id: 'SO001',
-      date: '2024-01-15',
-      customer: 'ABC Wines & Spirits',
-      items: 12,
-      amount: '₹45,000',
-      status: 'Confirmed'
-    }
-  ]);
+export default function SalesOrder() {
+  const [openMainDialog, setOpenMainDialog] = useState(false);
+  const [openItemDialog, setOpenItemDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState('');
 
-  const handleCreateOrder = () => {
-    const newOrder = {
-      id: `SO${String(orders.length + 1).padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      customer: 'New Customer',
-      items: Math.floor(Math.random() * 20) + 1,
-      amount: `₹${(Math.random() * 100000).toFixed(0)}`,
-      status: 'Draft'
-    };
-    
-    setOrders([...orders, newOrder]);
-    toast({
-      title: "Sales Order Created",
-      description: `New sales order ${newOrder.id} has been created successfully.`,
-    });
-  };
-
-  const handleViewOrder = (orderId: string) => {
-    toast({
-      title: "Viewing Order",
-      description: `Opening details for order ${orderId}`,
-    });
+  const handleItemSelect = (value) => {
+    setSelectedItem(value);
+    setOpenItemDialog(true); // Open item dialog when value is selected
   };
 
   return (
     <div className="space-y-6">
+      {/* Header and Purchase Button */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Sales Orders</h1>
-        <Dialog>
+        <h1 className="text-3xl font-bold text-gray-900">Sales Order</h1>
+
+        {/* Main Dialog for Creating PO */}
+        <Dialog open={openMainDialog} onOpenChange={setOpenMainDialog}>
           <DialogTrigger asChild>
-            <Button onClick={handleCreateOrder}>Create Sales Order</Button>
+            <Button onClick={() => setOpenMainDialog(true)}>Add Order</Button>
           </DialogTrigger>
-          <DialogContent>
+
+          <DialogContent className="sm:max-w-[900px]">
             <DialogHeader>
-              <DialogTitle>Create New Sales Order</DialogTitle>
+              <DialogTitle className='d-flex justify-content-between'>
+                <div>Sales Order</div>
+                <div>
+                  <Input
+                    type="text"
+                    className="text-xs h-6 "
+                    style={{ width:'105px',marginRight:10}}
+                    value={'27-08-2025'}
+                  />
+                </div>
+              </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="customer">Customer</Label>
-                <Input id="customer" placeholder="Enter customer name" />
+
+            <div className="grid grid-cols-3 gap-4 py-4 border-b border-t">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Delivery Note No</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
               </div>
-              <div>
-                <Label htmlFor="items">Number of Items</Label>
-                <Input id="items" type="number" placeholder="Enter number of items" />
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Party A/C Name</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
               </div>
-              <div>
-                <Label htmlFor="amount">Total Amount</Label>
-                <Input id="amount" placeholder="Enter total amount" />
+              
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-32">Price Level</Label>
+                <Input id="poNumber" className="h-6 text-xs flex-1" />
               </div>
-              <Button onClick={handleCreateOrder} className="w-full">Create Order</Button>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="amount" className="text-xs w-32">Sales Ledger</Label>
+                <Input id="amount" type="number" className="h-6 text-xs flex-1" />
+              </div>
             </div>
+            <div className='container-fluid'>
+              <div className='row border-b space-y-0 pb-3'>
+                <div className='col-6'>Name Of Item</div>
+                <div className='col-2'>Quantity</div>
+                <div className='col-2'>Rate</div>
+                <div className='col-2'>Amount</div>
+              </div>
+              <div className='row mt-3'>
+                <div className='col-6'>
+                  <Select onValueChange={handleItemSelect}>
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="royal-green">Royal Green Premium</SelectItem>
+                      <SelectItem value="officer-choice">Officer's Choice Blue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+                <div className='col-2'>
+                  <Input type='text' className='h-6 text-xs'/>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Add</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Secondary Dialog for Item Details */}
+        <Dialog open={openItemDialog} onOpenChange={setOpenItemDialog}>
+          <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+              <DialogTitle style={{textTransform:'uppercase'}}>{selectedItem}</DialogTitle>
+            </DialogHeader>
+
+            <div className='row border-t border-b py-2'>
+              <div className='col-2'>
+                <div className='text-xs'>Tracking No</div>
+              </div>
+              <div className='col-4'>
+                <div className='text-xs'>Godown</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Quantity</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Rate</div>
+              </div>
+              <div className='col-2'>
+                <div className='text-xs'>Amount</div>
+              </div>
+            </div>
+
+            <div className='row'>
+              <div className='col-2'>
+                <Input type='text' className='h6 text-xs' style={{height:26}}/>
+              </div>
+              <div className='col-4'>
+                <Input type='text' className='h6 text-xs' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+              <div className='col-2'>
+                <Input type='text' className='text-xs h6' style={{height:26}}/>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" onClick={() => setOpenItemDialog(false)}>Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-      
+
+      {/* Table showing the purchase list */}
       <Card>
         <CardHeader>
-          <CardTitle>Sales Orders List</CardTitle>
+          <CardTitle>Sales Order List</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2">SO Number</th>
-                  <th className="text-left p-2">Date</th>
-                  <th className="text-left p-2">Customer</th>
-                  <th className="text-left p-2">Items</th>
-                  <th className="text-left p-2">Total Amount</th>
-                  <th className="text-left p-2">Status</th>
-                  <th className="text-left p-2">Actions</th>
+                  <th className="text-left p-2" style={{ width: '60%'}}>Name Of Item</th>
+                  <th className="text-left p-2">Quantity</th>
+                  <th className="text-left p-2">Rate</th>
+                  <th className="text-left p-2">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
-                  <tr key={order.id} className="border-b">
-                    <td className="p-2">{order.id}</td>
-                    <td className="p-2">{order.date}</td>
-                    <td className="p-2">{order.customer}</td>
-                    <td className="p-2">{order.items}</td>
-                    <td className="p-2">{order.amount}</td>
-                    <td className="p-2"><Badge variant="secondary">{order.status}</Badge></td>
-                    <td className="p-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewOrder(order.id)}
-                      >
-                        View
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                <tr className="border-b">
+                  <td className="p-2">Royal Green Premium</td>
+                  <td className="p-2">10</td>
+                  <td className="p-2">₹1,000</td>
+                  <td className="p-2">₹10,000</td>
+                </tr>
               </tbody>
             </table>
           </div>
