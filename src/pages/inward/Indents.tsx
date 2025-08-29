@@ -41,16 +41,33 @@ export default function Indents() {
   const [backup,setbackup]=useState("")
 
 
-  const [currentIndent, setCurrentIndent] = useState({
-    indent_date: new Date().toISOString().split('T')[0],
-    depot_id: '',
-    product_id: '',
-    pack_size: '',
-    indent_qty: 0,
-    status: 'draft'
-  });
+  const [currentIndent, setCurrentIndent] = useState({sofNo:"",sofDate:"",data:[{
+                   depot_id: "",
+                  product_id: "", pack_size: "", indent_qty: "",
+                  uom1:"",
+                  indent_qty2:""
+                  ,uom2:"",
+                }],
+                narration:"",
+                indent_date:"",
+                indentvoucherno:generateUniqueId(7),
+status: 'draft'
+               });
   const [isEditing, setIsEditing] = useState(false);
   const [viewingIndent, setViewingIndent] = useState(null);
+
+
+
+  function generateUniqueId(length = 10) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    result += chars[randomIndex];
+  }
+  return result;
+}
+
 
   // Fetch indents from API
   const fetchIndents = async () => {
@@ -113,18 +130,11 @@ export default function Indents() {
     try {
       const token = localStorage.getItem('authToken');
       const url = isEditing
-        ? `${BASE_URL}/update_indent/${currentIndent.id}`
-        : '${BASE_URL}/create_indent';
+        ? `${BASE_URL}update_indent/${currentIndent._id}`
+        : `${BASE_URL}create_indent`;
       const method = isEditing ? 'PUT' : 'POST';
 
-      const payload = {
-        indent_date: currentIndent.indent_date,
-        depot_id: currentIndent.depot_id,
-        product_id: currentIndent.product_id,
-        pack_size: currentIndent.pack_size,
-        indent_qty: Number(currentIndent.indent_qty),
-        status: currentIndent.status
-      };
+      const payload = {...currentIndent};
 
       const response = await fetch(url, {
         method,
@@ -161,15 +171,7 @@ export default function Indents() {
   };
 
   const handleEditIndent = (indent) => {
-    setCurrentIndent({
-      id: indent._id || indent.id,
-      indent_date: indent.indent_date || indent.sofDate?.split('T')[0],
-      depot_id: indent.depot_id || indent.depot,
-      product_id: indent.product_id || indent.productName,
-      pack_size: indent.pack_size || indent.packSize,
-      indent_qty: indent.indent_qty || indent.indentQty,
-      status: indent.status || 'draft'
-    });
+    setCurrentIndent(indent);
     setIsEditing(true);
     setIsDialogOpen(true);
   };
@@ -183,7 +185,7 @@ export default function Indents() {
     try {
       const token = localStorage.getItem('authToken');
       const response = await fetch(
-        `${BASE_URL}/delete_indent/${id}`,
+        `${BASE_URL}delete_indent/${id}`,
         {
           method: 'DELETE',
           headers: {
@@ -225,7 +227,7 @@ export default function Indents() {
   function excelDateToJSDate(serial) {
   const excelEpoch = new Date(1899, 11, 30); // Excel's day 0
   const jsDate = new Date(excelEpoch.getTime() + serial * 86400000); // 86400000 ms/day
-  return jsDate;
+  return jsDate.toISOString().split('T')[0];
 }
 
 // Example:
@@ -252,19 +254,29 @@ export default function Indents() {
             checkitme.push(item["SOF NO"])
             // datafil[item["SOF NO"]] = []
                 let date = excelDateToJSDate(item["SOF DATE"]);
-               datafil.push({sofNo:item["SOF NO"],sofDate:(date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()),data:[]})
+               datafil.push({sofNo:item["SOF NO"],sofDate:date,data:[],
+                narration:"",
+                indentvoucherno:generateUniqueId(7),
+                 status:'draft',
+                indent_date:new Date().toISOString().split('T')[0]
+
+               })
             jsonData.map((item2) => {
               if (item2["SOF NO"] == item["SOF NO"]) {
                 let valll = Object.values(item2)
                  date = excelDateToJSDate(valll[1]);
                 storetmp.push({
-                  soft_date: (date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear()), depot_id: valll[0],
+                  soft_date: date, depot_id: valll[0],
                   product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
                   sof_no___:valll[2]
                 })
                 datafil[tmpind].data.push({
                    depot_id: valll[0],
                   product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
+                  uom1:"",
+                  indent_qty2:""
+                  ,uom2:""
+                  
                 })
               }
             })
@@ -280,33 +292,13 @@ export default function Indents() {
       }
 
 
-
-      // Map Excel columns to API fields with better parsing and validation
-
-
-
-
-
-
-
-
-
     };
 
     reader.readAsArrayBuffer(fileobj);
 
 
-
-
-
-
-
-
   }
   let takeinputfrom = takeinput(handleSearch, 500)
-
-// console.log(showtabledata)
-
   async function uploadexcel() {
     
           const response = await fetch(
@@ -344,14 +336,18 @@ export default function Indents() {
 
 
   const resetForm = () => {
-    setCurrentIndent({
-      indent_date: new Date().toISOString().split('T')[0],
-      depot_id: '',
-      product_id: '',
-      pack_size: '',
-      indent_qty: 0,
-      status: 'draft'
-    });
+    setCurrentIndent({sofNo:"",sofDate:"",data:[{
+                   depot_id: "",
+                  product_id: "", pack_size: "", indent_qty: "",
+                  uom1:"",
+                  indent_qty2:""
+                  ,uom2:"",
+                }],
+                narration:"",
+                indent_date:"",
+                indentvoucherno:generateUniqueId(7),
+status: 'draft'
+               });
     setIsEditing(false);
   };
 
@@ -514,13 +510,14 @@ export default function Indents() {
               </div>
             </DialogContent>
           </Dialog>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
             <DialogTrigger asChild>
               <Button onClick={() => setIsDialogOpen(true)} disabled={loading}>
                 Create Indent
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] md:max-w-[1200px]" style={{ maxHeight: 600, overflowY: 'auto' }}>
+            <DialogContent className="max-w-[95vw] md:max-w-[1200px]" 
+            style={{ maxHeight: 600, overflowY: 'auto' }} >
               <DialogHeader className='border-b pb-3'>
                 <DialogTitle className='d-flex justify-content-between'>
                   <div>New Indent</div>
@@ -547,6 +544,8 @@ export default function Indents() {
                       type="text"
                       className="sm:col-span-2 text-xs h-6 "
                       style={{ marginLeft: 25 }}
+                      value={currentIndent.indentvoucherno}
+                        disabled
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
@@ -558,6 +557,16 @@ export default function Indents() {
                       name="indent_date"
                       type="date"
                       className="sm:col-span-2 text-xs h-6"
+                      value={currentIndent.indent_date}
+
+                      onChange={(e)=>{
+
+                        const today = new Date(e.target.value);
+                        const formattedDate = today.toISOString().split('T')[0];
+
+
+                        setCurrentIndent(prev => ({ ...prev, indent_date: formattedDate }));
+                      }}
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
@@ -569,6 +578,18 @@ export default function Indents() {
                       name="sof_date"
                       type="date"
                       className="sm:col-span-2 text-xs h-6"
+
+                      value={currentIndent.sofDate}
+
+                      onChange={(e)=>{
+
+                        const today = new Date(e.target.value);
+                        const formattedDate = today.toISOString().split('T')[0];
+
+
+                        setCurrentIndent(prev => ({ ...prev, sofDate: formattedDate }));
+                      }}
+
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-3">
@@ -580,94 +601,212 @@ export default function Indents() {
                       name="sof_no"
                       type="text"
                       className="sm:col-span-2 text-xs h-6"
+                      value={currentIndent.sofNo}
+                      onChange={(e)=>{
+                        setCurrentIndent(prev => ({ ...prev, sofNo: e.target.value }));
+                      }}
+
+
                     />
                   </div>
                 </div>
               </div>
 
-              <div className='d-flex mb-5 pb-5'>
+
+<div>
+  <div className='d-flex align-content-end flex-wrap'>
+    <div className='' style={{ width: 50 }}>
+      <div className='border-b pb-3'>Sl No.</div>
+    </div>
+    <div>
+      <div className='border-b px-3 pb-3'>Depot</div>
+    </div>
+    <div>
+      <div className='border-b pb-3'>Product Name</div>
+    </div>
+    <div>
+      <div className='border-b px-3 pb-3'>Pack Size</div>
+    </div>
+    <div>
+      <div className='border-b pb-3'>Qty</div>
+    </div>
+    <div>
+      <div className='border-b px-3 pb-3'>Uom1</div>
+    </div>
+    <div>
+      <div className='border-b pb-3'>Qty</div>
+    </div>
+    <div>
+      <div className='border-b px-3 pb-3'>Uom2</div>
+    </div>
+
+  </div>
+</div>
+      {currentIndent.data.map((val, idx) => (
+              <div className='d-flex  '>
                 <div className=''>
-                  <div className='border-b pb-3' style={{ width: 50 }}>Sl No.</div>
-                  <div className='pt-3'>1</div>
+                  {/* <div className='border-b pb-3' style={{ width: 50 }}>Sl No.</div> */}
+                  <div className='d-flex '>
+                  <div className='pt-3 me-1 mt-1 '>{1!=currentIndent.data.length?
+                    <svg   onClick={()=>{
+                     let tmpdata=currentIndent.data
+                        tmpdata.splice(idx,1)
+                        setCurrentIndent(prev=>({...prev,data: tmpdata}) )
+                  }}  xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8"/>
+</svg>
+                    
+                   :<></>}</div>
+                  <div className='pt-3'>{idx+1}</div>
+                  </div>
+
                 </div>
                 <div>
-                  <div className='border-b px-3 pb-3'>Depot</div>
+                  {/* <div className='border-b px-3 pb-3'>Depot</div> */}
                   <div className='px-3 pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+                      value={val.depot_id}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].depot_id=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
+
+
+                      
                     />
                   </div>
                 </div>
                 <div>
-                  <div className='border-b pb-3'>Product Name</div>
+                  {/* <div className='border-b pb-3'>Product Name</div> */}
                   <div className='pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+                       value={val.product_id}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].product_id=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
                   </div>
                 </div>
                 <div>
-                  <div className='border-b px-3 pb-3'>Pack Size</div>
+                  {/* <div className='border-b px-3 pb-3'>Pack Size</div> */}
                   <div className='px-3 pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+                       value={val.pack_size}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].pack_size=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
                   </div>
                 </div>
                 <div>
-                  <div className='border-b pb-3'>Qty</div>
+                  {/* <div className='border-b pb-3'>Qty</div> */}
                   <div className='pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+
+                        value={val.indent_qty}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].indent_qty=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
                   </div>
                 </div>
                 <div>
-                  <div className='border-b px-3 pb-3'>Uom1</div>
+                  {/* <div className='border-b px-3 pb-3'>Uom1</div> */}
                   <div className='px-3 pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+                        value={val.uom1}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].uom1=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
                   </div>
                 </div>
                 <div>
-                  <div className='border-b pb-3'>Qty</div>
+                  {/* <div className='border-b pb-3'>Qty</div> */}
                   <div className='pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+                        value={val.indent_qty2}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].indent_qty2=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
                   </div>
                 </div>
-                <div>
-                  <div className='border-b px-3 pb-3'>Uom</div>
+            <div>
+                  {/* <div className='border-b px-3 pb-3'>Uom</div> */}
                   <div className='px-3 pt-3'>
                     <Input
                       id="Depot"
                       name="Depot"
                       type="text"
                       className=" text-xs h-6"
+
+                        value={val.uom2}
+                      onChange={(event)=>{
+                        let tmpdata=currentIndent.data
+                        tmpdata[idx].uom2=event.target.value
+                        setCurrentIndent(prev=>({...prev,data:tmpdata}) )
+                      }}
                     />
+                   
                   </div>
+                  
                 </div>
-              </div>
+                
+                </div>
+              
+      ))}
+
+      <div className='row'>
+                <div className='col-12 text-end'>
+                  <span style={{ cursor: 'pointer' }} className='text-primary' onClick={() => {
+                    let tmpdata = currentIndent.data
+                    tmpdata.push({
+                   depot_id: "",
+                  product_id: "", pack_size: "", indent_qty: "",
+                  uom1:"",
+                  indent_qty2:""
+                  ,uom2:"",
+                })
+                    setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
+                  }}>+ Add More</span>
+                </div>
+      </div>
 
               <div className='mt-5 pt-5'>
                 <div className='d-flex'>
@@ -678,6 +817,11 @@ export default function Indents() {
                       name="Narration"
                       type="text"
                       className=" text-xs h-6"
+                        value={currentIndent.narration}
+
+                        onChange={(event)=>{
+                        setCurrentIndent(prev=>({...prev,narration:event.target.value}) )
+                      }}
                     />
                   </div>
                 </div>
@@ -756,7 +900,7 @@ export default function Indents() {
                 ) : (
                   indents.map((indent) => (
                     <tr key={indent._id || indent.id} className="border-b">
-                      <td className="p-2">{indent.indent_date || indent.sofDate?.split('T')[0]}</td>
+                      <td className="p-2">{indent.indent_date?.split('T')[0] || indent.sofDate?.split('T')[0]}</td>
                       <td className="p-2">{indent.depot_id || indent.depot}</td>
                       <td className="p-2">{indent.product_id || indent.productName}</td>
                       <td className="p-2">{indent.pack_size || indent.packSize}</td>
