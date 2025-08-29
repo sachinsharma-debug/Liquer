@@ -71,7 +71,7 @@
 //     const fetchDepots = async () => {
 //       try {
 //         setIsLoading(true);
-//         const response = await fetch(`${BASE_URL}/get_depot`);
+//         const response = await fetch(`${BASE_URL}get_depot`);
 //         if (!response.ok) {
 //           throw new Error("Failed to fetch depots");
 //         }
@@ -147,8 +147,8 @@
 //       setIsLoading(true);
 //       const method = isEditMode ? "PUT" : "POST";
 //       const url = isEditMode
-//         ? `${BASE_URL}/update_depot/${currentDepotId}`
-//         : `${BASE_URL}/create_depot`;
+//         ? `${BASE_URL}update_depot/${currentDepotId}`
+//         : `${BASE_URL}create_depot`;
 
 //       const response = await fetch(url, {
 //         method,
@@ -167,7 +167,7 @@
 //       const result = await response.json();
 
 //       // Refresh the depot list after successful operation
-//       const refreshResponse = await fetch(`${BASE_URL}/get_depot`);
+//       const refreshResponse = await fetch(`${BASE_URL}get_depot`);
 //       if (refreshResponse.ok) {
 //         const refreshData = await refreshResponse.json();
 //         setDepots(refreshData.data || []);
@@ -199,7 +199,7 @@
 //     try {
 //       setIsLoading(true);
 //       const response = await fetch(
-//         `${BASE_URL}/delete_depot/${depotToDelete}`,
+//         `${BASE_URL}delete_depot/${depotToDelete}`,
 //         {
 //           method: "DELETE",
 //         }
@@ -210,7 +210,7 @@
 //       }
 
 //       // Refresh the depot list after successful deletion
-//       const refreshResponse = await fetch(`${BASE_URL}/get_depot`);
+//       const refreshResponse = await fetch(`${BASE_URL}get_depot`);
 //       if (refreshResponse.ok) {
 //         const refreshData = await refreshResponse.json();
 //         setDepots(refreshData.data || []);
@@ -709,7 +709,7 @@ export default function DepotManagement() {
   const fetchDepots = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/get_depot`);
+      const response = await fetch(`${BASE_URL}get_depot`);
       if (!response.ok) {
         throw new Error("Failed to fetch depots");
       }
@@ -798,8 +798,8 @@ export default function DepotManagement() {
       setIsLoading(true);
       const method = isEditMode ? "PUT" : "POST";
       const url = isEditMode
-        ? `${BASE_URL}/update_depot/${currentDepotId}`
-        : `${BASE_URL}/create_depot`;
+        ? `${BASE_URL}update_depot/${currentDepotId}`
+        : `${BASE_URL}create_depot`;
 
       const response = await fetch(url, {
         method,
@@ -843,7 +843,7 @@ export default function DepotManagement() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${BASE_URL}/delete_depot/${depotToDelete}`,
+        `${BASE_URL}delete_depot/${depotToDelete}`,
         {
           method: "DELETE",
         }

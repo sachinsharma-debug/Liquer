@@ -101,11 +101,11 @@
 // //       isActive: formData.isActive
 // //     };
 
-// //     let url = `${BASE_URL}/account`; // ✅ Ensure BASE_URL and correct path
+// //     let url = `${BASE_URL}account`; // ✅ Ensure BASE_URL and correct path
 // //     let method: 'POST' | 'PUT' = 'POST';
 
 // //     if (isEditing && currentId) {
-// //       url = `${BASE_URL}/account/${currentId}`; // ✅ Correct update URL
+// //       url = `${BASE_URL}account/${currentId}`; // ✅ Correct update URL
 // //       method = 'PUT';
 // //     }
 
@@ -455,11 +455,11 @@
 //         isActive: formData.isActive
 //       };
 
-//       let url = `${BASE_URL}/account`;
+//       let url = `${BASE_URL}account`;
 //       let method: 'POST' | 'PUT' = 'POST';
 
 //       if (isEditing && currentId) {
-//         url = `${BASE_URL}/account/${currentId}`;
+//         url = `${BASE_URL}account/${currentId}`;
 //         method = 'PUT';
 //       }
 
@@ -1850,7 +1850,7 @@ export default function AccountingManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   {isEditing ? 'Edit Accounting Ledger' : 'Add New Accounting Ledger'}
-                  {isEditing && (
+                  {isEditing && ( 
                     <Button variant="ghost" onClick={resetForms}>
                       <Plus className="h-4 w-4 mr-2" /> Add New
                     </Button>

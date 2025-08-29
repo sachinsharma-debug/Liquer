@@ -92,7 +92,7 @@ export default function LedgerManagement() {
     const fetchLedgers = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}/ledger_list`);
+        const response = await fetch(`${BASE_URL}ledger_list`);
         if (!response.ok) {
           throw new Error('Failed to fetch ledgers');
         }
@@ -169,8 +169,8 @@ export default function LedgerManagement() {
       setIsLoading(true);
       const method = isEditMode ? 'PUT' : 'POST';
       const url = isEditMode 
-        ? `${BASE_URL}/update_ledger/${currentLedgerId}`
-        : `${BASE_URL}/create_ledger`;
+        ? `${BASE_URL}update_ledger/${currentLedgerId}`
+        : `${BASE_URL}create_ledger`;
 
       const response = await fetch(url, {
         method,
@@ -185,7 +185,7 @@ export default function LedgerManagement() {
       }
 
       // Refresh the ledger list after successful operation
-      const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setLedgers(refreshData.data || []);
@@ -214,7 +214,7 @@ export default function LedgerManagement() {
     
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/delete_ledger/${ledgerToDelete}`, {
+      const response = await fetch(`${BASE_URL}delete_ledger/${ledgerToDelete}`, {
         method: 'DELETE',
       });
 
@@ -223,7 +223,7 @@ export default function LedgerManagement() {
       }
 
       // Refresh the ledger list after successful deletion
-      const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setLedgers(refreshData.data || []);

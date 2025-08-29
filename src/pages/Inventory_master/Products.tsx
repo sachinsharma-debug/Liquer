@@ -130,6 +130,10 @@ export function ProductPage() {
   const [openingBalance, setOpeningBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const [tmpIndex,settmpIndex]=useState(0);
+
+
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -137,12 +141,14 @@ export function ProductPage() {
     }
   };
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [depots, setDepots] = useState<Depot[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [ledgerdata, setLedgerdata] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -165,14 +171,37 @@ export function ProductPage() {
     }>
   >([]);
   const { toast } = useToast();
+function pushEffectivedatedata(){
+  return {date:"",
+data:{
+    unit:"",
+alternateunit:"",
+description:["Base Price","","","Landed Cost","Distributer","Whole sale price","BEVCO Margin","Retail Price","Retail Price","Retail Margin","Special Purpose Levy","MRP","Round Off","Final MRP"],
+formula:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+rate:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+amount:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
+}
+}
+}
+
+
 
   const [formData, setFormData] = useState({
     masterId: "",
     alterId: "",
     name: "",
-    description: "",
     category: "",
     group: "",
+    unit: "",
+    altUnit: "",
+    where:"",
+     bottle:"",
+    preferredSupplier: "",
+    description: "",
+    opening_balance:"",
+    rate:"",
+    value:"",
     brand: "",
     type: "",
     subType: "",
@@ -180,25 +209,9 @@ export function ProductPage() {
     alcoholPercentage: 0,
     volume: 0,
     standardRate: "",
-    unit: "",
-    altUnit: "",
-    altUnitQuantity: "" as string | number,
-    conversionRatio: "" as string | number,
     stock: 0,
     minStockLevel: 0,
-    preferredSupplier: "",
-    costingInfo: false,
-    declaredPrice: 0,
-    margin: 0,
-    sellingPrice: 0,
-    mrp: 0,
-    roundOff: 0,
-    finalPrice: 0,
-    reorderLevels: [] as Array<{
-      depot: string;
-      quantity: number;
-      altQuantity: number;
-    }>,
+    effectivedate:[],
     isActive: true,
   });
 
@@ -300,6 +313,7 @@ export function ProductPage() {
         suppliersRes,
         depotsRes,
         groupsRes,
+        ledgerRes,
       ] = await Promise.all([
         fetch(`${BASE_URL}product_list`),
         fetch(`${BASE_URL}stockcategory_list`),
@@ -307,6 +321,9 @@ export function ProductPage() {
         fetch(`${BASE_URL}vendor_list`),
         fetch(`${BASE_URL}get_depot`),
         fetch(`${BASE_URL}stockgroup_list`),
+        fetch(`${BASE_URL}accountingledger/yes`),
+
+        
       ]);
 
       const [
@@ -316,6 +333,7 @@ export function ProductPage() {
         suppliersData,
         depotsData,
         groupsData,
+        ledgerData,
       ] = await Promise.all([
         productsRes.json(),
         categoriesRes.json(),
@@ -323,6 +341,7 @@ export function ProductPage() {
         suppliersRes.json(),
         depotsRes.json(),
         groupsRes.json(),
+        ledgerRes.json()
       ]);
 
       if (!productsRes.ok)
@@ -344,6 +363,8 @@ export function ProductPage() {
       setSuppliers(suppliersData.data || []);
       setDepots(depotsData.data || []);
       setGroups(groupsData.data || []);
+      setLedgerdata(ledgerData.data || []);
+
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -417,36 +438,32 @@ export function ProductPage() {
 
   const resetForm = () => {
     setFormData({
-      masterId: "",
-      alterId: "",
-      name: "",
-      description: "",
-      category: "",
-      group: "",
-      brand: "",
-      type: "",
-      subType: "",
-      origin: "",
-      alcoholPercentage: 0,
-      volume: 0,
-      standardRate: "",
-      unit: "",
-      altUnit: "",
-      altUnitQuantity: "",
-      conversionRatio: "",
-      stock: 0,
-      minStockLevel: 0,
-      preferredSupplier: "",
-      costingInfo: false,
-      declaredPrice: 0,
-      margin: 0,
-      sellingPrice: 0,
-      mrp: 0,
-      roundOff: 0,
-      finalPrice: 0,
-      reorderLevels: [],
-      isActive: true,
-    });
+    masterId: "",
+    alterId: "",
+    name: "",
+    category: "",
+    group: "",
+    unit: "",
+    altUnit: "",
+    where:"",
+     bottle:"",
+    preferredSupplier: "",
+    description: "",
+    opening_balance:"",
+    rate:"",
+    value:"",
+    brand: "",
+    type: "",
+    subType: "",
+    origin: "",
+    alcoholPercentage: 0,
+    volume: 0,
+    standardRate: "",
+    stock: 0,
+    minStockLevel: 0,
+    effectivedate:[],
+    isActive: true,
+  });
     setIsEditing(false);
     setCurrentId(null);
     setEffectiveDate("");
@@ -459,38 +476,17 @@ export function ProductPage() {
     setDialogOpen(true);
   };
 
-  const startEdit = (product: Product) => {
-    setFormData({
-      masterId: (product as any).masterId || "",
-      alterId: (product as any).alterId || "",
-      name: product.name,
-      description: product.description,
-      category: product.category._id,
-      group: product.group?._id || "",
-      brand: (product as any).brand || "",
-      type: product.type,
-      subType: product.subType,
-      origin: product.origin,
-      alcoholPercentage: product.alcoholPercentage,
-      volume: product.volume,
-      standardRate: (product as any).standardRate || "",
-      unit: product.unit._id,
-      altUnit: product.altUnit?._id || "",
-      altUnitQuantity: (product as any).altUnitQuantity || "",
-      conversionRatio: (product as any).conversionRatio || "",
-      stock: product.stock,
-      minStockLevel: product.minStockLevel,
-      preferredSupplier: product.preferredSupplier?._id || "",
-      costingInfo: product.costingInfo,
-      declaredPrice: product.declaredPrice,
-      margin: product.margin,
-      sellingPrice: product.sellingPrice,
-      mrp: product.mrp,
-      roundOff: product.roundOff,
-      finalPrice: product.finalPrice,
-      reorderLevels: product.reorderLevels || [],
-      isActive: product.isActive,
-    });
+  const startEdit = (product) => {
+
+    product.category = product.category?._id || "";
+    product.unit = product.unit?._id || "";
+
+
+if(product.standardRate=="yes"){
+     setStandardRateDialogOpen(true);
+
+}
+    setFormData(product);
     setIsEditing(true);
     setCurrentId(product._id);
     setDialogOpen(true);
@@ -505,6 +501,9 @@ export function ProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+
+    
     if (
       !formData.name ||
       !formData.category ||
@@ -724,6 +723,13 @@ export function ProductPage() {
     );
   };
 
+
+
+  console.log(formData,"ZxZ");
+
+
+
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -924,12 +930,12 @@ export function ProductPage() {
                         <Input
                           type="number"
                           min="0"
-                          value={formData.altUnitQuantity || ""}
+                          value={formData.where || ""}
                           onChange={(e) => {
                             const value = e.target.value;
                             setFormData({
                               ...formData,
-                              altUnitQuantity: value ? parseInt(value) : "",
+                              where: value ? parseInt(value) : "",
                             });
                           }}
                           className="h-6 text-xs w-24 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
@@ -944,12 +950,12 @@ export function ProductPage() {
                           id="conversionRatio"
                           type="number"
                           min="0"
-                          value={formData.conversionRatio || ""}
+                          value={formData.bottle || ""}
                           onChange={(e) => {
                             const value = e.target.value;
                             setFormData({
                               ...formData,
-                              conversionRatio: value ? parseInt(value) : "",
+                              bottle: value ? parseInt(value) : "",
                             });
                           }}
                           className="h-6 text-xs w-24 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
@@ -1157,6 +1163,9 @@ export function ProductPage() {
                   >
                     Standard Rate:
                   </Label>
+                       
+
+
                   <Select
                     value={formData.standardRate}
                     onValueChange={(value) => {
@@ -1309,6 +1318,8 @@ export function ProductPage() {
                           </div>
                         </DialogContent>
                       </Dialog>
+
+
                         <div className="flex mt-3">
                           <div className="flex items-center gap-2">
                             <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
@@ -1318,8 +1329,15 @@ export function ProductPage() {
                               id="minStockLevel"
                               type="text"
                               min="0"
-                              value={openingBalance}
-                              onChange={(e) => setOpeningBalance(e.target.value)}
+                              value={formData.opening_balance}
+
+
+                              onChange={(e) =>
+                          setFormData({
+                        ...formData,
+                          opening_balance: parseInt(e.target.value) || 0,
+                      })
+                    }
                               onKeyDown={handleKeyDown}
                               className="h-6 text-xs flex-1"
                             />
@@ -1333,6 +1351,16 @@ export function ProductPage() {
                               type="text"
                               min="0"
                               className="h-6 text-xs flex-1"
+
+                              value={formData.rate}
+
+
+                              onChange={(e) =>
+                          setFormData({
+                        ...formData,
+                          rate: parseInt(e.target.value) || 0,
+                      })
+                    }
                               
                             />
                           </div>
@@ -1345,6 +1373,16 @@ export function ProductPage() {
                               type="text"
                               min="0"
                               className="h-6 text-xs flex-1"
+                              
+                              value={formData.value}
+                              onChange={(e) =>
+                              setFormData({
+                               ...formData,
+                               value: parseInt(e.target.value) || 0,})
+                         }
+
+
+
                               // style={{width: '100px'}}
                             />
                           </div>
@@ -1394,13 +1432,45 @@ export function ProductPage() {
                 className="flex-1"
               />
             </div>
+
+           {formData.effectivedate.length>0 &&   <div className="">
+            
+              {formData.effectivedate.map((val_tmp,iiii)=>
+              <div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="effectiveDate" className="text-sm w-32">
+                Date:
+              </Label>
+              <Input
+                id="effectiveDate"
+                type="date"
+                value={val_tmp.date.split('T')[0]}
+                className="flex-1"
+                disabled
+              />
+             <Edit className="h-4 w-4"  onClick={()=>{
+                settmpIndex(iiii)
+                setEffectiveDate(val_tmp.date.split('T')[0])
+                 setRatePeriodDialogOpen(true);
+                  setStandardRateDialogOpen(false);
+
+             }}/>
+
+
+            </div>
+            </div>
+              )}
+            </div>}
+
+
+
+
             <div className="flex justify-end space-x-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => {
                   setStandardRateDialogOpen(false);
-                  setFormData({ ...formData, standardRate: "" });
                 }}
               >
                 Cancel
@@ -1408,6 +1478,13 @@ export function ProductPage() {
               <Button
                 type="button"
                 onClick={() => {
+                      let tmpeffectdata=pushEffectivedatedata()
+                      tmpeffectdata.date=effectiveDate;
+                      settmpIndex(formData.effectivedate.length)
+                      formData.effectivedate.push(tmpeffectdata)
+
+                         setFormData({ ...formData})
+
                   if (effectiveDate) {
                     setStandardRateDialogOpen(false);
                     setRatePeriodDialogOpen(true);
@@ -1490,9 +1567,11 @@ export function ProductPage() {
                 Unit *:
               </Label>
               <Select
-                value={formData.unit}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, unit: value })
+                value={formData?.effectivedate?.[tmpIndex]?.data?.unit ||""}
+                onValueChange={(value) =>{
+                  formData.effectivedate[tmpIndex].data.unit=value;
+                  setFormData({ ...formData})
+                }
                 }
               >
                 <SelectTrigger className="h-6 text-xs flex-1">
@@ -1500,7 +1579,6 @@ export function ProductPage() {
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px] overflow-y-auto">
                   {units
-                    .filter((unit) => unit._id !== formData.altUnit)
                     .map((unit) => (
                       <SelectItem key={unit._id} value={unit._id}>
                         {unit.symbol}{" "}
@@ -1517,12 +1595,11 @@ export function ProductPage() {
                 Alternate Unit:
               </Label>
               <Select
-                value={formData.altUnit || "none"}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    altUnit: value === "none" ? "" : value,
-                  })
+                 value={formData?.effectivedate?.[tmpIndex]?.data?.alternateunit || ""}
+                onValueChange={(value) =>{
+                  formData.effectivedate[tmpIndex].data.alternateunit=value; 
+                  setFormData({ ...formData})
+                }
                 }
               >
                 <SelectTrigger className="h-6 text-xs flex-1">
@@ -1531,7 +1608,6 @@ export function ProductPage() {
                 <SelectContent className="max-h-[200px] overflow-y-auto">
                   <SelectItem value="none">None</SelectItem>
                   {units
-                    .filter((unit) => unit._id !== formData.unit)
                     .map((unit) => (
                       <SelectItem key={unit._id} value={unit._id}>
                         {unit.symbol}{" "}
@@ -1561,14 +1637,17 @@ export function ProductPage() {
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">Base Price</div>
 
-                <Select>
+                <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[0]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[0]=value;
+                  setFormData({ ...formData})
+                }}>
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Not Applicable</SelectItem>
-                    <SelectItem value="no">Percentage</SelectItem>
-                    <SelectItem value="no">Amount</SelectItem>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
                   </SelectContent>
                 </Select>
                 <Input
@@ -1576,39 +1655,75 @@ export function ProductPage() {
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[0]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[0]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+                       value={formData?.effectivedate?.[tmpIndex]?.data?.amount[0]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[0]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+
+
+
+
+
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs" 
+                
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[0]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[0]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">
-                  <Select>
+                  <Select  
+                  
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.description[1]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.description[1]=value;
+                  setFormData({ ...formData})
+
+                }}
+                  >
                     <SelectTrigger className="h-6 text-xs flex-1">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="yes">End Of List</SelectItem>
-                      <SelectItem value="no">1</SelectItem>
-                      <SelectItem value="no">2</SelectItem>
+                      {ledgerdata.map((val)=><SelectItem value={val._id}>{val.name}</SelectItem>)}
+                     
                     </SelectContent>
                   </Select>
 
                 </div>
 
-                <Select>
+                <Select   
+                value={formData?.effectivedate?.[tmpIndex]?.data?.formula[1]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[1]=value;
+                  setFormData({ ...formData})
+
+                }}
+                >
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Not Applicable</SelectItem>
-                    <SelectItem value="no">Percentage</SelectItem>
-                    <SelectItem value="no">Amount</SelectItem>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
                   </SelectContent>
                 </Select>
                 <Input
@@ -1616,31 +1731,64 @@ export function ProductPage() {
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+                 value={formData?.effectivedate?.[tmpIndex]?.data?.rate[1]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[1]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[1]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[1]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+
+
+
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs"
+                
+                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[1]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[1]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">
-                  <Select>
+                  <Select   
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.description[2]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.description[2]=value;
+                  setFormData({ ...formData})
+
+                }}
+                  >
                     <SelectTrigger className="h-6 text-xs flex-1">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="yes">End Of List</SelectItem>
-                      <SelectItem value="no">1</SelectItem>
-                      <SelectItem value="no">2</SelectItem>
+                                           {ledgerdata.map((val)=><SelectItem value={val._id}>{val.name}</SelectItem>)}
+
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Select>
+                <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[2]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[2]=value;
+                  setFormData({ ...formData})
+
+                }}>
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
@@ -1655,14 +1803,34 @@ export function ProductPage() {
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[2]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[2]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[2]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[2]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs"
+                
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[2]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[2]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
@@ -1671,21 +1839,43 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[3]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[3]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[3]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[3]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+
+                                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[3]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[3]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[3]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[3]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
               </div>
 
@@ -1696,20 +1886,43 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[4]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[4]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                                     value={formData?.effectivedate?.[tmpIndex]?.data?.rate[4]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[4]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[4]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[4]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs" 
+                
+                
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[4]||""}  
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[4]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
@@ -1718,21 +1931,27 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[5]||""}  
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[5]||""}  
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.amount[5]||""}  
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[5]||""}  
+
                 />
               </div>
 
@@ -1743,20 +1962,41 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[6]||""}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[6]||""}
+                   onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[6]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+
+
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[6]||""}
+                    onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[6]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs" 
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[6]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[6]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
@@ -1765,21 +2005,27 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[7]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.rate[7]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.amount[7]||""}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[7]||""}
                 />
               </div>
 
@@ -1790,20 +2036,43 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[8]||""}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[8]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[8]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[8]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[8]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs" 
+
+                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[8]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[8]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                
+                
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
@@ -1813,20 +2082,43 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[9]||""}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[9]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[9]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+
+
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.amount[9]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[9]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" />
+                <Input placeholder="Remarks" className="h-6 text-xs" 
+                
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[9]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.remarks[9]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center border-t pt-2">
@@ -1835,21 +2127,27 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[10]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[10]||""}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[10]||""}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[10]||""}
                 />
               </div>
 
@@ -1859,23 +2157,39 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[11]||""}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[11]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.rate[11]=value.target.value;
+                  setFormData({ ...formData})
+                }}
+                  
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
+                                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[11]||""}
+
+                onChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.amount[11]=value.target.value;
+                  setFormData({ ...formData})
+                }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                 value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[11]||""}
+
                 />
               </div>
 
@@ -1885,21 +2199,29 @@ export function ProductPage() {
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                 value={formData?.effectivedate?.[tmpIndex]?.data?.formula[12]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+               value={formData?.effectivedate?.[tmpIndex]?.data?.rate[12]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                 value={formData?.effectivedate?.[tmpIndex]?.data?.amount[12]||""}
+
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
                   disabled
+                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[12]||""}
+
                 />
               </div>
               
