@@ -27,6 +27,8 @@ interface StockCategory {
   name: string;
   categoryId?: string; // ✅ linked category id
   categoryName?: string; // ✅ linked category name for display
+     masterId?:string;
+   alternateId?:string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -45,19 +47,19 @@ export function Brand() {
   const [formData, setFormData] = useState({
     name: "",
     categoryId: "",
-    isActive: true,
+       masterId:"",
+       alternateId:"",
+       isActive: true,
   });
 
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}stockcategory_list`);
+      const response = await fetch(`${BASE_URL}get_master/brand`);
       const result = await response.json();
-
       if (!response.ok)
         throw new Error(result.message || "Failed to fetch categories");
-
-      setCategories(result.data || []);
+        setCategories(result.data || []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -65,8 +67,8 @@ export function Brand() {
       toast({
         title: "Error",
         description:
-          err instanceof Error ? err.message : "Failed to load categories",
-        variant: "destructive",
+          err instanceof Error ? err.message : "Failed to load  brand",
+          variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -81,6 +83,8 @@ export function Brand() {
     setFormData({
       name: "",
       categoryId: "",
+         masterId:"",
+         alternateId:"",
       isActive: true,
     });
     setIsEditing(false);
@@ -97,6 +101,9 @@ export function Brand() {
       name: category.name,
       categoryId: category.categoryId || "",
       isActive: category.isActive,
+      masterId:category.masterId,
+      alternateId:category.alternateId
+
     });
     setIsEditing(true);
     setCurrentId(category._id);
@@ -111,25 +118,29 @@ export function Brand() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) {
-      setError("Category name is required");
+      setError("Brand name is required");
       toast({
         title: "Validation Error",
-        description: "Category name is required",
+        description: "Brand name is required",
         variant: "destructive",
       });
       return;
     }
 
+    let payload={
+          tablename:"brand",
+          data:formData,
+    }
     try {
       const url =
         isEditing && currentId
-          ? `${BASE_URL}stockcategory_update/${currentId}`
-          : `${BASE_URL}stockcategory_create`;
+          ? `${BASE_URL}update_master/${currentId}`
+          : `${BASE_URL}create_master`;
 
       const response = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -157,11 +168,11 @@ export function Brand() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this category?"))
+    if (!window.confirm("Are you sure you want to delete this brand?"))
       return;
 
     try {
-      const response = await fetch(`${BASE_URL}stockcategory_delete/${id}`, {
+      const response = await fetch(`${BASE_URL}delete_master/${id}/brand`, {
         method: "DELETE",
       });
 
@@ -169,7 +180,7 @@ export function Brand() {
 
       toast({
         title: "Success",
-        description: "Category deleted successfully",
+        description: "Brand deleted successfully",
       });
 
       await fetchCategories();
@@ -210,7 +221,7 @@ export function Brand() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {isEditing ? "Edit Category" : "Add New Category"}
+              {isEditing ? "Edit Brand" : "Add New Brand"}
               <Button variant="ghost" onClick={cancelForm}>
                 Cancel
               </Button>
@@ -225,11 +236,25 @@ export function Brand() {
                     id="masterId"
                     name="masterId"
                     placeholder="Master Id"
+                    
+                 
+                     value={formData.masterId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, masterId: e.target.value })
+                    }
+                  
                   />
                 </div>
                 <div>
                   <Label htmlFor="alterId">Alter Id:</Label>
-                  <Input id="alterId" name="alterId" placeholder="Alter Id" />
+                  <Input id="alterId" name="alterId" placeholder="Alter Id"
+                  
+                  value={formData.alternateId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, alternateId: e.target.value })
+                    }
+                  
+                  />
                 </div>
                 <div>
                   <Label htmlFor="name">Name*</Label>
@@ -257,7 +282,6 @@ export function Brand() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="primary">Primary</SelectItem>
                       {categories.map((cat) => (
                         <SelectItem key={cat._id} value={cat._id}>
                           {cat.name}
@@ -344,7 +368,7 @@ export function Brand() {
                         <TableCell className="font-medium">
                           {category.name}
                         </TableCell>
-                        <TableCell>{category.categoryName || "-"}</TableCell>
+                        <TableCell>{categories?.filter((val)=>val?._id==category?.categoryId)?.[0]?.name}</TableCell>
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
