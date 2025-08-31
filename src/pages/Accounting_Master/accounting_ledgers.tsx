@@ -10,6 +10,7 @@ import { BASE_URL } from '@/api/BaseUrl';
 interface AccountingLedger {
   _id: string;
   name: string;
+  usepurchase:string,
   
   groupId: string;
   isActive: boolean;
@@ -42,10 +43,9 @@ export default function AccountingLedgersPage() {
 
   const [formData, setFormData] = useState<Omit<AccountingLedger, '_id'>>({
     name: '',
-  
-  
     groupId: '',
-  
+    usepurchase:"yes",
+
     isActive: true
   });
 
@@ -97,10 +97,15 @@ export default function AccountingLedgersPage() {
   }, []);
 
   const resetForm = () => {
+
+    console.log("DSfdsfDSF");
     setFormData({
       name: '',
     
       groupId: '',
+        usepurchase:"yes",
+
+
     
       isActive: true
     });
@@ -119,10 +124,8 @@ export default function AccountingLedgersPage() {
     try {
       const payload = {
         name: formData.name,
-        
-  
+        usepurchase:formData.usepurchase,
         groupId: formData.groupId,
-        
         isActive: formData.isActive
       };
 
@@ -146,14 +149,13 @@ export default function AccountingLedgersPage() {
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
 
-      if (!response.ok || result.status !== 200) {
-        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} accounting ledger`);
-      }
+
+      const result = await response.json();
+      
+      resetForm();
 
       await fetchData();
-      resetForm();
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -163,9 +165,8 @@ export default function AccountingLedgersPage() {
   const handleEdit = (ledger: AccountingLedger) => {
     setFormData({
       name: ledger.name,
-      
+      usepurchase:ledger.usepurchase,
       groupId: ledger.groupId._id,
-    
       isActive: ledger.isActive
     });
     setIsEditing(true);
@@ -181,9 +182,6 @@ export default function AccountingLedgersPage() {
 
         const result = await response.json();
 
-        if (!response.ok || result.status !== 200) {
-          throw new Error(result.message || 'Failed to delete accounting ledger');
-        }
 
         await fetchData();
       } catch (err) {
@@ -272,6 +270,23 @@ export default function AccountingLedgersPage() {
                       {group.name} ({group.code})
                     </option>
                   ))}
+                </select>
+              </div>
+
+
+               <div>
+                <Label htmlFor="groupId">Use for purchase addl. Expense </Label>
+                <select
+                  id="groupId"
+                  name="groupId"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={formData.usepurchase}
+                  onChange={(e) => setFormData({...formData, usepurchase: e.target.value})}
+                >
+                  <option value="yes">yes</option>
+                  <option value="no">no</option>
+
+                 
                 </select>
               </div>
               {/* <div>

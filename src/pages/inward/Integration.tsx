@@ -648,7 +648,21 @@ interface Depot {
   State?: string;
   Country?: string;
   PinCode?: string;
+  Email?: string;
   Mobile?: string;
+   clientName: string;
+  clientAddress?: string;
+  clientState?: string;
+  clientCountry?: string;
+  clientPinCode?: string;
+  clientEmail?: string;
+  clientMobile?: string;
+  tallyEdition?:string;
+tallySerialno?:string;
+validTill?:string;
+registrationDate?:string;
+partnerCode?:string;
+partnerName?:string;
   Telephone?: string;
 }
 
@@ -664,7 +678,21 @@ interface DepotFormData {
   State?: string;
   Country?: string;
   PinCode?: string;
+  Email?: string;
   Mobile?: string;
+  clientName: string;
+  clientAddress?: string;
+  clientState?: string;
+  clientCountry?: string;
+  clientPinCode?: string;
+  clientEmail?: string;
+  clientMobile?: string;
+    tallyEdition?:string;
+tallySerialno?:string;
+validTill?:string;
+registrationDate?:string;
+partnerCode?:string;
+partnerName?:string;
   Telephone?: string;
 }
 
@@ -697,7 +725,24 @@ export default function Integration() {
     State: "",
     Country: "",
     PinCode: "",
+    Email:"",
     Mobile: "",
+
+    clientName: "",
+    clientAddress: "",
+    clientState: "",
+    clientCountry: "",
+    clientPinCode: "",
+    clientEmail:"",
+    clientMobile: "",
+
+tallyEdition:"",
+tallySerialno:"",
+validTill:"",
+registrationDate:"",
+partnerCode:"",
+partnerName:"",
+
     Telephone: ""
   });
 
@@ -709,11 +754,13 @@ export default function Integration() {
   const fetchDepots = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/get_depot`);
+      const response = await fetch(`${BASE_URL}get_master/integration`);
       if (!response.ok) {
         throw new Error("Failed to fetch depots");
       }
       const data = await response.json();
+      console.log(data,"test")
+
       setDepots(data.data || []);
     } catch (error) {
       setError(error.message);
@@ -756,6 +803,22 @@ export default function Integration() {
       Country: "",
       PinCode: "",
       Mobile: "",
+        clientName: "",
+    clientAddress: "",
+    clientState: "",
+    clientCountry: "",
+    clientPinCode: "",
+    clientMobile: "",
+    Email:"",
+    clientEmail:"",
+
+    tallyEdition:"",
+tallySerialno:"",
+validTill:"",
+registrationDate:"",
+partnerCode:"",
+partnerName:"",
+
       Telephone: ""
     });
     setIsModalOpen(true);
@@ -779,7 +842,28 @@ export default function Integration() {
       Country: depot.Country || "",
       PinCode: depot.PinCode || "",
       Mobile: depot.Mobile || "",
+      Email: depot.Email || "",
+      clientEmail: depot.clientEmail || "",
+
+    clientName: depot.clientName,
+    clientAddress: depot.clientAddress,
+    clientState: depot.clientState,
+    clientCountry: depot.clientCountry,
+    clientPinCode: depot.clientPinCode,
+    clientMobile: depot.clientMobile,
+
+
+    tallyEdition:depot.tallyEdition,
+tallySerialno:depot.tallySerialno,
+validTill:depot.validTill,
+registrationDate:depot.registrationDate,
+partnerCode:depot.partnerCode,
+partnerName:depot.partnerName,
       Telephone: depot.Telephone || ""
+
+
+
+
     });
     setIsModalOpen(true);
   };
@@ -793,20 +877,23 @@ export default function Integration() {
   // Submit form (create or update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       setIsLoading(true);
       const method = isEditMode ? "PUT" : "POST";
       const url = isEditMode
-        ? `${BASE_URL}/update_depot/${currentDepotId}`
-        : `${BASE_URL}/create_depot`;
+        ? `${BASE_URL}update_master/${currentDepotId}`
+        : `${BASE_URL}create_master`;
+    let payload={
+         tablename:"integration",
+         data:formData
+    }
 
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -820,8 +907,8 @@ export default function Integration() {
       toast({
         title: "Success",
         description: isEditMode
-          ? "Depot updated successfully"
-          : "Depot created successfully",
+          ? "Integration updated successfully"
+          : "Integration created successfully",
       });
 
       setIsModalOpen(false);
@@ -843,23 +930,19 @@ export default function Integration() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${BASE_URL}/delete_depot/${depotToDelete}`,
+        `${BASE_URL}delete_master/${depotToDelete}/integration`,
         {
           method: "DELETE",
         }
       );
-
       const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.error || "Failed to delete depot");
+        throw new Error(result.error || "Failed to delete integration");
       }
-
       await fetchDepots();
-
       toast({
         title: "Success",
-        description: "Depot deleted successfully",
+        description: "Integration deleted successfully",
       });
     } catch (error) {
       toast({
@@ -1002,16 +1085,6 @@ export default function Integration() {
                 />
               </div>
               <div className="space-y-2">
-              <Label htmlFor="name">Client Details</Label>
-              <Input
-                id="name"
-                value={formData.Name}
-                onChange={(e) => handleInputChange("Name", e.target.value)}
-                placeholder="Enter depot name"
-                required
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="name">Company Name</Label>
               <Input
                 id="name"
@@ -1021,6 +1094,55 @@ export default function Integration() {
                 required
               />
             </div>
+             <div className="space-y-2">
+                <Label htmlFor="mobile">Mobile:</Label>
+                <Input
+                  id="mobile"
+                  value={formData.Mobile}
+                  onChange={(e) => handleInputChange("Mobile", e.target.value)}
+                  placeholder="+91 9876543210"
+                />
+              </div>
+            </div>
+              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="Email">Email:</Label>
+                <Input
+                  id="Email"
+                  value={formData.Email}
+                  onChange={(e) => handleInputChange("Email", e.target.value)}
+                  placeholder="Email"
+                />
+              </div>
+            
+               <div className="space-y-2">
+                <Label htmlFor="country">Country:</Label>
+                <Input
+                  id="country"
+                  value={formData.Country}
+                  onChange={(e) => handleInputChange("Country", e.target.value)}
+                  placeholder="Country"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State:</Label>
+                <Input
+                  id="state"
+                  value={formData.State}
+                  onChange={(e) => handleInputChange("State", e.target.value)}
+                  placeholder="Company State"
+                />
+              </div>
+                <div className="space-y-2">
+                <Label htmlFor="pinCode">PinCode:</Label>
+                <Input
+                  id="pinCode"
+                  value={formData.PinCode}
+                  onChange={(e) => handleInputChange("PinCode", e.target.value)}
+                  placeholder="Pincode"
+                />
+              </div>
+             
             </div>
             
 
@@ -1053,60 +1175,91 @@ export default function Integration() {
               />
             </div>
 
+          
+<hr/>
             <div className="grid grid-cols-2 gap-4">
+              
+               <div className="space-y-2">
+              <Label htmlFor="name">Client Details</Label>
+              <Input 
+                id="name"
+                value={formData.clientName}
+                onChange={(e) => handleInputChange("clientName", e.target.value)}
+                placeholder="Enter depot name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="mobile">Mobile:</Label>
+                <Input
+                  id="mobile"
+                  value={formData.clientMobile}
+                  onChange={(e) => handleInputChange("clientMobile", e.target.value)}
+                  placeholder="+91 9876543210"
+                />
+              </div>
+
+               <div className="space-y-2">
+                <Label htmlFor="Email">Email:</Label>
+                <Input
+                  id="Email"
+                  value={formData.clientEmail}
+                  onChange={(e) => handleInputChange("clientEmail", e.target.value)}
+                  placeholder="Email"
+                />
+              </div>
+            
+               <div className="space-y-2">
+                <Label htmlFor="country">Country:</Label>
+                <Input
+                  id="country"
+                  value={formData.clientCountry}
+                  onChange={(e) => handleInputChange("clientCountry", e.target.value)}
+                  placeholder="Country"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="state">State:</Label>
                 <Input
                   id="state"
-                  value={formData.State}
-                  onChange={(e) => handleInputChange("State", e.target.value)}
+                  value={formData.clientState}
+                  onChange={(e) => handleInputChange("clientState", e.target.value)}
                   placeholder="Company State"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country:</Label>
-                <Input
-                  id="country"
-                  value={formData.Country}
-                  onChange={(e) => handleInputChange("Country", e.target.value)}
-                  placeholder="Country"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
+                <div className="space-y-2">
                 <Label htmlFor="pinCode">PinCode:</Label>
                 <Input
                   id="pinCode"
-                  value={formData.PinCode}
-                  onChange={(e) => handleInputChange("PinCode", e.target.value)}
+                  value={formData.clientPinCode}
+                  onChange={(e) => handleInputChange("clientPinCode", e.target.value)}
                   placeholder="Pincode"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="Email">Email:</Label>
-                <Input
-                  id="Email"
-                  value={formData.PinCode}
-                  onChange={(e) => handleInputChange("PinCode", e.target.value)}
-                  placeholder="Pincode"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mobile">Mobile:</Label>
-                <Input
-                  id="mobile"
-                  value={formData.Mobile}
-                  onChange={(e) => handleInputChange("Mobile", e.target.value)}
-                  placeholder="+91 9876543210"
-                />
-              </div>
+
+               </div>
+                <div className="space-y-2">
+              <Label htmlFor="address">Address:</Label>
+              <Textarea
+                id="address"
+                value={formData.clientAddress}
+                onChange={(e) => handleInputChange("clientAddress", e.target.value)}
+                placeholder="Company Address"
+              />
+            </div>
+
+          
+             <hr/>
+               <div className="grid grid-cols-2 gap-4">   
               <div className="space-y-2">
                 <Label htmlFor="Partner">Partner Name:</Label>
                 <Input
                   id="Partner"
                   type="text"
+                  value={formData.partnerName}
+                  onChange={(e) => handleInputChange("partnerName", e.target.value)}
+
                 />
               </div>
               <div className="space-y-2">
@@ -1114,6 +1267,11 @@ export default function Integration() {
                 <Input
                   id="Partner"
                   type="text"
+
+                   value={formData.partnerCode}
+                   onChange={(e) => handleInputChange("partnerCode", e.target.value)}
+
+
                 />
               </div>
               <div className="space-y-2">
@@ -1121,6 +1279,10 @@ export default function Integration() {
                 <Input
                   id="Partner"
                   type="text"
+
+                  
+                   value={formData.registrationDate}
+                   onChange={(e) => handleInputChange("registrationDate", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -1128,6 +1290,8 @@ export default function Integration() {
                 <Input
                   id="Partner"
                   type="text"
+                   value={formData.validTill}
+                   onChange={(e) => handleInputChange("validTill", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -1135,6 +1299,8 @@ export default function Integration() {
                 <Input
                   id="Partner"
                   type="text"
+                   value={formData.tallySerialno}
+                   onChange={(e) => handleInputChange("tallySerialno", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -1142,6 +1308,11 @@ export default function Integration() {
                 <Input
                   id="Partner"
                   type="text"
+
+                   value={formData.tallyEdition}
+                   onChange={(e) => handleInputChange("tallyEdition", e.target.value)}
+
+
                 />
               </div>
             </div>

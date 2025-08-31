@@ -257,7 +257,7 @@ export function StockCategoryPage() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="primary">Primary</SelectItem>
+                      <SelectItem value="68b419477f633f9b05ad8c8f">Primary</SelectItem>
                       {categories.map((cat) => (
                         <SelectItem key={cat._id} value={cat._id}>
                           {cat.name}
@@ -344,7 +344,11 @@ export function StockCategoryPage() {
                         <TableCell className="font-medium">
                           {category.name}
                         </TableCell>
-                        <TableCell>{category.categoryName || "-"}</TableCell>
+                        <TableCell>
+
+
+                          {(category.parentCategory=="primary"?"Primary":categories?.filter((val)=>val?._id==category?.parentCategory)?.[0]?.name)}
+                        </TableCell>
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

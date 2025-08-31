@@ -300,6 +300,7 @@ interface UserRole {
   department: 'Sales' | 'Purchase' | 'Inventory' | 'Finance';
   status: 'Active' | 'Inactive';
   lastLogin: string;
+  general: string;
 }
 
 interface ApiResponse {
@@ -314,6 +315,8 @@ export function UserManagement() {
   const [users, setUsers] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [general, setgeneral] = useState("Active");
+
   const [editingUser, setEditingUser] = useState<UserRole | null>(null);
   const [formData, setFormData] = useState({
     username: '',
@@ -331,7 +334,7 @@ export function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get<ApiResponse>(`${BASE_URL}/orginization_user`);
+      const response = await axios.get<ApiResponse>(`${BASE_URL}orginization_user`);
       
       if (response.data.success && Array.isArray(response.data.data)) {
         setUsers(response.data.data);
@@ -359,13 +362,14 @@ export function UserManagement() {
 
  const handleCreateUser = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/orginization_user`, {
+    const response = await axios.post(`${BASE_URL}orginization_user`, {
       username: formData.username,
       email: formData.email,
       role: formData.role,
       department: formData.department,
       password: formData.password,
-      status: 'Active'
+      status: 'Active',
+      general:general
     });
 
     if (response.status === 200 && response.data.user) {
@@ -406,6 +410,7 @@ export function UserManagement() {
       email: user.email,
       role: user.role,
       department: user.department,
+      general:user.general,
       password: ''
     });
     setIsCreateModalOpen(true);
@@ -415,11 +420,12 @@ export function UserManagement() {
     if (!editingUser) return;
     
     try {
-      const response = await axios.put<ApiResponse>(`${BASE_URL}/orginization_user/${editingUser.id}`, {
+      const response = await axios.put<ApiResponse>(`${BASE_URL}orginization_user/${editingUser.id}`, {
         username: formData.username,
         email: formData.email,
         role: formData.role,
         department: formData.department,
+        general:general,
         ...(formData.password && { password: formData.password })
       });
 
@@ -452,7 +458,7 @@ export function UserManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const response = await axios.delete<ApiResponse>(`${BASE_URL}/orginization_user/${userId}`);
+      const response = await axios.delete<ApiResponse>(`${BASE_URL}orginization_user/${userId}`);
       
       if (response.data.success) {
         setUsers(users.filter(user => user.id !== userId));
@@ -483,7 +489,7 @@ export function UserManagement() {
       
       const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
       const response = await axios.patch<ApiResponse>(
-        `${BASE_URL}/orginization_user/${userId}/status`, 
+        `${BASE_URL}orginization_user/${userId}/status`, 
         { status: newStatus }
       );
 
@@ -698,6 +704,30 @@ export function UserManagement() {
                 <option value="Finance">Finance</option>
               </select> 
             </div>
+            <div>
+
+              
+              <Label className="text-sm text-gray-500">General</Label>
+              <select 
+value={general}
+onChange={(e) => setgeneral(e.target.value)}
+
+
+
+              
+                className="w-full rounded-md border border-input bg-background px-3 py-2"
+              
+              >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+              </select>
+              </div>
+
+
+
+
+
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button 
                 variant="outline"  

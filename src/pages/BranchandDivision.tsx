@@ -103,7 +103,7 @@
 //     const fetchBranchesAndDivisions = async () => {
 //       try {
 //         setIsLoading(true);
-//         const response = await fetch(`${BASE_URL}/ledger_list`);
+//         const response = await fetch(`${BASE_URL}ledger_list`);
 //         if (!response.ok) {
 //           throw new Error("Failed to fetch branches and divisions");
 //         }
@@ -192,8 +192,8 @@
 //       setIsLoading(true);
 //       const method = isEditMode ? "PUT" : "POST";
 //       const url = isEditMode
-//         ? `${BASE_URL}/update_ledger/${currentBranchDivisionId}`
-//         : `${BASE_URL}/create_ledger`;
+//         ? `${BASE_URL}update_ledger/${currentBranchDivisionId}`
+//         : `${BASE_URL}create_ledger`;
 
 //       const response = await fetch(url, {
 //         method,
@@ -212,7 +212,7 @@
 //       }
 
 //       // Refresh the branch and division list after successful operation
-//       const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+//       const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
 //       if (refreshResponse.ok) {
 //         const refreshData = await refreshResponse.json();
 //         setBranchesAndDivisions(refreshData.data || []);
@@ -244,7 +244,7 @@
 //     try {
 //       setIsLoading(true);
 //       const response = await fetch(
-//         `${BASE_URL}/delete_ledger/${branchDivisionToDelete}`,
+//         `${BASE_URL}delete_ledger/${branchDivisionToDelete}`,
 //         {
 //           method: "DELETE",
 //         }
@@ -255,7 +255,7 @@
 //       }
 
 //       // Refresh the branch and division list after successful deletion
-//       const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+//       const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
 //       if (refreshResponse.ok) {
 //         const refreshData = await refreshResponse.json();
 //         setBranchesAndDivisions(refreshData.data || []);
@@ -653,6 +653,7 @@ import { BASE_URL } from "@/api/BaseUrl";
 
 interface BranchandDivision {
   _id: string;
+  depotId:string,
   Name: string;
   Parent: string;
   Master_Id?: string;
@@ -678,6 +679,7 @@ export default function BranchandDivision() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [Depots,setDepots]=useState([])
 
   // Current branch and division states
   const [branchDivisionToDelete, setBranchDivisionToDelete] = useState<
@@ -691,6 +693,7 @@ export default function BranchandDivision() {
   // Form states
   const [formData, setFormData] = useState<Omit<BranchandDivision, "_id">>({
     Name: "",
+    depotId:"",
     Parent: "Primary",
     Master_Id: "",
     Alter_id: "",
@@ -722,7 +725,7 @@ export default function BranchandDivision() {
     const fetchBranchesAndDivisions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}/ledger_list`);
+        const response = await fetch(`${BASE_URL}ledger_list`);
         if (!response.ok) {
           throw new Error("Failed to fetch branches and divisions");
         }
@@ -741,6 +744,7 @@ export default function BranchandDivision() {
     };
 
     fetchBranchesAndDivisions();
+    fetchDepots()
   }, []);
 
   // Handle form input changes
@@ -761,6 +765,7 @@ export default function BranchandDivision() {
     setIsEditMode(false);
     setFormData({
       Name: "",
+      depotId:"",
       Parent: "Primary",
       Master_Id: "",
       Alter_id: "",
@@ -782,6 +787,7 @@ export default function BranchandDivision() {
     setIsEditMode(true);
     setFormData({
       Name: branchDivision.Name,
+      depotId:branchDivision.depotId,
       Parent: branchDivision.Parent,
       Master_Id: branchDivision.Master_Id || "",
       Alter_id: branchDivision.Alter_id || "",
@@ -811,12 +817,13 @@ export default function BranchandDivision() {
       setIsLoading(true);
       const method = isEditMode ? "PUT" : "POST";
       const url = isEditMode
-        ? `${BASE_URL}/update_ledger/${currentBranchDivisionId}`
-        : `${BASE_URL}/create_ledger`;
+        ? `${BASE_URL}update_ledger/${currentBranchDivisionId}`
+        : `${BASE_URL}create_ledger`;
 
       // Prepare payload according to backend expectations
       const payload = {
         Master_Id: formData.Master_Id,
+        depotId:formData.depotId,
         Alter_id: formData.Alter_id,
         Name: formData.Name,
         Parent: formData.Parent,
@@ -850,7 +857,7 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful operation
-      const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -882,7 +889,7 @@ export default function BranchandDivision() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        `${BASE_URL}/delete_ledger/${branchDivisionToDelete}`,
+        `${BASE_URL}delete_ledger/${branchDivisionToDelete}`,
         {
           method: "DELETE",
         }
@@ -893,7 +900,7 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful deletion
-      const refreshResponse = await fetch(`${BASE_URL}/ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -932,6 +939,41 @@ export default function BranchandDivision() {
       </div>
     );
   }
+
+   async function fetchDepots(){
+      try {
+        const response = await fetch(`${BASE_URL}get_depot`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch depots");
+        }
+        const data = await response.json();
+        setDepots(data.data || []);
+
+
+
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.message,
+        });
+      } finally {
+      }
+    };
+    
+
+  // useEffect(()=>{
+  // },[])
+
+
+console.log(Depots,"lkkkkkkk");
+
+
+
+
+
+
+
 
   return (
     <div className="space-y-6">
@@ -1193,6 +1235,32 @@ export default function BranchandDivision() {
                 placeholder="1234567890"
                 className="h-6 text-xs flex-1"
               />
+            </div>
+
+
+
+            <div className="flex items-center gap-2">
+              <Label htmlFor="telephone" className="text-xs w-20 text-right">
+              Depo:
+              </Label>
+                <Select
+                value={formData.depotId}
+                onValueChange={(value) => handleInputChange("depotId", value)}
+              >
+                <SelectTrigger className="h-6 text-xs flex-1">
+                  <SelectValue placeholder="Select parent group" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem key={"askdlasklkasldkl"} value={"68b16974e6dc1871952e787d"}>
+                    Not Applicable
+                    </SelectItem>
+                  {Depots.map((group) => (
+                    <SelectItem key={group._id} value={group._id}>
+                      {group.Name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex items-center gap-2">

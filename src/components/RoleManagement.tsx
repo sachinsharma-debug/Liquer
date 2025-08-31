@@ -331,7 +331,7 @@ export function RoleManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get<ApiResponse>(`${BASE_URL}/orginization_user`);
+      const response = await axios.get<ApiResponse>(`${BASE_URL}orginization_user`);
       
       if (response.data.success && Array.isArray(response.data.data)) {
         setUsers(response.data.data);
@@ -359,7 +359,7 @@ export function RoleManagement() {
 
  const handleCreateUser = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/orginization_user`, {
+    const response = await axios.post(`${BASE_URL}orginization_user`, {
       username: formData.username,
       email: formData.email,
       role: formData.role,
@@ -415,7 +415,7 @@ export function RoleManagement() {
     if (!editingUser) return;
     
     try {
-      const response = await axios.put<ApiResponse>(`${BASE_URL}/orginization_user/${editingUser.id}`, {
+      const response = await axios.put<ApiResponse>(`${BASE_URL}orginization_user/${editingUser.id}`, {
         username: formData.username,
         email: formData.email,
         role: formData.role,
@@ -452,7 +452,7 @@ export function RoleManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const response = await axios.delete<ApiResponse>(`${BASE_URL}/orginization_user/${userId}`);
+      const response = await axios.delete<ApiResponse>(`${BASE_URL}orginization_user/${userId}`);
       
       if (response.data.success) {
         setUsers(users.filter(user => user.id !== userId));
@@ -483,7 +483,7 @@ export function RoleManagement() {
       
       const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
       const response = await axios.patch<ApiResponse>(
-        `${BASE_URL}/orginization_user/${userId}/status`, 
+        `${BASE_URL}orginization_user/${userId}/status`, 
         { status: newStatus }
       );
 
