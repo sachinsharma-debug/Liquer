@@ -26,7 +26,7 @@ import SalesOrders from "./pages/sales/Orders";
 import DeliveryNotes from "./pages/sales/DeliveryNotes";
 import Invoices from "./pages/sales/Invoices";
 import Receipts from "./pages/sales/Receipts";
-import Reports from "./pages/Reports";
+import Reports from "./pages/Reports/AnalyticsReports";
 import NotFound from "./pages/NotFound";
 import IndentReport from "./pages/IndentReports/IndentReport";
 import Genral_Setting from "./pages/GenralSetting";
@@ -37,6 +37,12 @@ import Purchase from './pages/inward/Purchase';
 import PurchaseAllOrders from './pages/Reports/AllReports';
 import PurchaseReports from './pages/Reports/PurchaseReport';
 import PurchaseOrderReport from './pages/Reports/PurchaseOrderReport';
+import WastageReport from './pages/Reports/WastageReport';
+import MaterialReport from './pages/Reports/MaterialReport';
+import InvoiceReport from './pages/Reports/InvoiceReport';
+import DeliveryReport from './pages/Reports/DeliveryReport';
+import StockAdjustmentReport from './pages/Reports/StockAdjustmentReport';
+import AnalyticsReports from './pages/Reports/AnalyticsReports';
 
 const queryClient = new QueryClient();
 
@@ -73,6 +79,11 @@ function AppRoutes() {
          <Route path="/indent-purchase-report" element={<PurchaseAllOrders />} />
          <Route path="/indent-purchase-reports" element={<PurchaseReports />} />
          <Route path="/indent-purchase-order" element={<PurchaseOrderReport />} />
+         <Route path="/indent-wastage-report" element={<WastageReport />} />
+         <Route path="/indent-material-report" element={<MaterialReport />} />
+         <Route path="/indent-invoice-report" element={<InvoiceReport />} />
+         <Route path="/indent-delivery-report" element={<DeliveryReport />} />
+         <Route path="/indent-stock-report" element={<StockAdjustmentReport />} />
         <Route path="/inward/grn" element={<GRN />} />
         <Route path="/inward/Purchase" element={<Purchase />} />
         <Route path="/inward/returns" element={<Returns />} />
@@ -83,7 +94,7 @@ function AppRoutes() {
         <Route path="/sales/delivery" element={<DeliveryNotes />} />
         <Route path="/sales/invoices" element={<Invoices />} />
         <Route path="/sales/receipts" element={<Receipts />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route path="/reports" element={<AnalyticsReports />} />
         <Route path="/indent-register" element={<IndentRegister />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
