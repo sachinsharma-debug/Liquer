@@ -63,20 +63,7 @@ const navigation = [
       { name: 'Purchase Returns', href: '/inward/returns' }
     ]
   },
-  
-{
-    name: 'Reports',
-    icon: BarChart3,//TrendingDown,
-    children: [
-      { name: 'Indents', href: '/indent-report' },
-      { name: 'Purchase Order Due', href: '/indent-purchase-report' },
-      { name: 'Purchase ', href: '/indent-purchase-reports' },
-      { name: 'Purchase Order', href: '/indent-purchase-order' },
-      // { name: 'Purchase Orders', href: '/inward/purchase-orders' },
-      // { name: 'GRN', href: '/inward/grn' },
-      // { name: 'Returns', href: '/inward/returns' }
-    ]
-  },
+
 
   {
     name: 'Store Operations',
@@ -97,7 +84,28 @@ const navigation = [
       // { name: 'Receipts', href: '/sales/receipts' }
     ]
   },
-  { name: 'Reports', href: '/reports', icon: BarChart3 }
+  
+
+    
+{
+    name: 'Reports',
+    icon: BarChart3,//TrendingDown,
+    children: [
+      { name: 'Indents', href: '/indent-report' },
+      { name: 'Purchase Order Due', href: '/indent-purchase-report' },
+      { name: 'Purchase ', href: '/indent-purchase-reports' },
+      { name: 'Purchase Order', href: '/indent-purchase-order' },
+      { name: 'Wastage Report', href: '/indent-wastage-report' },
+      { name: 'Material Report', href: '/indent-material-report' },
+      { name: 'Invoice Report', href: '/indent-invoice-report' },
+      { name: 'Delivery Report', href: '/indent-delivery-report' },
+      { name: 'Stock Report', href: '/indent-stock-report' },
+      { name: 'Reports', href: '/reports' }
+      // { name: 'Purchase Orders', href: '/inward/purchase-orders' },
+      // { name: 'GRN', href: '/inward/grn' },
+      // { name: 'Returns', href: '/inward/returns' }
+    ]
+  }
 ];
 
 export function Sidebar() {
