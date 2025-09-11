@@ -130,7 +130,9 @@ export function ProductPage() {
   const [openingBalance, setOpeningBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [tmpIndex,settmpIndex]=useState(0);
+  const [tmpIndex, settmpIndex] = useState(0);
+  const [dynamicindex, setdynamic] = useState(0)
+
 
 
 
@@ -171,19 +173,28 @@ export function ProductPage() {
     }>
   >([]);
   const { toast } = useToast();
-function pushEffectivedatedata(){
-  return {date:"",
-data:{
-    unit:"",
-alternateunit:"",
-description:["Base Price","","","Landed Cost","Distributer","Whole sale price","BEVCO Margin","Retail Price","Retail Price","Retail Margin","Special Purpose Levy","MRP","Round Off","Final MRP"],
-formula:[0,0,0,0,0,0,0,0,0,0,0,0,0],
-rate:[0,0,0,0,0,0,0,0,0,0,0,0,0],
-amount:[0,0,0,0,0,0,0,0,0,0,0,0,0],
-remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
-}
-}
-}
+  function pushEffectivedatedata() {
+    return {
+      date: "",
+      data: {
+        unit: "",
+        alternateunit: "",
+        basepricetype:"",
+        description: ["Base Price", "", "", "Landed Cost", "Distributer", "Whole sale price", "BEVCO Margin", "Retail Price", "Retail Price", "Retail Margin", "Special Purpose Levy", "MRP", "Round Off", "Final MRP"],
+        formula: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        rate: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        amount: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        remarks: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      }
+    }
+  }
+
+
+
+
+
+
+
 
 
 
@@ -195,13 +206,13 @@ remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
     group: "",
     unit: "",
     altUnit: "",
-    where:"",
-     bottle:"",
+    where: "",
+    bottle: "",
     preferredSupplier: "",
     description: "",
-    opening_balance:"",
-    rate:"",
-    value:"",
+    opening_balance: "",
+    rate: "",
+    value: "",
     brand: "",
     type: "",
     subType: "",
@@ -211,7 +222,7 @@ remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
     standardRate: "",
     stock: 0,
     minStockLevel: 0,
-    effectivedate:[],
+    effectivedate: [],
     isActive: true,
   });
 
@@ -323,7 +334,7 @@ remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
         fetch(`${BASE_URL}stockgroup_list`),
         fetch(`${BASE_URL}accountingledger/yes`),
 
-        
+
       ]);
 
       const [
@@ -438,32 +449,32 @@ remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
 
   const resetForm = () => {
     setFormData({
-    masterId: "",
-    alterId: "",
-    name: "",
-    category: "",
-    group: "",
-    unit: "",
-    altUnit: "",
-    where:"",
-     bottle:"",
-    preferredSupplier: "",
-    description: "",
-    opening_balance:"",
-    rate:"",
-    value:"",
-    brand: "",
-    type: "",
-    subType: "",
-    origin: "",
-    alcoholPercentage: 0,
-    volume: 0,
-    standardRate: "",
-    stock: 0,
-    minStockLevel: 0,
-    effectivedate:[],
-    isActive: true,
-  });
+      masterId: "",
+      alterId: "",
+      name: "",
+      category: "",
+      group: "",
+      unit: "",
+      altUnit: "",
+      where: "",
+      bottle: "",
+      preferredSupplier: "",
+      description: "",
+      opening_balance: "",
+      rate: "",
+      value: "",
+      brand: "",
+      type: "",
+      subType: "",
+      origin: "",
+      alcoholPercentage: 0,
+      volume: 0,
+      standardRate: "",
+      stock: 0,
+      minStockLevel: 0,
+      effectivedate: [],
+      isActive: true,
+    });
     setIsEditing(false);
     setCurrentId(null);
     setEffectiveDate("");
@@ -482,10 +493,10 @@ remarks:[0,0,0,0,0,0,0,0,0,0,0,0,0],
     product.unit = product.unit?._id || "";
 
 
-if(product.standardRate=="yes"){
-     setStandardRateDialogOpen(true);
+    if (product.standardRate == "yes") {
+      setStandardRateDialogOpen(true);
 
-}
+    }
     setFormData(product);
     setIsEditing(true);
     setCurrentId(product._id);
@@ -503,7 +514,7 @@ if(product.standardRate=="yes"){
     e.preventDefault();
 
 
-    
+
     if (
       !formData.name ||
       !formData.category ||
@@ -723,9 +734,48 @@ if(product.standardRate=="yes"){
     );
   };
 
+ 
+
+  let landendcostindex = formData?.effectivedate?.[tmpIndex]?.data?.description?.indexOf("Landed Cost") || 0
+  let Wholesalepriceindex = formData?.effectivedate?.[tmpIndex]?.data?.description?.indexOf("Whole sale price") || 0
+  let RetailPriceindex = formData?.effectivedate?.[tmpIndex]?.data?.description?.indexOf("Retail Price") || 0
+ let MRPindex = formData?.effectivedate?.[tmpIndex]?.data?.description?.indexOf("MRP") || 0
 
 
-  console.log(formData,"ZxZ");
+
+
+  const calculateamount=()=>{
+    formData.effectivedate[tmpIndex].data.amount[landendcostindex]=parseFloat(formData.effectivedate[tmpIndex].data.amount.slice(0,landendcostindex).reduce((accumulator, currentValue) => parseFloat(accumulator) + parseFloat(currentValue), 0));
+      formData.effectivedate[tmpIndex].data.amount[Wholesalepriceindex]=parseFloat(formData.effectivedate[tmpIndex].data.amount.slice(landendcostindex,Wholesalepriceindex).reduce((accumulator, currentValue) => parseFloat(accumulator) + parseFloat(currentValue), 0));
+      formData.effectivedate[tmpIndex].data.amount[RetailPriceindex]=parseFloat(formData.effectivedate[tmpIndex].data.amount.slice(Wholesalepriceindex,RetailPriceindex).reduce((accumulator, currentValue) => parseFloat(accumulator) + parseFloat(currentValue), 0));
+      formData.effectivedate[tmpIndex].data.amount[MRPindex]=parseFloat(formData.effectivedate[tmpIndex].data.amount.slice(RetailPriceindex,MRPindex).reduce((accumulator, currentValue) => parseFloat(accumulator) + parseFloat(currentValue), 0));
+      formData.effectivedate[tmpIndex].data.amount[MRPindex+2]=parseFloat(formData.effectivedate[tmpIndex].data.amount[MRPindex+1])+parseFloat(formData.effectivedate[tmpIndex].data.amount[MRPindex])
+      setFormData({...formData})
+  }
+
+   const getAmount =(baseamount,index,rate)=>{
+       if(formData?.effectivedate?.[tmpIndex].data.formula[index]=="amount"){
+               formData.effectivedate[tmpIndex].data.amount[index]=parseFloat(rate)
+
+       }
+       else if(formData?.effectivedate?.[tmpIndex].data.formula[index]=="percentage"){
+                formData.effectivedate[tmpIndex].data.amount[index]=(parseFloat(baseamount)/100*parseFloat(rate))
+       }
+       else
+        {
+               formData.effectivedate[tmpIndex].data.amount[index]=0
+       }
+       calculateamount()
+      
+   }
+     
+
+
+
+
+console.log(formData,">>>>>>>>>>>>>>>>")
+
+
 
 
 
@@ -1163,7 +1213,7 @@ if(product.standardRate=="yes"){
                   >
                     Standard Rate:
                   </Label>
-                       
+
 
 
                   <Select
@@ -1223,7 +1273,7 @@ if(product.standardRate=="yes"){
                     className="h-6 text-xs flex-1"
                   />
                 </div>
-                
+
                 {/* <div className="flex items-center gap-2">
                   <Label htmlFor="isActive" className="text-xs w-32 text-right">
                     Active:
@@ -1241,153 +1291,154 @@ if(product.standardRate=="yes"){
                   </div>
                 </div> */}
 
-                
-                  
+
+
               </div>
             </div>
-                  <div className="row">
+            <div className="row">
 
-                      {/* Opening balance dialog */}
-                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogContent className="sm:max-w-[500px]">
-                          <DialogHeader>
-                            <DialogTitle>Opening Balance Details</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2 border-t pt-2">
-                              <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
-                                Allocations Of:
-                              </Label>
-                              <Input
-                                id="minStockLevel"
-                                type="text"
-                                min="0"
-                                value={openingBalance}
-                                onChange={(e) => setOpeningBalance(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                className="h-6 text-xs flex-1"
-                              />
-                            </div>
+              {/* Opening balance dialog */}
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Opening Balance Details</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 border-t pt-2">
+                      <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
+                        Allocations Of:
+                      </Label>
+                      <Input
+                        id="minStockLevel"
+                        type="text"
+                        min="0"
+                        value={openingBalance}
+                        onChange={(e) => setOpeningBalance(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="h-6 text-xs flex-1"
+                      />
+                    </div>
 
-                            <div className="flex items-center gap-2 pb-2 border-b">
-                              <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
-                                For:
-                              </Label>
-                              <Input
-                                id="minStockLevel"
-                                type="text"
-                                min="0"
-                                value={openingBalance}
-                                onChange={(e) => setOpeningBalance(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                className="h-6 text-xs flex-1"
-                              />
-                            </div>
+                    <div className="flex items-center gap-2 pb-2 border-b">
+                      <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
+                        For:
+                      </Label>
+                      <Input
+                        id="minStockLevel"
+                        type="text"
+                        min="0"
+                        value={openingBalance}
+                        onChange={(e) => setOpeningBalance(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="h-6 text-xs flex-1"
+                      />
+                    </div>
 
-                              <div className="grid grid-cols-5 gap-2 text-xs font-medium mt-0 text-gray-600 py-2 border-b">
-                                <div>Godown</div>
-                                <div></div>
-                                <div>Quantity</div>
-                                <div className="text-center">Rate</div>
-                                <div className="text-center">Amount</div>
-                              </div>
-                              <div className="grid grid-cols-5 gap-2 items-center">
+                    <div className="grid grid-cols-5 gap-2 text-xs font-medium mt-0 text-gray-600 py-2 border-b">
+                      <div>Godown</div>
+                      <div></div>
+                      <div>Quantity</div>
+                      <div className="text-center">Rate</div>
+                      <div className="text-center">Amount</div>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2 items-center">
 
-                                <Input
-                                  type="text"
-                                  className="h-6 text-xs text-center"
-                                style={{width: '175px'}}
-                                />
-                                <div></div>
-                                <Input
-                                  type="text"
-                                  className="h-6 text-xs text-center"
-                                />
-                                <Input
-                                  type="text"
-                                  className="h-6 text-xs text-center"
-                                />
-                                <Input
-                                  type="text"
-                                  className="h-6 text-xs text-center"
-                                />
-                              </div>
-                          </div>
-                          <div className="flex justify-end pt-4 border-t">
-                            <Button >Save</Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-
-
-                        <div className="flex mt-3">
-                          <div className="flex items-center gap-2">
-                            <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
-                              Opening Balance
-                            </Label>
-                            <Input
-                              id="minStockLevel"
-                              type="text"
-                              min="0"
-                              value={formData.opening_balance}
-
-
-                              onChange={(e) =>
-                          setFormData({
-                        ...formData,
-                          opening_balance: parseInt(e.target.value) || 0,
-                      })
-                    }
-                              onKeyDown={handleKeyDown}
-                              className="h-6 text-xs flex-1"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
-                              Rate
-                            </Label>
-                            <Input
-                              id="minStockLevel"
-                              type="text"
-                              min="0"
-                              className="h-6 text-xs flex-1"
-
-                              value={formData.rate}
-
-
-                              onChange={(e) =>
-                          setFormData({
-                        ...formData,
-                          rate: parseInt(e.target.value) || 0,
-                      })
-                    }
-                              
-                            />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
-                              Value
-                            </Label>
-                            <Input
-                              id="minStockLevel"
-                              type="text"
-                              min="0"
-                              className="h-6 text-xs flex-1"
-                              
-                              value={formData.value}
-                              onChange={(e) =>
-                              setFormData({
-                               ...formData,
-                               value: parseInt(e.target.value) || 0,})
-                         }
-
-
-
-                              // style={{width: '100px'}}
-                            />
-                          </div>
-                        </div>
+                      <Input
+                        type="text"
+                        className="h-6 text-xs text-center"
+                        style={{ width: '175px' }}
+                      />
+                      <div></div>
+                      <Input
+                        type="text"
+                        className="h-6 text-xs text-center"
+                      />
+                      <Input
+                        type="text"
+                        className="h-6 text-xs text-center"
+                      />
+                      <Input
+                        type="text"
+                        className="h-6 text-xs text-center"
+                      />
+                    </div>
                   </div>
+                  <div className="flex justify-end pt-4 border-t">
+                    <Button >Save</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+
+              <div className="flex mt-3">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
+                    Opening Balance
+                  </Label>
+                  <Input
+                    id="minStockLevel"
+                    type="text"
+                    min="0"
+                    value={formData.opening_balance}
+
+
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        opening_balance: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    onKeyDown={handleKeyDown}
+                    className="h-6 text-xs flex-1"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
+                    Rate
+                  </Label>
+                  <Input
+                    id="minStockLevel"
+                    type="text"
+                    min="0"
+                    className="h-6 text-xs flex-1"
+
+                    value={formData.rate}
+
+
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        rate: parseInt(e.target.value) || 0,
+                      })
+                    }
+
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="minStockLevel" className="text-xs w-32 text-right">
+                    Value
+                  </Label>
+                  <Input
+                    id="minStockLevel"
+                    type="text"
+                    min="0"
+                    className="h-6 text-xs flex-1"
+
+                    value={formData.value}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        value: parseInt(e.target.value) || 0,
+                      })
+                    }
+
+
+
+                  // style={{width: '100px'}}
+                  />
+                </div>
+              </div>
+            </div>
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={cancelForm}>
                 Cancel
@@ -1433,32 +1484,32 @@ if(product.standardRate=="yes"){
               />
             </div>
 
-           {formData.effectivedate.length>0 &&   <div className="">
-            
-              {formData.effectivedate.map((val_tmp,iiii)=>
-              <div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="effectiveDate" className="text-sm w-32">
-                Date:
-              </Label>
-              <Input
-                id="effectiveDate"
-                type="date"
-                value={val_tmp.date.split('T')[0]}
-                className="flex-1"
-                disabled
-              />
-             <Edit className="h-4 w-4"  onClick={()=>{
-                settmpIndex(iiii)
-                setEffectiveDate(val_tmp.date.split('T')[0])
-                 setRatePeriodDialogOpen(true);
-                  setStandardRateDialogOpen(false);
+            {formData.effectivedate.length > 0 && <div className="">
 
-             }}/>
+              {formData.effectivedate.map((val_tmp, iiii) =>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="effectiveDate" className="text-sm w-32">
+                      Date:
+                    </Label>
+                    <Input
+                      id="effectiveDate"
+                      type="date"
+                      value={val_tmp.date.split('T')[0]}
+                      className="flex-1"
+                      disabled
+                    />
+                    <Edit className="h-4 w-4" onClick={() => {
+                      settmpIndex(iiii)
+                      setEffectiveDate(val_tmp.date.split('T')[0])
+                      setRatePeriodDialogOpen(true);
+                      setStandardRateDialogOpen(false);
+
+                    }} />
 
 
-            </div>
-            </div>
+                  </div>
+                </div>
               )}
             </div>}
 
@@ -1478,12 +1529,12 @@ if(product.standardRate=="yes"){
               <Button
                 type="button"
                 onClick={() => {
-                      let tmpeffectdata=pushEffectivedatedata()
-                      tmpeffectdata.date=effectiveDate;
-                      settmpIndex(formData.effectivedate.length)
-                      formData.effectivedate.push(tmpeffectdata)
+                  let tmpeffectdata = pushEffectivedatedata()
+                  tmpeffectdata.date = effectiveDate;
+                  settmpIndex(formData.effectivedate.length)
+                  formData.effectivedate.push(tmpeffectdata)
 
-                         setFormData({ ...formData})
+                  setFormData({ ...formData })
 
                   if (effectiveDate) {
                     setStandardRateDialogOpen(false);
@@ -1510,7 +1561,7 @@ if(product.standardRate=="yes"){
         open={ratePeriodDialogOpen}
         onOpenChange={setRatePeriodDialogOpen}
       >
-        <DialogContent className="max-w-3xl" style={{height:'600px',overflowY:'auto'}}>
+        <DialogContent className="max-w-3xl" style={{ height: '600px', overflowY: 'auto' }}>
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle>Price Configuration</DialogTitle>
@@ -1567,10 +1618,11 @@ if(product.standardRate=="yes"){
                 Unit *:
               </Label>
               <Select
-                value={formData?.effectivedate?.[tmpIndex]?.data?.unit ||""}
-                onValueChange={(value) =>{
-                  formData.effectivedate[tmpIndex].data.unit=value;
-                  setFormData({ ...formData})
+              disabled
+                value={formData.unit || ""}
+                onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.unit = value;
+                  setFormData({ ...formData })
                 }
                 }
               >
@@ -1595,10 +1647,11 @@ if(product.standardRate=="yes"){
                 Alternate Unit:
               </Label>
               <Select
-                 value={formData?.effectivedate?.[tmpIndex]?.data?.alternateunit || ""}
-                onValueChange={(value) =>{
-                  formData.effectivedate[tmpIndex].data.alternateunit=value; 
-                  setFormData({ ...formData})
+              disabled
+                value={formData?.altUnit || ""}
+                onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.alternateunit = value;
+                  setFormData({ ...formData })
                 }
                 }
               >
@@ -1620,8 +1673,114 @@ if(product.standardRate=="yes"){
               </Select>
             </div>
 
+
+   {formData.altUnit && formData.altUnit !== "none" && (
+                  <>
+                    <div className="flex items-center gap-2 " aria-disabled="true"  >
+                      <Label className="text-xs w-32 text-right text-gray-500">
+                        e.g: 1 case = 24 bottle
+                      </Label>
+                      <div className="flex-1"></div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label
+                        htmlFor="conversionRatio"
+                        className="text-xs w-32 text-right"
+                      >
+                        where:
+                      </Label>
+                      <div className="flex items-center gap-2 flex-1">
+                        <Input
+                        disabled
+                          type="number"
+                          min="0"
+                          value={formData.where || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData({
+                              ...formData,
+                              where: value ? parseInt(value) : "",
+                            });
+                          }}
+                          className="h-6 text-xs w-24 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          placeholder="1"
+                        />
+                        <span className="text-xs font-medium">
+                          {units.find((u) => u._id === formData.altUnit)
+                            ?.symbol || "CASE"}
+                        </span>
+                        <span className="text-xs">=</span>
+                        <Input
+                        disabled
+                          id="conversionRatio"
+                          type="number"
+                          min="0"
+                          value={formData.bottle || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData({
+                              ...formData,
+                              bottle: value ? parseInt(value) : "",
+                            });
+                          }}
+                          className="h-6 text-xs w-24 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          placeholder="24"
+                        />
+                        <span className="text-xs font-medium">
+                          {units.find((u) => u._id === formData.unit)?.symbol ||
+                            "BOTTLE"}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+          <div className="space-y-3">
+              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-gray-600 pb-2 border-b">
+                <div>Select Base Price Type</div>
+                <div><Select
+                value={formData?.effectivedate?.[tmpIndex]?.data?.basepricetype || ""}
+                onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.basepricetype = value;
+                  setFormData({ ...formData })
+                }
+                }
+              >
+                <SelectTrigger className="h-6 text-xs flex-1">
+                  <SelectValue placeholder="Select alternate unit" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
+                  <SelectItem value="none">None</SelectItem>
+                  {units
+                    .map((unit) => {
+                      return   unit._id==formData?.altUnit ||  unit._id==formData?.unit ?
+                      <SelectItem key={unit._id} value={unit._id}>
+                        {unit.symbol}{" "}
+                        {unit.decimalPlaces
+                          ? `(${unit.decimalPlaces} decimals)`
+                          : ""}
+                      </SelectItem>
+                      :""
+                    }
+                    )}
+                </SelectContent>
+              </Select>
+              </div>
+                <div> </div>
+
+
+                  
+
+              </div>
+              </div>
+
+
+
+
+
+
             {/* Horizontal divider lines */}
-            <div className="border-t border-gray-400"></div>
+            {/* <div className="border-t border-gray-400"></div> */}
             <div className="border-t border-gray-400"></div>
 
             {/* Pricing Configuration */}
@@ -1637,9 +1796,9 @@ if(product.standardRate=="yes"){
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">Base Price</div>
 
-                <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[0]||""}   onValueChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.formula[0]=value;
-                  setFormData({ ...formData})
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[0] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[0] = value;
+                  setFormData({ ...formData })
                 }}>
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
@@ -1655,11 +1814,11 @@ if(product.standardRate=="yes"){
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[0]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[0]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[0] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[0] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
@@ -1667,55 +1826,55 @@ if(product.standardRate=="yes"){
                   className="h-6 text-xs text-center"
                   step="0.01"
 
-                       value={formData?.effectivedate?.[tmpIndex]?.data?.amount[0]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[0]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[0] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[0] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
 
 
 
 
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" 
-                
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[0]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[0]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                
+                <Input placeholder="Remarks" className="h-6 text-xs"
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[0] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[0] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+
                 />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">
-                  <Select  
-                  
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.description[1]||""}   onValueChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.description[1]=value;
-                  setFormData({ ...formData})
+                  <Select
 
-                }}
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.description[1] || ""} onValueChange={(value) => {
+                      formData.effectivedate[tmpIndex].data.description[1] = value;
+                      setFormData({ ...formData })
+
+                    }}
                   >
                     <SelectTrigger className="h-6 text-xs flex-1">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ledgerdata.map((val)=><SelectItem value={val._id}>{val.name}</SelectItem>)}
-                     
+                      {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
+
                     </SelectContent>
                   </Select>
 
                 </div>
 
-                <Select   
-                value={formData?.effectivedate?.[tmpIndex]?.data?.formula[1]||""}   onValueChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.formula[1]=value;
-                  setFormData({ ...formData})
+                <Select
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[1] || ""} onValueChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.formula[1] = value;
+                    setFormData({ ...formData })
 
-                }}
+                  }}
                 >
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
@@ -1732,11 +1891,12 @@ if(product.standardRate=="yes"){
                   className="h-6 text-xs text-center"
                   step="0.01"
 
-                 value={formData?.effectivedate?.[tmpIndex]?.data?.rate[1]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[1]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[1] = value.target.value;
+                    getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],1,value.target.value)
+                    setFormData({ ...formData })
+                  }}
 
                 />
                 <Input
@@ -1745,57 +1905,57 @@ if(product.standardRate=="yes"){
                   className="h-6 text-xs text-center"
                   step="0.01"
 
-                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[1]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[1]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
 
 
                 />
                 <Input placeholder="Remarks" className="h-6 text-xs"
-                
-                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[1]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[1]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+
                 />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">
-                  <Select   
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.description[2]||""}   onValueChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.description[2]=value;
-                  setFormData({ ...formData})
+                  <Select
+                    value={formData?.effectivedate?.[tmpIndex]?.data?.description[2] || ""} onValueChange={(value) => {
+                      formData.effectivedate[tmpIndex].data.description[2] = value;
+                      setFormData({ ...formData })
 
-                }}
+                    }}
                   >
                     <SelectTrigger className="h-6 text-xs flex-1">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                                           {ledgerdata.map((val)=><SelectItem value={val._id}>{val.name}</SelectItem>)}
+                      {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
 
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[2]||""}   onValueChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.formula[2]=value;
-                  setFormData({ ...formData})
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[2] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[2] = value;
+                  setFormData({ ...formData })
 
                 }}>
                   <SelectTrigger className="h-6 text-xs flex-1">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Not Applicable</SelectItem>
-                    <SelectItem value="no">Percentage</SelectItem>
-                    <SelectItem value="no">Amount</SelectItem>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
                   </SelectContent>
                 </Select>
                 <Input
@@ -1805,11 +1965,13 @@ if(product.standardRate=="yes"){
                   step="0.01"
 
 
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[2]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[2]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[2] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[2] = value.target.value;
+                    getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],2,value.target.value)
+
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
@@ -1817,414 +1979,1235 @@ if(product.standardRate=="yes"){
                   className="h-6 text-xs text-center"
                   step="0.01"
 
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[2]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[2]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[2] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input placeholder="Remarks" className="h-6 text-xs"
-                
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[2]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[2]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[2] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
+
+
+
+
+
               </div>
+
+
+              {formData?.effectivedate?.[tmpIndex]?.data?.description?.map((val, i) => {
+                let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Landed Cost")
+                if (i > 2 && i < tmplandcost) {
+                  return <>
+
+                    <div className="grid grid-cols-5 gap-2 items-center">
+                      <div className="text-xs text-gray-700">
+                        <Select
+
+                          value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""} onValueChange={(value) => {
+                            formData.effectivedate[tmpIndex].data.description[i] = value;
+                            setFormData({ ...formData })
+
+                          }}
+                        >
+                          <SelectTrigger className="h-6 text-xs flex-1">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
+
+                          </SelectContent>
+                        </Select>
+
+                      </div>
+
+                      <Select
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.formula[i] || ""} onValueChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.formula[i] = value;
+                          setFormData({ ...formData })
+
+                        }}
+                      >
+                        <SelectTrigger className="h-6 text-xs flex-1">
+                          <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not applicable">Not Applicable</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                          <SelectItem value="amount">Amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.rate[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.rate[i] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.amount[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.amount[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+
+
+                      />
+                      <Input placeholder="Remarks" className="h-6 text-xs"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.remarks[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                    </div>
+
+
+                  </>
+                }
+
+              })}
+
+              <div className="grid grid-cols-5 gap-2 items-center">
+
+                <div></div>
+                <div>
+
+                </div>
+                <div></div>
+                <div></div>
+                <div className="d-flex flex-row justify-content-end ">
+
+                  <svg
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Landed Cost") - 1
+                      if (tmplandcost != 2) {
+                        formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 1)
+                        setFormData({ ...formData })
+                      }
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Landed Cost")
+                      formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 0, "")
+                      formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 0, 0)
+                      setFormData({ ...formData })
+
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+
+                </div>
+              </div>
+
+
+
+
+
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
                 <div className="text-xs text-gray-700"><strong>Landed Cost</strong></div>
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[3]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[3]=value.target.value;
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex]=value;
                   setFormData({ ...formData})
-                }}
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[3]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[3]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
 
-                                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[3]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[3]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                   <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+                <div></div>
+
+                <Input
+                  type="number"
+                  className="h-6 text-xs text-center"
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[landendcostindex] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[landendcostindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
 
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[3]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[3]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[landendcostindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+                />
+                <Input
+                  type="number"
+                  className="h-6 text-xs text-center"
+
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[landendcostindex] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[landendcostindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">Distributer</div>
 
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex + 1] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex + 1] = value;
+                  setFormData({ ...formData })
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
                   type="number"
+                  placeholder="0.00"
                   className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[4]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.formula[4]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[landendcostindex + 1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[landendcostindex + 1] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex],landendcostindex + 1,value.target.value)
+
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                                     value={formData?.effectivedate?.[tmpIndex]?.data?.rate[4]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[4]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex + 1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[landendcostindex + 1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  className="h-6 text-xs text-center"
-                  step="0.01"
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[4]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[4]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                />
-                <Input placeholder="Remarks" className="h-6 text-xs" 
-                
-                
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[4]||""}  
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[4]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                <Input placeholder="Remarks" className="h-6 text-xs"
+
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[landendcostindex + 1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[landendcostindex + 1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
+
+
+
+
+  {formData?.effectivedate?.[tmpIndex]?.data?.description?.map((val, i) => {
+                let tmpwholecost = formData.effectivedate[tmpIndex].data.description.indexOf("Whole sale price")
+                let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Landed Cost")+1
+                if (i<tmpwholecost && i >tmplandcost) {
+                  return <>
+
+                    <div className="grid grid-cols-5 gap-2 items-center">
+                      <div className="text-xs text-gray-700">
+                         <Input
+                        type="text"
+                        placeholder="Enter description"
+                        className="h-6 text-xs text-center"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.description[i] = value.target.value;
+                          // getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value,landendcostindex)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                        {/* <Select
+                          value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""} onValueChange={(value) => {
+                            formData.effectivedate[tmpIndex].data.description[i] = value;
+                            setFormData({ ...formData })
+
+                          }}
+                        >
+                          <SelectTrigger className="h-6 text-xs flex-1">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
+
+                          </SelectContent>
+                        </Select> */}
+
+                      </div>
+
+                      <Select
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.formula[i] || ""} onValueChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.formula[i] = value;
+                          setFormData({ ...formData })
+
+                        }}
+                      >
+                        <SelectTrigger className="h-6 text-xs flex-1">
+                          <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not applicable">Not Applicable</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                          <SelectItem value="amount">Amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.rate[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.rate[i] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.amount[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.amount[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+
+
+                      />
+                      <Input placeholder="Remarks" className="h-6 text-xs"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.remarks[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                    </div>
+
+
+                  </>
+                }
+
+              })}
+
+
+
+
+<div className="grid grid-cols-5 gap-2 items-center">
+
+                <div></div>
+                <div>
+
+                </div>
+                <div></div>
+                <div></div>
+                <div className="d-flex flex-row justify-content-end ">
+
+                  <svg
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Whole sale price") - 1
+                      if (tmplandcost != 2) {
+                        formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 1)
+                        setFormData({ ...formData })
+                      }
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Whole sale price")
+                      formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 0, "")
+                      formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 0, 0)
+                      setFormData({ ...formData })
+
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+
+                </div>
+              </div>
+
+
+
+
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
                 <div className="text-xs text-gray-700"><strong>Whole sale price</strong></div>
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex+2]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex+2]=value;
+                  setFormData({ ...formData})
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+                <div></div>
+
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[5]||""}  
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[Wholesalepriceindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[Wholesalepriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+                />
+                <Input
+                  type="number"
+                  className="h-6 text-xs text-center"
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[Wholesalepriceindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[Wholesalepriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[5]||""}  
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.amount[5]||""}  
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[5]||""}  
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[Wholesalepriceindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[Wholesalepriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
               </div>
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">BEVCO Margin</div>
 
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[Wholesalepriceindex+1] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[Wholesalepriceindex+1] = value;
+                  setFormData({ ...formData })
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
                   type="number"
+                  placeholder="0.00"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[6]||""}
+                  step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[Wholesalepriceindex+1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[Wholesalepriceindex+1] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex+2],Wholesalepriceindex+1,value.target.value)
+
+
+                    setFormData({ ...formData })
+                  }}
+
+
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[6]||""}
-                   onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[6]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-
-
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[Wholesalepriceindex+1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[Wholesalepriceindex+1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  className="h-6 text-xs text-center"
-                  step="0.01"
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[6]||""}
-                    onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[6]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                />
-                <Input placeholder="Remarks" className="h-6 text-xs" 
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[6]||""}
+                <Input placeholder="Remarks" className="h-6 text-xs"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[Wholesalepriceindex+1] || ""}
 
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[6]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[Wholesalepriceindex+1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+
                 />
               </div>
+
+
+              {formData?.effectivedate?.[tmpIndex]?.data?.description?.map((val, i) => {
+                let tmpwholecost = formData.effectivedate[tmpIndex].data.description.indexOf("Retail Price")
+                let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Whole sale price")+1
+                if (i<tmpwholecost && i >tmplandcost) {
+                  return <>
+
+                    <div className="grid grid-cols-5 gap-2 items-center">
+                      <div className="text-xs text-gray-700">
+                         <Input
+                        type="text"
+                        placeholder="Enter description"
+                        className="h-6 text-xs text-center"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.description[i] = value.target.value;
+                          // getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value,landendcostindex)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                        {/* <Select
+                          value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""} onValueChange={(value) => {
+                            formData.effectivedate[tmpIndex].data.description[i] = value;
+                            setFormData({ ...formData })
+
+                          }}
+                        >
+                          <SelectTrigger className="h-6 text-xs flex-1">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
+
+                          </SelectContent>
+                        </Select> */}
+
+                      </div>
+
+                      <Select
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.formula[i] || ""} onValueChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.formula[i] = value;
+                          setFormData({ ...formData })
+
+                        }}
+                      >
+                        <SelectTrigger className="h-6 text-xs flex-1">
+                          <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not applicable">Not Applicable</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                          <SelectItem value="amount">Amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.rate[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.rate[i] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.amount[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.amount[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+
+
+                      />
+                      <Input placeholder="Remarks" className="h-6 text-xs"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.remarks[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                    </div>
+
+
+                  </>
+                }
+
+              })}
+
+
+
+
+<div className="grid grid-cols-5 gap-2 items-center">
+
+                <div></div>
+                <div>
+
+                </div>
+                <div></div>
+                <div></div>
+                <div className="d-flex flex-row justify-content-end ">
+
+                  <svg
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Retail Price") - 1
+                      if (tmplandcost != 2) {
+                        formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 1)
+                        setFormData({ ...formData })
+                      }
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Retail Price")
+                      formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 0, "")
+                      formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 0, 0)
+                      setFormData({ ...formData })
+
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+
+                </div>
+              </div>
+
+
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center border-t border-b py-2">
                 <div className="text-xs text-gray-700"><strong>Retail Price</strong></div>
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex+4]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex+4]=value;
+                  setFormData({ ...formData})
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+                <div></div>
+
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[7]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[RetailPriceindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[RetailPriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.rate[7]||""}
 
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[RetailPriceindex] || ""}
+
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[RetailPriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.amount[7]||""}
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[7]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[RetailPriceindex] || ""}
+
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[RetailPriceindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
+
+
+
+
+
+
+
+
+
+
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">Retail Margin</div>
 
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[RetailPriceindex+1] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[RetailPriceindex+1] = value;
+                  setFormData({ ...formData })
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
                   type="number"
+                  placeholder="0.00"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[8]||""}
+                  step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[RetailPriceindex+1] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[RetailPriceindex+1] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex+4],RetailPriceindex+1,value.target.value)
+
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[8]||""}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[RetailPriceindex+1] || ""}
 
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[8]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[RetailPriceindex+1] = value.target.value;
+                    
+                    setFormData({ ...formData })
+                  }}
                 />
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  className="h-6 text-xs text-center"
-                  step="0.01"
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[8]||""}
+                <Input placeholder="Remarks" className="h-6 text-xs"
 
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[8]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[RetailPriceindex+1] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[RetailPriceindex+1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+
+
                 />
-                <Input placeholder="Remarks" className="h-6 text-xs" 
 
-                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[8]||""}
 
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[8]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                
-                
-                />
+
+
+
+
+
+
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700">Special Purpose Levy</div>
 
+                <Select value={formData?.effectivedate?.[tmpIndex]?.data?.formula[RetailPriceindex+2] || ""} onValueChange={(value) => {
+                  formData.effectivedate[tmpIndex].data.formula[RetailPriceindex+2] = value;
+                  setFormData({ ...formData })
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Input
                   type="number"
+                  placeholder="0.00"
                   className="h-6 text-xs text-center"
-                  disabled
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.formula[9]||""}
+                  step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[RetailPriceindex+2] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[RetailPriceindex+2] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[landendcostindex+4],RetailPriceindex+2,value.target.value)
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[9]||""}
-
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[9]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[RetailPriceindex+2] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[RetailPriceindex+2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  className="h-6 text-xs text-center"
-                  step="0.01"
+                <Input placeholder="Remarks" className="h-6 text-xs"
 
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[RetailPriceindex+2] || ""}
 
-                    value={formData?.effectivedate?.[tmpIndex]?.data?.amount[9]||""}
-
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[9]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                />
-                <Input placeholder="Remarks" className="h-6 text-xs" 
-                
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[9]||""}
-
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.remarks[9]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[RetailPriceindex+2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
 
+
+               {formData?.effectivedate?.[tmpIndex]?.data?.description?.map((val, i) => {
+                let tmpwholecost = formData.effectivedate[tmpIndex].data.description.indexOf("MRP")
+                let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("Special Purpose Levy")
+                if (i<tmpwholecost && i>tmplandcost) {
+                  return <>
+
+                    <div className="grid grid-cols-5 gap-2 items-center">
+                      <div className="text-xs text-gray-700">
+                         <Input
+                        type="text"
+                        placeholder="Enter description"
+                        className="h-6 text-xs text-center"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.description[i] = value.target.value;
+                          // getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value,landendcostindex)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                        {/* <Select
+                          value={formData?.effectivedate?.[tmpIndex]?.data?.description[i] || ""} onValueChange={(value) => {
+                            formData.effectivedate[tmpIndex].data.description[i] = value;
+                            setFormData({ ...formData })
+
+                          }}
+                        >
+                          <SelectTrigger className="h-6 text-xs flex-1">
+                            <SelectValue placeholder="Select option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ledgerdata.map((val) => <SelectItem value={val._id}>{val.name}</SelectItem>)}
+
+                          </SelectContent>
+                        </Select> */}
+
+                      </div>
+
+                      <Select
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.formula[i] || ""} onValueChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.formula[i] = value;
+                          setFormData({ ...formData })
+
+                        }}
+                      >
+                        <SelectTrigger className="h-6 text-xs flex-1">
+                          <SelectValue placeholder="Select option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not applicable">Not Applicable</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                          <SelectItem value="amount">Amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.rate[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.rate[i] = value.target.value;
+                          getAmount(formData?.effectivedate?.[tmpIndex]?.data?.amount[0],i,value.target.value)
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="h-6 text-xs text-center"
+                        step="0.01"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.amount[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.amount[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+
+
+                      />
+                      <Input placeholder="Remarks" className="h-6 text-xs"
+
+                        value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[i] || ""}
+                        onChange={(value) => {
+                          formData.effectivedate[tmpIndex].data.remarks[i] = value.target.value;
+                          setFormData({ ...formData })
+                        }}
+
+                      />
+                    </div>
+
+
+                  </>
+                }
+
+              })}
+
+
+
+
+<div className="grid grid-cols-5 gap-2 items-center">
+
+                <div></div>
+                <div>
+
+                </div>
+                <div></div>
+                <div></div>
+                <div className="d-flex flex-row justify-content-end ">
+
+                  <svg
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("MRP") - 1
+                      if (tmplandcost != 2) {
+                        formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 1)
+                        formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 1)
+                        setFormData({ ...formData })
+                      }
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+                    onClick={() => {
+                      let tmplandcost = formData.effectivedate[tmpIndex].data.description.indexOf("MRP")
+                      formData.effectivedate[tmpIndex].data.description.splice(tmplandcost, 0, "")
+                      formData.effectivedate[tmpIndex].data.formula.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.rate.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.amount.splice(tmplandcost, 0, 0)
+                      formData.effectivedate[tmpIndex].data.remarks.splice(tmplandcost, 0, 0)
+                      setFormData({ ...formData })
+
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+
+                </div>
+              </div>
+
+
+
+
+
+
+
+
               <div className="grid grid-cols-5 gap-2 items-center border-t pt-2">
                 <div className="text-xs text-gray-700"><strong>MRP</strong></div>
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex+7]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex+7]=value;
+                  setFormData({ ...formData})
 
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[10]||""}
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+                <div></div>
+                <Input
+                  type="number"
+                  className="h-6 text-xs text-center"
 
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[MRPindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[MRPindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[10]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[MRPindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[MRPindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[10]||""}
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[10]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[MRPindex] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[MRPindex] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center">
                 <div className="text-xs text-gray-700"><strong>Round Off</strong></div>
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex+8]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex+8]=value;
+                  setFormData({ ...formData})
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+
+                <div></div>
+
                 <Input
                   type="number"
+                  placeholder="0.00"
                   className="h-6 text-xs text-center"
-                  disabled
-                  value={formData?.effectivedate?.[tmpIndex]?.data?.formula[11]||""}
+                  step="0.01"
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[MRPindex+1] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[MRPindex+1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
+
                 />
                 <Input
                   type="number"
                   placeholder="0.00"
                   className="h-6 text-xs text-center"
                   step="0.01"
-                   value={formData?.effectivedate?.[tmpIndex]?.data?.rate[11]||""}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[MRPindex+1] || ""}
 
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.rate[11]=value.target.value;
-                  setFormData({ ...formData})
-                }}
-                  
-                />
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  className="h-6 text-xs text-center"
-                  step="0.01"
-                                     value={formData?.effectivedate?.[tmpIndex]?.data?.amount[11]||""}
-
-                onChange={(value)=>{
-                  formData.effectivedate[tmpIndex].data.amount[11]=value.target.value;
-                  setFormData({ ...formData})
-                }}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[MRPindex+1] = value.target.value;
+                    calculateamount()
+                    setFormData({ ...formData })
+                  }}
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                 value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[11]||""}
 
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[MRPindex+1] || ""}
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[MRPindex+1] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
                 />
               </div>
 
               <div className="grid grid-cols-5 gap-2 items-center border-b pb-2">
                 <div className="text-xs text-gray-700"><strong>Final MRP</strong></div>
+                {/* <Select   value={formData?.effectivedate?.[tmpIndex]?.data?.formula[landendcostindex+9]||""}   onValueChange={(value)=>{
+                  formData.effectivedate[tmpIndex].data.formula[landendcostindex+9]=value;
+                  setFormData({ ...formData})
+
+                }}>
+                  <SelectTrigger className="h-6 text-xs flex-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not applicable">Not Applicable</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="amount">Amount</SelectItem>
+                  </SelectContent>
+                </Select> */}
+
+                <div></div>
+
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                 value={formData?.effectivedate?.[tmpIndex]?.data?.formula[12]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.rate[MRPindex+2] || ""}
+
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.rate[MRPindex+2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-               value={formData?.effectivedate?.[tmpIndex]?.data?.rate[12]||""}
+
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.amount[MRPindex+2] || ""}
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.amount[MRPindex+2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
                 <Input
                   type="number"
                   className="h-6 text-xs text-center"
-                  disabled
-                 value={formData?.effectivedate?.[tmpIndex]?.data?.amount[12]||""}
 
-                />
-                <Input
-                  type="number"
-                  className="h-6 text-xs text-center"
-                  disabled
-                value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[12]||""}
+                  value={formData?.effectivedate?.[tmpIndex]?.data?.remarks[MRPindex+2] || ""}
+
+
+                  onChange={(value) => {
+                    formData.effectivedate[tmpIndex].data.remarks[MRPindex+2] = value.target.value;
+                    setFormData({ ...formData })
+                  }}
 
                 />
               </div>
-              
+
             </div>
 
             <div className="flex justify-between space-x-3">

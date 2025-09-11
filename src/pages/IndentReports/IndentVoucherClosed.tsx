@@ -37,6 +37,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { MasterGet }  from "@/api/mastercontroller"
+
+
 interface AccountingGroup {
   _id: string;
   name: string;
@@ -58,6 +61,29 @@ export default function IndentVoucherClosed() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+
+  const [indentlist,setindentlist]=useState([])
+  const [vendorlist,setvendorlist]=useState({})
+  const [productlist,setproductlist]=useState({})
+  const [translist,settranslist]=useState({})
+
+
+  let datecurr=new Date()
+
+  function formatDate(dateString) {
+  const date = new Date(dateString);
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0"); // Months start from 0
+  const yyyy = date.getFullYear();
+
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+
+
+  const [fromdate,setfromdate]=useState(formatDate(datecurr.toISOString()))
+  const [todate,settodate]=useState(formatDate(datecurr.toISOString()))
 
   const [formData, setFormData] = useState({
     name: "",
@@ -101,6 +127,105 @@ export default function IndentVoucherClosed() {
       setIsLoading(false);
     }
   };
+
+  function getindent(){
+    let  fromdate_:any=fromdate.split("-")
+    let  todate_:any=todate.split("-")
+    // console.log(Number(todate_[0]),">>>>>>>>>>>>",)
+    fromdate_=fromdate_[2]+"-"+(fromdate_[1]<10?"0"+Number(fromdate_[1]):fromdate_[1])+"-"+(fromdate_[0]<10?"0"+Number(fromdate_[0]):fromdate_[0])
+    todate_=todate_[2]+"-"+(todate_[1]<10?"0"+Number(todate_[1]):todate_[1])+"-"+(todate_[0]<10?"0"+Number(todate_[0]):todate_[0])
+   let ddd=new Date(fromdate_)
+   let ddd2=new Date(todate_)
+
+    let wheretmp={
+      indent_date: {
+      $gte:ddd,
+      $lte: ddd2
+    }
+    }
+      MasterGet("indents?where="+JSON.stringify(wheretmp))
+       .then((response)=>{
+           setindentlist(response)
+        })
+      .catch(()=>{
+        
+      })
+  }
+
+  useEffect(()=>{
+     MasterGet("vendors")
+       .then((response)=>{
+        let tmpstore={}
+        response.map((val)=>{
+          tmpstore[val._id]=val
+        })
+        setvendorlist(tmpstore)
+
+        })
+      .catch(()=>{
+        
+      })
+
+
+        MasterGet("accountingledgers")
+       .then((response)=>{
+        let tmpstore={id:[],data:[]}
+        response.map((val)=>{
+           tmpstore[val._id]=val.name
+        })
+        setledger(tmpstore)
+
+        })
+      .catch(()=>{
+        
+      })
+
+
+      
+
+
+
+
+       MasterGet("products")
+       .then((response)=>{
+          let tmpstore={}
+        response.map((val)=>{
+          tmpstore[val._id]=val
+          let tmpstore_={}
+          let tmp2=0
+          val.effectivedate.map((val1)=>{
+            let tmp3:any=new Date(val1.date)
+                 tmp3=tmp3.getTime()
+           if(tmp2<tmp3){
+            tmp2=tmp3
+            tmpstore_={...val1}
+           }
+          })
+
+// console.log(tmpstore_,"amount")
+          tmpstore[val._id].effectivedate[0]={...tmpstore_,_amount:tmpstore_.data.amount[tmpstore_.data.description.indexOf("Landed Cost")]}
+
+          
+        })
+
+        
+        
+
+
+
+
+        setproductlist(tmpstore)
+        })
+      .catch(()=>{
+        
+      })
+
+
+
+      getindent()
+    
+      
+  },[])
 
   useEffect(() => {
     fetchGroups();
@@ -210,12 +335,39 @@ export default function IndentVoucherClosed() {
     const parent = parentOptions.find((p) => p._id === parentGroup);
     return parent?.name || "-";
   };
+    function formchagedate(tmpdate){
+
+      const today = new Date(tmpdate);
+      const formattedDate = today.toLocaleDateString('en-GB');
+      return formattedDate
+  }
+  
 
   return (
     <div className="">
       <Card className="flex-1 flex flex-col">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle>Indent Voucher Closed</CardTitle>
+           <div className="flex items-center space-x-2">
+                      <Label htmlFor="itemsPerPage">From:</Label>
+                      
+                      <Input type='text' value={fromdate} onChange={(e)=>{
+                        setfromdate(e.target.value)
+          
+                      }} className='text-xs' placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
+                      <Label htmlFor="itemsPerPage">To :</Label>
+                      <Input type='text' className='text-xs'  
+                      value={todate} onChange={(e)=>{
+                        settodate(e.target.value)
+          
+                      }}
+                      
+                      placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
+                      <button className="btn btn-primary " onClick={getindent}>ok</button>
+                      <button className="btn btn-primary  float-end ">Detailsh</button>
+          
+                      
+                    </div>
           <div className="flex items-center space-x-2">
             <Label htmlFor="itemsPerPage">Items per page:</Label>
             <select
@@ -262,50 +414,36 @@ export default function IndentVoucherClosed() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                     {indentlist?.map((val)=><TableRow >
+                        <TableCell >{formchagedate(val.indent_date)}</TableCell>
+                        <TableCell >{val.indentvoucherno}</TableCell>
+                        <TableCell  colSpan={8}>
+
+                   <Table className="min-w-full">
+                   
+                    <TableBody>
+                      {val.data.map((valll)=>
                       <TableRow>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                        <TableCell>Lorem</TableCell>
-                      </TableRow>
+                       <TableCell >{vendorlist?.[productlist[valll.product_id]?.preferredSupplier]?.name || ""}</TableCell>
+                       <TableCell >{productlist?.[valll.product_id]?.name || ""}</TableCell>
+                       <TableCell >{valll?.indent_qty || ""}</TableCell>
+                       <TableCell >{productlist?.[valll.product_id]?.effectivedate[0]?._amount || ""}</TableCell>
+                       <TableCell >{productlist?.[valll.product_id]?.effectivedate[0]?._amount*valll?.indent_qty}</TableCell>
+                       <TableCell ></TableCell>
+                       <TableCell ></TableCell>
+                       <TableCell  >
+                      
+                       
+                       
+                       </TableCell>
+
+                       </TableRow>
+                      )}
+                    </TableBody>
+                    </Table>
+                        </TableCell>
+                       
+                      </TableRow>)}
                     </TableBody>
                   </Table>
                 </div>

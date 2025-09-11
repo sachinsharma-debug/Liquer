@@ -15,15 +15,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
+import * as Reselect from "react-select"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Value } from '@radix-ui/react-select';
 export default function Indents() {
   const { toast } = useToast();
   const [indents, setIndents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [fileobj, setfileobj] = useState({})
-  const [errorfile, seterrorfile] = useState("")
+  let [errorfile, seterrorfile] = useState("")
+  const [Units,setUnits]=useState([])
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +40,17 @@ export default function Indents() {
   const [excelviewerbox, Excelfileviewer] = useState(false);
   const [showtabledata, setshowtabledata] = useState({ data: [], showtab: [] })
 
+  let [tmpstoreprudctinof,settmpstoreprudctinof]=useState([])
+
+
+
+
+
+
+  const [depot,setdepots]=useState([])
+  const [product,setproduct]=useState([])
+
+
 
   const [dueon, setdueon] = useState("")
   const [backup, setbackup] = useState("")
@@ -44,20 +59,83 @@ export default function Indents() {
   const [currentIndent, setCurrentIndent] = useState({
     sofNo: "", sofDate: "", data: [{
       depot_id: "",
-      product_id: "", pack_size: "", indent_qty: "",
+      product_id: "", pack_size: "", indent_qty: 0,
       uom1: "",
       indent_qty2: ""
       , uom2: "",
     }],
     narration: "",
     indent_date: "",
-    indentvoucherno: generateUniqueId(7),
+    transuctiontype:"",
+    indentvoucherno: generatePONumber(),
     status: 'draft'
   });
+const [transuctiontypelist,settransuctiontypelist]=useState([])
+const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
+
   const [isEditing, setIsEditing] = useState(false);
   const [viewingIndent, setViewingIndent] = useState(null);
 
 
+
+
+   const fetchUnits = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}stockunit_list`);
+        const result = await response.json();
+  
+        if (!response.ok)
+          throw new Error(result.message || "Failed to fetch units");
+        console.log(result.data,"units ")
+        setUnits(result.data || []);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+        toast({
+          title: "Error",
+          description:
+            err instanceof Error ? err.message : "Failed to load units",
+          variant: "destructive",
+        });
+      } finally {
+      }
+    };
+
+
+
+    const fetchTransuction = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}getTransactionTypes`);
+        const result = await response.json();
+        if (!response.ok)
+          throw new Error(result.message || "Failed to fetch units");
+        let tmpstore=[]
+        
+        
+        result.data.map((val)=>{
+
+
+          if(val.voucherType=="indent"){
+                tmpstore.push({Value:val._id,label:val.name})
+          }
+
+          
+        })
+        settransuctiontypelist([...tmpstore])
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+        toast({
+          title: "Error",
+          description:
+            err instanceof Error ? err.message : "Failed to load units",
+          variant: "destructive",
+        });
+      } finally {
+      }
+    };
 
   function generateUniqueId(length = 10) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -68,16 +146,24 @@ export default function Indents() {
     }
     return result;
   }
+  function generatePONumber() {
+     return "PO-" + Date.now();  // Example: PO-1693991875632
+   }
+
+// console.log(generatePONumber());
+
 
 
   // Fetch indents from API
   const fetchIndents = async () => {
+
+
     try {
       setLoading(true);
       setError(null);
 
       const token = localStorage.getItem('authToken');
-      const response = await fetch(
+      let response = await fetch(
         `${BASE_URL}indent_list?page=${currentPage}&limit=${itemsPerPage}`,
         {
           headers: {
@@ -87,20 +173,48 @@ export default function Indents() {
         }
       );
 
-      const data = await response.json();
+      let data = await response.json();
 
-      if (!response.ok) {
+       if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       if (data.data && Array.isArray(data.data)) {
-        setIndents(data.data);
         setTotalItems(data.total || data.data.length);
-      } else {
+      }
+      else 
+        {
         setIndents([]);
         setTotalItems(0);
         throw new Error(data.message || 'No data found');
       }
+     setIndents(data.data);
+       response =await fetch(`${BASE_URL}get_master/depots`,
+          {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+
+       )
+
+
+       data = await response.json();
+       setdepots(data.data)
+        response =await fetch(`${BASE_URL}get_master/products`,
+          {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+
+       )
+
+
+     data = await response.json();
+     setproduct(data.data)
 
     } catch (err) {
       setError(err.message);
@@ -116,6 +230,8 @@ export default function Indents() {
 
   useEffect(() => {
     fetchIndents();
+    fetchUnits();
+    fetchTransuction()
   }, [currentPage, itemsPerPage]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,6 +366,15 @@ export default function Indents() {
         let checkitme = []
         let storetmp = []
         let tmpind = 0
+
+
+          let depotname=[...depot.map((val,i)=>val.Name)]
+          let depotnameid=[...depot.map((val,i)=>val._id)]
+
+          let productname=[...product.map((val,i)=>val.name)]
+          let productnameid=[...product.map((val,i)=>val._id)]
+
+
         const mappedData = jsonData.map((item) => {
           if (!checkitme.includes(item["SOF NO"])) {
             checkitme.push(item["SOF NO"])
@@ -258,8 +383,9 @@ export default function Indents() {
             datafil.push({
               sofNo: item["SOF NO"], sofDate: date, data: [],
               narration: "",
-              indentvoucherno: generateUniqueId(7),
+              indentvoucherno: generatePONumber(),
               status: 'draft',
+              transuctiontype:transuctiontype.value,
               indent_date: new Date().toISOString().split('T')[0]
 
             })
@@ -268,13 +394,13 @@ export default function Indents() {
                 let valll = Object.values(item2)
                 date = excelDateToJSDate(valll[1]);
                 storetmp.push({
-                  soft_date: date, depot_id: valll[0],
-                  product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
+                  soft_date: date, depot_id: valll[0].trim(),
+                  product_id: valll[3].trim(), pack_size: valll[4], indent_qty: valll[5],
                   sof_no___: valll[2]
                 })
                 datafil[tmpind].data.push({
-                  depot_id: valll[0],
-                  product_id: valll[3], pack_size: valll[4], indent_qty: valll[5],
+                  depot_id: depotname.indexOf(valll[0].trim())!=-1?depotnameid[depotname.indexOf(valll[0].trim())]:"",
+                  product_id:productname.indexOf(valll[3].trim())!=-1? productnameid[productname.indexOf(valll[3].trim())]:"", pack_size: valll[4], indent_qty: valll[5],
                   uom1: "",
                   indent_qty2: ""
                   , uom2: ""
@@ -301,8 +427,10 @@ export default function Indents() {
 
   }
   let takeinputfrom = takeinput(handleSearch, 500)
-  async function uploadexcel() {
-
+   async function uploadexcel() {
+if(errorfile!=""){
+  return 
+}
     const response = await fetch(
       BASE_URL + 'import_indents_excel',
       {
@@ -332,6 +460,7 @@ export default function Indents() {
 
 
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    seterrorfile("")
     const file = e.target.files?.[0];
     setfileobj(file)
   };
@@ -348,7 +477,7 @@ export default function Indents() {
       }],
       narration: "",
       indent_date: "",
-      indentvoucherno: generateUniqueId(7),
+      indentvoucherno: generatePONumber(),
       status: 'draft'
     });
     setIsEditing(false);
@@ -365,8 +494,98 @@ export default function Indents() {
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const [isDialogOpen1, setIsDialogOpen1] = useState(false);
+
+  let depotname=[...depot.map((val,i)=>val.Name)]
+  let productname=[...product.map((val,i)=>val.name)]
+
+
+  const checktmpdepot=(xxxxx)=>{
+    if(depotname.includes(xxxxx)){
+       return true
+    }
+    errorfile="Please keep coorrect file data"
+     return false
+  }
+
+
+   const checktmpdepotprod=(xxxxx)=>{
+    if(productname.includes(xxxxx)){
+       return true
+    }
+    errorfile="Please keep coorrect file data"
+     return false
+  }
+  
+
+
+  console.log(transuctiontypelist,depot,product,">>>>>>>>>>>>>>>>>>",showtabledata)
+
+const customStyles = {
+  control: (base, state) => ({
+    ...base,
+    border: state.isFocused ? "2px solid #213257ff" : "1px solid #d1d5db",
+    boxShadow: state.isFocused ? "0 0 0 1px #2563eb" : "none",
+    "&:hover": { borderColor: "#2563eb" },
+    borderRadius: "0.75rem",
+    padding: "2px",
+  }),
+  menu: (base) => ({
+    ...base,
+    borderRadius: "0.75rem",
+    padding: "4px",
+    zIndex: 9999,
+  }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isFocused
+      ? "#99c7e5ff"
+      : state.isSelected
+      ? "#152445ff"
+      : "white",
+    color: state.isSelected ? "white" : "white",
+    borderRadius: "0.5rem",
+    padding: "10px",
+    cursor: "pointer",
+  }),
+  placeholder: (base) => ({
+    ...base,
+    color: "#9ca3af",
+    fontStyle: "italic",
+  }),
+};
+
+
+
   return (
     <div className="space-y-6">
+      <style type='text/css'>
+      
+      {
+        `
+        .selectBox__control {
+        
+        min-width:300px;
+
+
+        
+        }
+
+         .selectBox__menu {
+        
+        background-color:white;
+        color:black;
+
+
+        
+        }
+        
+        
+        
+        `
+      }
+
+      
+      </style>
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <h1 className="text-2xl md:text-3xl font-bold">Indents Management</h1>
         <div className="flex flex-col sm:flex-row gap-2">
@@ -392,10 +611,10 @@ export default function Indents() {
                   </tr></thead>
                   <tbody>
                     {showtabledata.showtab.map((val) => <tr className='border-b'>
-                      <td className='border-r'>{val.depot_id}</td>
+                      <td className={'border-r'+(!checktmpdepot(val.depot_id)?" text-danger ":"")}>{val.depot_id}</td>
                       <td className='border-r px-2'>{val.soft_date}</td>
                       <td className='border-r'>{val.sof_no___}</td>
-                      <td className='border-r px-2'>{val.product_id}</td>
+                      <td className={'border-r px-2'+(!checktmpdepotprod(val.product_id)?" text-danger ":"")}>{val.product_id}</td>
                       <td className='border-r'>{val.pack_size}</td>
                       <td className='px-2'>{val.indent_qty}</td>
 
@@ -446,8 +665,28 @@ export default function Indents() {
                   className="h-6 text-xs flex-1"
                   onInput={takeinputfrom}
                 />
-                <span>{errorfile}</span>
+                <span className=' text-danger '>{errorfile}</span>
               </div>
+
+    <div className="flex items-center gap-2 mt-3">
+                <Label htmlFor="standardRate" className="text-xs w-60">
+                  Transuction Type:
+                </Label>
+                   <Reselect.default styles={customStyles}  options={transuctiontypelist}
+                       classNamePrefix='selectBox'
+                       value={transuctiontype}
+                       onChange={(e)=>{
+                        settransuctiontype(e)
+                       }}
+               />
+
+              </div>
+
+
+
+
+
+
               <div className="flex items-center gap-2 mt-3">
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Preview Import Summary :
@@ -477,15 +716,20 @@ export default function Indents() {
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Due on:
                 </Label>
-                <Select onValueChange={setdueon} value={dueon}>
-                  <SelectTrigger className="h-6 text-xs ">
-                    <SelectValue placeholder="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
+
+                 <Input
+                  id="minStockLevel"
+                  type="date"
+                  onChange={(e)=>{
+                     setdueon(e.target.value)
+                  }}
+                  value={dueon}
+                />
+                
+
+
+           
+
               </div>
 
 
@@ -664,36 +908,71 @@ export default function Indents() {
                     </div>
                     {/* <div className='border-b px-3 pb-3'>Depot</div> */}
                     <div className='col-2 pt-3'>
-                      <Input
-                        id="Depot"
-                        name="Depot"
-                        type="text"
-                        className=" text-xs h-6"
-                        value={val.depot_id}
-                        onChange={(event) => {
-                          let tmpdata = currentIndent.data
-                          tmpdata[idx].depot_id = event.target.value
-                          setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
-                        }}
 
 
 
-                      />
+
+
+                         
+                                            <Select
+                                               value={val.depot_id}
+                                               onValueChange={(value) =>{
+                                                let tmpdata = currentIndent.data
+                                                    tmpdata[idx].depot_id = value
+                                                  setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
+                                               }
+                                              }
+                                             >
+                                               <SelectTrigger id="category">
+                                                 <SelectValue placeholder="Select category" />
+                                               </SelectTrigger>
+                                               <SelectContent>
+                                                 {depot.map((cat) => (
+                                                   <SelectItem key={cat._id} value={cat._id}>
+                                                     {cat.Name}
+                                                   </SelectItem>
+                                                 ))}
+                                               </SelectContent>
+                                             </Select>
+
+
+
+
                     </div>
                     {/* <div className='border-b pb-3'>Product Name</div> */}
                     <div className='col-2 pt-3'>
-                      <Input
-                        id="Depot"
-                        name="Depot"
-                        type="text"
-                        className=" text-xs h-6"
-                        value={val.product_id}
-                        onChange={(event) => {
-                          let tmpdata = currentIndent.data
-                          tmpdata[idx].product_id = event.target.value
-                          setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
-                        }}
-                      />
+
+
+                      <Select
+                                               value={val.product_id}
+                                               onValueChange={(value) =>{
+                                                let tmpdata = currentIndent.data
+                                                    tmpdata[idx].product_id = value
+
+                                    let tmptxx=product.filter((val)=>val._id==value)[0]
+                                     tmpdata[idx].pack_size=tmptxx.volume
+
+
+                                     tmpstoreprudctinof[idx]=tmptxx;
+
+
+                                                    
+                                                  setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
+                                               }
+                                              }
+                                             >
+                                               <SelectTrigger id="category">
+                                                 <SelectValue placeholder="Select category" />
+                                               </SelectTrigger>
+                                               <SelectContent>
+                                                 {product.map((cat) => (
+                                                   <SelectItem key={cat._id} value={cat._id}>
+                                                     {cat.name}
+                                                   </SelectItem>
+                                                 ))}
+                                               </SelectContent>
+                                             </Select>
+                    
                     </div>
                     {/* <div className='border-b px-3 pb-3'>Pack Size</div> */}
                     <div className='col-2 px-3 pt-3'>
@@ -704,6 +983,7 @@ export default function Indents() {
                         className=" text-xs h-6"
                         value={val.pack_size}
                         onChange={(event) => {
+
                           let tmpdata = currentIndent.data
                           tmpdata[idx].pack_size = event.target.value
                           setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
@@ -722,24 +1002,48 @@ export default function Indents() {
                         onChange={(event) => {
                           let tmpdata = currentIndent.data
                           tmpdata[idx].indent_qty = event.target.value
+                          if(tmpstoreprudctinof?.[idx]?.bottle && tmpstoreprudctinof?.[idx]?.where){
+                          
+                           tmpdata[idx].indent_qty2 =tmpstoreprudctinof[idx].bottle/tmpstoreprudctinof?.[idx]?.where*event.target.value
+
+
+
+                          }
+
+
+
                           setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
                         }}
                       />
                     </div>
                     {/* <div className='border-b px-3 pb-3'>Uom1</div> */}
                     <div className='col-1 px-3 pt-3'>
-                      <Input
-                        id="Depot"
-                        name="Depot"
-                        type="text"
-                        className=" text-xs h-6"
-                        value={val.uom1}
-                        onChange={(event) => {
-                          let tmpdata = currentIndent.data
-                          tmpdata[idx].uom1 = event.target.value
-                          setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
-                        }}
-                      />
+
+
+                                                                  <Select
+                                               value={val.uom1}
+                                               onValueChange={(value) =>{
+                                                let tmpdata = currentIndent.data
+                                                    tmpdata[idx].uom1 = value
+                                                    tmpdata[idx].uom2=tmpstoreprudctinof[idx].unit ==tmpdata[idx].uom1?tmpstoreprudctinof[idx].altUnit:tmpstoreprudctinof[idx].unit
+                                                  setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
+                                               }
+                                              }
+                                             >
+                                               <SelectTrigger id="category">
+                                                 <SelectValue placeholder="Select uom" />
+                                               </SelectTrigger>
+                                               <SelectContent>
+                                                 {Units.map((cat) => (tmpstoreprudctinof?.[idx]?.unit==cat._id || tmpstoreprudctinof?.[idx]?.altUnit==cat._id?
+                                                                    <SelectItem key={cat._id} value={cat._id}>
+                                                           {cat.symbol}
+                                                   </SelectItem>
+                                                   :
+                                                   <></>
+                                                 ))}
+                                               </SelectContent>
+                                             </Select>
+                     
                     </div>
                     {/* <div className='border-b pb-3'>Qty</div> */}
                     <div className='col-1 pt-3'>
@@ -758,19 +1062,30 @@ export default function Indents() {
                     </div>
                     {/* <div className='border-b px-3 pb-3'>Uom</div> */}
                     <div className='col-1 px-3 pt-3'>
-                      <Input
-                        id="Depot"
-                        name="Depot"
-                        type="text"
-                        className=" text-xs h-6"
 
-                        value={val.uom2}
-                        onChange={(event) => {
-                          let tmpdata = currentIndent.data
-                          tmpdata[idx].uom2 = event.target.value
-                          setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
-                        }}
-                      />
+                        <Select
+                                               value={val.uom2}
+                                               onValueChange={(value) =>{
+                                                let tmpdata = currentIndent.data
+                                                    tmpdata[idx].uom2 = value
+                                                  setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
+                                               }
+                                              }
+                                             >
+                                               <SelectTrigger id="category">
+                                                 <SelectValue placeholder="Select" />
+                                               </SelectTrigger>
+                                               <SelectContent>
+                                                 {Units.map((cat) => (tmpstoreprudctinof?.[idx]?.unit==cat._id || tmpstoreprudctinof?.[idx]?.altUnit==cat._id?
+                                                                    <SelectItem key={cat._id} value={cat._id}>
+                                                           {cat.symbol}
+                                                   </SelectItem>
+                                                   :
+                                                   <></>
+                                                 ))}
+                                               </SelectContent>
+                                             </Select>
+                    
 
                     </div>
 
@@ -785,12 +1100,13 @@ export default function Indents() {
                   <span style={{ cursor: 'pointer' }} className='text-primary' onClick={() => {
                     let tmpdata = currentIndent.data
                     tmpdata.push({
-                      depot_id: "",
+                      depot_id: "", 
                       product_id: "", pack_size: "", indent_qty: "",
                       uom1: "",
                       indent_qty2: ""
                       , uom2: "",
                     })
+                    tmpstoreprudctinof.push([])
                     setCurrentIndent(prev => ({ ...prev, data: tmpdata }))
                   }}>+ Add More</span>
                 </div>

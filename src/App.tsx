@@ -1,6 +1,7 @@
 import { Toaster } from 'react-hot-toast';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import "bootstrap-icons/font/bootstrap-icons";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -43,6 +44,7 @@ import InvoiceReport from './pages/Reports/InvoiceReport';
 import DeliveryReport from './pages/Reports/DeliveryReport';
 import StockAdjustmentReport from './pages/Reports/StockAdjustmentReport';
 import AnalyticsReports from './pages/Reports/AnalyticsReports';
+
 
 const queryClient = new QueryClient();
 

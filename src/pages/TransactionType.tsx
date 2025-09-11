@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import * as Rselect from "react-select"
+
 interface TransactionType {
   _id: string;
   name: string;
@@ -46,6 +48,7 @@ interface TransactionType {
 }
 
 export function TransactionType() {
+  // console.log(,"ksjfdksajdk ")
   const [isNumberingModalOpen, setIsNumberingModalOpen] = useState(false);
   const [transactionTypes, setTransactionTypes] = useState<TransactionType[]>([]);
 const [voucherTypealteration,setVouchertypealteration]=useState({
@@ -159,7 +162,6 @@ suffix_details:[{applicable_from:"",particulars:""}],
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    
     if (!formData.name) {
       setError("Transaction type name is required");
       toast({
@@ -170,13 +172,6 @@ suffix_details:[{applicable_from:"",particulars:""}],
       setIsSubmitting(false);
       return;
     }
-
-
- 
-
-
-
-
     try {
       const url = isEditing && currentId
         ? `${BASE_URL}updateTransactionType/${currentId}`
@@ -290,8 +285,44 @@ suffix_details:[{applicable_from:"",particulars:""}],
                               voucherTypealteration[type].splice(i,1)
                                setVouchertypealteration({...voucherTypealteration})
           }
+
+
+
+          let  vouchertypelist=[ {value:"credit-note",label:"Credit Note"},
+                            {value:"debit-note",label:"Debit Note"},
+                            {value:"material-out",label:"Material Out"},
+                            {value:"physical-stock",label:"Physical Stock"},
+                            {value:"purchase",label:"Purchase"},
+                            {value:"purchase-order",label:"Purchase Order"},
+                            {value:"receipt",label:"Receipt"},
+                            {value:"receipt-note",label:"Receipt Note"},
+                            {value:"sales",label:"Sales"},
+                            {value:"sales-order",label:"Sales Order"},
+                            {value:"indent",label:"Indent"},
+                            {value:"stock-journal",label:"Stock Journal"},
+                            ]
+
+
+                            // console.log(formData);
+
+
   return (
     <div className="space-y-6 h-full flex flex-col">
+      <style type="text/css">
+      {
+        `
+        
+        .selectbox__control {
+        
+        min-width:300px;
+
+
+        }
+        
+        `
+      }
+
+      </style>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">
           Transaction Type Management
@@ -371,18 +402,29 @@ suffix_details:[{applicable_from:"",particulars:""}],
                       >
                         Type of Voucher:
                       </Label>
-                      <Select
-                        value={formData.voucherType}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, voucherType: value })
-                        }
+                      <Rselect.default options={vouchertypelist}  
+                      className=" max-h-[200px] "
+                      classNamePrefix="selectbox"
+
+
+
+                      
+                      value={vouchertypelist.filter((val)=>val.value==formData.voucherType)[0] || {value:"",label:"Select voucher type"}}
+                      onChange={(e)=>{
+                          setFormData({ ...formData, voucherType: e.value })
+
+                      }}
+                        />
+                      {/* <Select
+                       
                       >
                         <SelectTrigger className="h-6 text-xs flex-1">
                           <SelectValue placeholder="Select voucher type" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[200px] overflow-y-auto">
                           <SelectItem value="credit-note">
-                            Credit Note
+                            
+                            
                           </SelectItem>
                           <SelectItem value="debit-note">Debit Note</SelectItem>
                           <SelectItem value="delivery-note">
@@ -411,7 +453,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
                             Stock Journal
                           </SelectItem>
                         </SelectContent>
-                      </Select>
+                      </Select> */}
                     </div>
                     <div className="flex items-center gap-2">
                       <Label
