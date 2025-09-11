@@ -42,6 +42,26 @@ export default function PurchaseOrders() {
   let [ledgerselected,setledgerselected]=useState([])
 
 
+  let [formdata,setformdata]=useState({
+  "vouchered":"",
+  "purchaseOrderNo": "",
+  "date": "",
+  "partyAccountName": "",
+  "trackFromIndent": "",
+  "purchaseLedger": "",
+  "orderNumber": "",
+  "items": [
+    { "name": "", "quantity": 10, "rate": 50, "amount": 500,
+       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}] 
+ },
+
+  ]
+}
+)
+
+
+
+
 
 
 
@@ -163,7 +183,7 @@ function dateconvertion(datein){
     setOpenItemDialog(true); // Open item dialog when value is selected
   };
 
-  console.log(indentAddedselect,openMainDialog2,">>>>>>>>>>",openMainDialog2==true)
+  // console.log(indentAddedselect,openMainDialog2,">>>>>>>>>>",openMainDialog2==true)
 
 
 
@@ -204,8 +224,13 @@ function dateconvertion(datein){
                        classNamePrefix='selectBox'
                        value={VoucherTypeselect}
                        onChange={(e)=>{
+
+
+                        
+                        formdata.vouchered=e.value
                         setVouchertypeselect(e)
-                           funtypscript(e)
+                        funtypscript(e)
+
                        }}
                />
                          <Button type="submit" className=' ms-4  w-34 '   
