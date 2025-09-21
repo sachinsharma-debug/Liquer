@@ -400,13 +400,15 @@ reset()
                             val.data.map((valll)=>{
                                
                               formdata.items.push({ "prodid": valll.product_id, "quantity": "", "rate": "", "amount": "",
-       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}
+                                "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}
        ] 
  })
                               
                             })
                             indentAdded.push(val._id)
+
                             setindentAdded([...indentAdded])
+                            
                           }
 
                         }

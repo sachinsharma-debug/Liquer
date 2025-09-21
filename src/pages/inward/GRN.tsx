@@ -15,6 +15,7 @@ import { MasterGet } from "@/api/mastercontroller"
 import { BASE_URL } from '@/api/BaseUrl';
 import { useSelector, useDispatch } from 'react-redux'
 import * as XLSX from 'xlsx';
+import { Receipt } from 'lucide-react';
 
 
 
@@ -45,6 +46,10 @@ export default function GRNComponent() {
 
 
 
+  const [depot,setdepots]=useState([])
+  const [product,setproduct]=useState([])
+
+
 
 
 
@@ -54,9 +59,13 @@ export default function GRNComponent() {
   const [selectedItem, setSelectedItem] = useState('');
   const [VoucherType, setVouchertype] = useState([])
   const [VoucherTypeselect, setVouchertypeselect] = useState([])
+  const [VoucherTypeselect1, setVouchertypeselect1] = useState([])
+
   const [vendorlist, setvendorlist] = useState([])
   const [indentlist, setindentlist] = useState([])
   const [purchaseorderlist, setpurchaseorderlist] = useState({})
+  const [purchaseorderforlist, setpurchaseorderforlist] = useState([])
+
   let [indentAdded, setindentAdded] = useState([])
   let [indentAddedselect, setindentAddedselect] = useState([])
   let [productlist, setproductlist] = useState([])
@@ -72,6 +81,11 @@ export default function GRNComponent() {
   let [updateid,setupdateid]=useState("")
 
   let [grnsdata,setgrnsdata]=useState([])
+
+
+
+
+  let [importgrn,setimportgrn]=useState([])
  
 
 
@@ -94,8 +108,6 @@ let defaultdataitem= { "prodid": "", "quantity": "", "rate": "", "amount": "", "
   "vouchered":"",
   "recieptno": "",
   "orderno": [],
-
-
   "date": "",
   "partyAccountName": "",
   "trackFromIndent": "",
@@ -161,9 +173,14 @@ getgrns()
 
       })
 
+
+      
+
+
     MasterGet("products")
       .then((response) => {
 
+           setproduct(response)
 
         console.log(response,">>>>>>")
 
@@ -181,6 +198,7 @@ getgrns()
       })
        MasterGet("depots")
       .then((response) => {
+             setdepots(response)
         let tmpstore = []
         response.map((val) => {
           tmpstore.push({ label: val.Name, value: val._id })
@@ -219,12 +237,20 @@ getgrns()
     let tmpstore={
 
     }
-    response.map((vall)=>{
+    let tmpparchase=[]
+    response.map((vall,i)=>{
+tmpparchase.push({partyid:vall.partyAccountName,prodid:[]})
+vall.items.map((val2)=>{
+   tmpparchase[i].prodid.push(val2.prodid)   
+})
+        setpurchaseorderforlist(tmpparchase)
+
       if(!Array.isArray(tmpstore[vall.partyAccountName])){
         tmpstore[vall.partyAccountName]=[]
       }
       tmpstore[vall.partyAccountName].push(vall)
-             
+          
+      
     })
            setpurchaseorderlist(tmpstore)
       })
@@ -248,12 +274,12 @@ getgrns()
       recieptno: new RegExp(`${e.label}`, "i").toString(),
       hihi: "asdasddsasd"
     }
-    console.log(new RegExp(`${e.label}`, "i"), e.label, wheree)
+    // console.log(new RegExp(`${e.label}`, "i"), e.label, wheree)
 
 
     MasterGet("purchaseorder?where=" + JSON.stringify(wheree) + "")
       .then((response) => {
-        console.log(response)
+        // console.log(response)
       })
       .catch(() => {
 
@@ -334,10 +360,11 @@ setformdata({
 
   const [excelviewerbox, Excelfileviewer] = useState(false);
   const [showtabledata, setshowtabledata] = useState({ data: [], showtab: [] })
+  const [excelview,setexcelview]=useState({})
    
 
   const [error, setError] = useState(null);
-  const [errorfile, seterrorfile] = useState("");
+  let [errorfile, seterrorfile] = useState("");
 
   const [fileobj, setfileobj] = useState({})
 
@@ -383,60 +410,60 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
         seterrorfile("")
         const worksheet = workbook.Sheets[checktmp[0]];
         let jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-        console.log(jsonData)
+        jsonData.splice(0,3)
 
-        // let datafil = []
-        // let checkitme = []
-        // let storetmp = []
-        // let tmpind = 0
+        let storealldata={
+          depot:[],
+          productlist:[],
+          recieptno:[],
+          godownwastage:[],
+        }
 
+  
 
-        //   let depotname=[...depot.map((val,i)=>val.Name)]
-        //   let depotnameid=[...depot.map((val,i)=>val._id)]
+let date=new Date().toISOString()
+        let grncreationlist=[]
+        let tmprod={
+        }
+         let tmdepot={
+        }
+        product.map((val)=>{
+          tmprod[val.name]=val._id
+        })
+        depot.map((val)=>{
+           tmdepot[val.Name]=val._id  
+        })
+        let tmpaccountid=[]
+        let tmpdefaultdataitem={...defaultdataitem}
+        jsonData.map((val)=>{
+           storealldata.depot.push(val.__EMPTY)
+           storealldata.productlist.push(val.__EMPTY_1)
+           storealldata.recieptno.push(val.__EMPTY_3)
+           storealldata.godownwastage.push(val.__EMPTY_8)
+           let partyid=""
+           if(tmdepot[val.__EMPTY] && tmprod[val.__EMPTY_1]){
+            purchaseorderforlist.map((vall)=>{
+                    if(vall.prodid.includes(tmprod[val.__EMPTY_1])){
+                        partyid=vall.partyid 
+                    }
+            })
+            if(!tmpaccountid.includes(partyid)){
+                  grncreationlist.push(formdata)
+                  tmpaccountid.push(partyid)                    
+            }
 
-        //   let productname=[...product.map((val,i)=>val.name)]
-        //   let productnameid=[...product.map((val,i)=>val._id)]
-
-
-        // const mappedData = jsonData.map((item) => {
-        //   if (!checkitme.includes(item["SOF NO"])) {
-        //     checkitme.push(item["SOF NO"])
-        //     // datafil[item["SOF NO"]] = []
-        //     let date = excelDateToJSDate(item["SOF DATE"]);
-        //     datafil.push({
-        //       sofNo: item["SOF NO"], sofDate: date, data: [],
-        //       narration: "",
-        //       indentvoucherno: generatePONumber(),
-        //       status: 'draft',
-        //       transuctiontype:transuctiontype.value,
-        //       indent_date: new Date().toISOString().split('T')[0]
-
-        //     })
-        //     jsonData.map((item2) => {
-        //       if (item2["SOF NO"] == item["SOF NO"]) {
-        //         let valll = Object.values(item2)
-        //         date = excelDateToJSDate(valll[1]);
-        //         storetmp.push({
-        //           soft_date: date, depot_id: valll[0].trim(),
-        //           product_id: valll[3].trim(), pack_size: valll[4], indent_qty: valll[5],
-        //           sof_no___: valll[2]
-        //         })
-        //         datafil[tmpind].data.push({
-        //           depot_id: depotname.indexOf(valll[0].trim())!=-1?depotnameid[depotname.indexOf(valll[0].trim())]:"",
-        //           product_id:productname.indexOf(valll[3].trim())!=-1? productnameid[productname.indexOf(valll[3].trim())]:"", pack_size: valll[4], indent_qty: valll[5],
-        //           uom1: "",
-        //           indent_qty2: ""
-        //           , uom2: ""
-
-        //         })
-        //       }
-        //     })
-        //     tmpind++
-        //   }
-        // })
-        // setshowtabledata({ data: datafil, showtab: storetmp })
-
-
+            let indexgrn=tmpaccountid.indexOf(partyid)
+            tmpdefaultdataitem.prodid=tmprod[val.__EMPTY_1]
+            grncreationlist[indexgrn].partyAccountName=partyid
+            grncreationlist[indexgrn].date=date
+            grncreationlist[indexgrn].vouchered=VoucherTypeselect1.value
+            grncreationlist[indexgrn].items.push(tmpdefaultdataitem)         
+           }
+           
+          
+        })
+setimportgrn(grncreationlist)
+setexcelview(storealldata)
       }
       else {
         seterrorfile("invalide sheet name")
@@ -456,33 +483,53 @@ if(errorfile!=""){
   return 
 }
     const response = await fetch(
-      BASE_URL + 'import_indents_excel',
+      BASE_URL + 'import_grn_excel',
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer `,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ indents: showtabledata.data }),
+        body: JSON.stringify({ grn: importgrn }),
            credentials: "include",
       }
     );
-
     const result = await response.json();
-
     if (!response.ok) {
       throw new Error(result.message || 'Import failed');
     }
 
     toast({
       title: "Import Successful",
-      description: ` indents imported successfully`,
+      description: ` grn imported successfully`,
     });
 
 
-
+setOpenMainDialog4(false)
   }
 
+
+   let depotname=[...depot?.map((val,i)=>val.Name)]
+  let productname=[...product?.map((val,i)=>val.name)]
+
+
+ const checktmpdepot=(xxxxx)=>{
+    if(depotname.includes(xxxxx)){
+       return true
+    }
+    errorfile="Please keep coorrect file data"
+     return false
+  }
+
+
+   const checktmpdepotprod=(xxxxx)=>{
+    if(productname.includes(xxxxx)){
+       return true
+    }
+    errorfile="Please keep coorrect file data"
+     return false
+  }
+  
 
 
 
@@ -500,6 +547,44 @@ if(errorfile!=""){
     `
         }
       </style>
+
+       <Dialog open={excelviewerbox} onOpenChange={Excelfileviewer}>
+                  <DialogContent className="max-w-[95vw] sm:max-w-[900px]">
+                    <DialogHeader>
+                      <DialogTitle>Excel View</DialogTitle>
+                    </DialogHeader>
+      
+      
+                    <div style={{ maxHeight: "600px", overflowY: "scroll" }}>
+                      <table>
+                        <thead><tr>
+                          <th>Warehouse </th>
+                          <th className='px-2'>Brand / Product Name </th>
+                          <th>Receipts (In Bottles) </th>
+                          <th className='px-2'>Godown Wastage (In Bottles)</th>
+                         
+      
+                        </tr></thead>
+                        <tbody>
+                          {excelview?.depot?.map((val,i) => <tr className='border-b'>
+                            <td className={'border-r'+(!checktmpdepot(val)?" text-danger ":"")}>{val}</td>
+                            <td className={'border-r px-2'+(!checktmpdepotprod(excelview.productlist[i])?" text-danger ":"")}>{excelview.productlist[i]}</td>
+                             <td className='border-r px-2'>{excelview.recieptno[i]}</td>
+                            <td className='border-r'>{excelview.godownwastage[i]}</td>
+      
+                          </tr>)}
+      
+                        </tbody>
+      
+                      </table>
+                    </div>
+      
+      
+      
+      
+      
+                  </DialogContent>
+                </Dialog>
 
  <Dialog open={openMainDialog4} onOpenChange={setOpenMainDialog4}>
             <DialogContent style={{ display: 'block' }}>
@@ -529,30 +614,22 @@ if(errorfile!=""){
               </div>
 
 
-              
-
-    <div className="flex items-center gap-2 mt-3">
-                <Label htmlFor="standardRate" className="text-xs w-60">
-                  Transuction Type:
-                </Label>
-                    <Select options={VoucherType}
+              <div className="flex items-center gap-2 mt-1 ">
+                <Label htmlFor="poNumber" className="text-xs w-40   ">Voucher type</Label>
+               <Select options={VoucherType}
                        classNamePrefix='selectBox'
-                       value={VoucherTypeselect}
+                       className="h-6 text-xs "
+                       value={VoucherTypeselect1}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
-                        setVouchertypeselect(e)
-                           funtypscript(e)
+                        setVouchertypeselect1(e)
                        }}
                />
-
+                       
               </div>
 
-
-
-
-
-
-              <div className="flex items-center gap-2 mt-3">
+    
+              <div className="flex items-center gap-2 mt-4 ">
                 <Label htmlFor="standardRate" className="text-xs w-60">
                   Preview Import Summary :
                 </Label>
@@ -563,9 +640,6 @@ if(errorfile!=""){
                   else {
                     Excelfileviewer(false)
                   }
-
-
-
                 }}>
                   <SelectTrigger className="h-6 text-xs ">
                     <SelectValue placeholder="" />
@@ -616,27 +690,38 @@ if(errorfile!=""){
                   {purchaseorderlist[formdata.partyAccountName]?.map((val, i) => <tr className="border-b">
                     <td className="p-2"><input type='checkbox' checked={formdata.orderno.includes(val.orderNumber)}
                       onClick={(e) => {
-                        if (e?.target?.checked) {
-                          if (!formdata.orderno.includes(val.orderNumber)) {
-                              formdata.orderno.push(val.orderNumber)
-                                                      
+
+
+                        if (e.target.checked) {
+                                                 
+
+                          if (!indentAdded.includes(val._id)) {
+                              formdata.orderno.push(val.orderNumber)                         
+
+                            val.items.map((valll)=>{
+                              formdata.items.push({ "prodid":valll.prodid, "quantity": "", "rate": "", "amount": "", "orderno": "", "godownwastge": "",
+                                "productdetails":[{"trackingno":"","orderno":"","godown":"","quantity":"","rate":"","amount":"","godownwastge":""}]})      
+                            })
+                           
+                            
                           }
 
                         }
                         else {
+
+
+                          val.items.map((valll)=>{
+                                let tmpfordata=[...formdata.items]
+                                tmpfordata.map((val2,iii)=>{
+                                  if(val2.prodid==valll.prodid){
+                                     tmpfordata.splice(iii,1)
+                                  }
+                                })
+                                formdata.items=[...tmpfordata]
+                            })
                            formdata.orderno.splice(formdata.orderno.indexOf(val.orderNumber),1)
-
-
-                         
                         }
-
-
-
                          setformdata({...formdata})
-
-
-
-
                       }} /></td>
                     <td className="p-2">{val.purchaseOrderNo}</td>
                     <td className="p-2">{val.orderNumber}</td>
@@ -795,7 +880,9 @@ if(errorfile!=""){
                   value={vendorlist.filter((val1)=>val1.value==formdata.partyAccountName)}
                   onChange={(e)=>{
                      formdata.partyAccountName=e.value
-                    setOpenMainDialog3(true) 
+
+
+                     setOpenMainDialog3(true) 
                      setformdata({...formdata})
                   }}
                 />
