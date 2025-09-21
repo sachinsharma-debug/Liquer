@@ -43,6 +43,26 @@ export default function PurchaseOrders() {
   let [ledgerselected, setledgerselected] = useState([])
 
 
+  let [formdata,setformdata]=useState({
+  "vouchered":"",
+  "purchaseOrderNo": "",
+  "date": "",
+  "partyAccountName": "",
+  "trackFromIndent": "",
+  "purchaseLedger": "",
+  "orderNumber": "",
+  "items": [
+    { "name": "", "quantity": 10, "rate": 50, "amount": 500,
+       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}] 
+ },
+
+  ]
+}
+)
+
+
+
+
 
 
 
@@ -164,7 +184,7 @@ export default function PurchaseOrders() {
     setOpenItemDialog(true); // Open item dialog when value is selected
   };
 
-  console.log(indentAddedselect, openMainDialog2, ">>>>>>>>>>", openMainDialog2 == true)
+  // console.log(indentAddedselect,openMainDialog2,">>>>>>>>>>",openMainDialog2==true)
 
 
 
@@ -201,20 +221,25 @@ export default function PurchaseOrders() {
             <div className="grid   border-b border-t">
               <div className="flex items-center gap-2">
                 <Label htmlFor="poNumber" className="text-xs w-45 ">Voucher type</Label>
-                <Select options={VoucherType}
-                  classNamePrefix='selectBox'
-                  value={VoucherTypeselect}
-                  onChange={(e) => {
-                    setVouchertypeselect(e)
-                    funtypscript(e)
-                  }}
-                />
-                <Button type="submit" className=' ms-4  w-34 '
-                  onClick={(val) => {
-                    setOpenMainDialog(true)
-                  }}
+               <Select options={VoucherType}
+                       classNamePrefix='selectBox'
+                       value={VoucherTypeselect}
+                       onChange={(e)=>{
 
-                >Add</Button>
+
+                        
+                        formdata.vouchered=e.value
+                        setVouchertypeselect(e)
+                        funtypscript(e)
+
+                       }}
+               />
+                         <Button type="submit" className=' ms-4  w-34 '   
+                          onClick={(val)=>{
+                            setOpenMainDialog(true)
+                          }}
+                         
+                         >Add</Button>
               </div>
               <div className="flex items-center gap-2">
               </div>
