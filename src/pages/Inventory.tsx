@@ -23,8 +23,8 @@ interface Product {
   Name: string;
   Parent: string;
   Unit: string;
-  Master_Id: string;
-  Alter_id: string;
+  masterId: string;
+  alternateId: string;
   Category: string;
   GstApplicable: string;
   Item_Code: string;
@@ -70,8 +70,8 @@ export default function Inventory() {
     Name: "",
     Parent: "Primary",
     Unit: "",
-    Master_Id: "",
-    Alter_id: "",
+    masterId: "",
+    alternateId: "",
     Category: "Primary",
     GstApplicable: "Applicable",
     Item_Code: "",
@@ -111,7 +111,10 @@ export default function Inventory() {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}item`);
+        const response = await fetch(`${BASE_URL}item`,{
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
@@ -151,8 +154,10 @@ export default function Inventory() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(currentProduct),
+             credentials: "include",
         });
 
+      
         if (!response.ok) {
           throw new Error('Failed to update product');
         }
@@ -173,6 +178,8 @@ export default function Inventory() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(currentProduct),
+             credentials: "include",
+
         });
 
         if (!response.ok) {
@@ -217,6 +224,8 @@ export default function Inventory() {
       setIsDeleting(true);
       const response = await fetch(`${BASE_URL}item/${productToDelete}`, {
         method: 'DELETE',
+             credentials: "include",
+
       });
 
       if (!response.ok) {
@@ -247,8 +256,8 @@ export default function Inventory() {
       Name: "",
       Parent: "Primary",
       Unit: "",
-      Master_Id: "",
-      Alter_id: "",
+      masterId: "",
+      alternateId: "",
       Category: "Primary",
       GstApplicable: "Applicable",
       Item_Code: "",
@@ -429,8 +438,8 @@ export default function Inventory() {
               <Label>Master ID</Label>
               <Input
                 placeholder="Enter master ID"
-                value={currentProduct.Master_Id}
-                onChange={(e) => handleInputChange("Master_Id", e.target.value)}
+                value={currentProduct.masterId}
+                onChange={(e) => handleInputChange("masterId", e.target.value)}
               />
             </div>
 
@@ -438,8 +447,8 @@ export default function Inventory() {
               <Label>Alter ID</Label>
               <Input
                 placeholder="Enter alter ID"
-                value={currentProduct.Alter_id}
-                onChange={(e) => handleInputChange("Alter_id", e.target.value)}
+                value={currentProduct.alternateId}
+                onChange={(e) => handleInputChange("alternateId", e.target.value)}
               />
             </div>
 

@@ -12,6 +12,12 @@ import { Select as RSelect, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MasterGet } from "@/api/mastercontroller"
+import { BASE_URL } from '@/api/BaseUrl';
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
+
 function logiccode(allparameter) {
   return {
   }
@@ -25,6 +31,9 @@ function logiccode(allparameter) {
 
 
 export default function PurchaseOrders() {
+
+ const companyid = useSelector((state) => state?.Store.companyid)
+  
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openMainDialog1, setOpenMainDialog1] = useState(false);
   const [openMainDialog2, setOpenMainDialog2] = useState(false);
@@ -39,10 +48,28 @@ export default function PurchaseOrders() {
   let [indentAdded, setindentAdded] = useState([])
   let [indentAddedselect, setindentAddedselect] = useState([])
   let [productlist, setproductlist] = useState([])
+  let [depotlist, setdepotlist] = useState([])
+
   let [ledgerlist, setledgerlist] = useState([])
   let [ledgerselected, setledgerselected] = useState([])
+  let [itemind,setitemind]=useState(0)
 
 
+
+
+
+  let [actionstate,setactionstate]=useState(false)
+  let [updateid,setupdateid]=useState("")
+
+
+
+
+  let [purchaseorderlist,setpurchaseorderlist]=useState([])
+
+let defaultdataitem= { "prodid": "", "quantity": "", "rate": "", "amount": "",
+       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}
+       ] 
+ }
   let [formdata,setformdata]=useState({
   "vouchered":"",
   "purchaseOrderNo": "",
@@ -52,15 +79,28 @@ export default function PurchaseOrders() {
   "purchaseLedger": "",
   "orderNumber": "",
   "items": [
-    { "name": "", "quantity": 10, "rate": 50, "amount": 500,
-       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}] 
- },
+  
 
   ]
 }
 )
 
 
+
+
+
+async function getlist(){
+
+   MasterGet("purchaseorder")
+      .then((response) => {
+        
+         setpurchaseorderlist(response)
+
+      })
+      .catch(() => {
+
+      })
+}
 
 
 
@@ -80,7 +120,7 @@ export default function PurchaseOrders() {
       .catch(() => {
 
       })
-
+getlist()
 
     MasterGet("accountingledgers")
       .then((response) => {
@@ -112,8 +152,27 @@ export default function PurchaseOrders() {
         setproductlist(tmpstore)
       })
       .catch(() => {
+      })
+
+
+
+
+       MasterGet("depots")
+      .then((response) => {
+        let tmpstore = []
+        response.map((val) => {
+          tmpstore.push({ label: val.Name, value: val._id })
+
+        })
+        setdepotlist(tmpstore)
+      })
+      .catch(() => {
 
       })
+
+
+
+      
 
 
 
@@ -146,7 +205,7 @@ export default function PurchaseOrders() {
 
       })
 
-  }, [])
+  }, [companyid])
 
 
 
@@ -162,7 +221,6 @@ export default function PurchaseOrders() {
       purchaseorderno: new RegExp(`${e.label}`, "i").toString(),
       hihi: "asdasddsasd"
     }
-    console.log(new RegExp(`${e.label}`, "i"), e.label, wheree)
 
 
     MasterGet("purchaseorder?where=" + JSON.stringify(wheree) + "")
@@ -179,12 +237,69 @@ export default function PurchaseOrders() {
     return formattedDate
   }
 
-  const handleItemSelect = (value) => {
-    setSelectedItem(value);
+  const handleItemSelect = (value,i) => {
+    formdata.items[i].prodid=value
+    setitemind(i)
+    setSelectedItem(productlist.filter((e)=>e.value==value)[0].label);
     setOpenItemDialog(true); // Open item dialog when value is selected
   };
 
-  // console.log(indentAddedselect,openMainDialog2,">>>>>>>>>>",openMainDialog2==true)
+
+const addpurchaseupdate=async()=>{
+
+let response={}
+let payload={
+  tablename:"purchaseorder",
+  data:{...formdata}
+}
+if(actionstate){
+  response=await fetch(`${BASE_URL}update_master/${updateid}`,{
+   method:"POST", 
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify(payload),
+     credentials: "include",
+  })
+}
+else{
+response=await fetch(`${BASE_URL}create_master`,{
+   method:"POST", 
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify(payload),
+     credentials: "include",
+  })
+}
+response=await response.json()
+setOpenMainDialog1(false)
+setOpenMainDialog2(false)
+setOpenMainDialog(false)
+getlist()
+}
+
+
+function reset(){
+
+
+
+setformdata({
+  "vouchered":"",
+  "purchaseOrderNo": "",
+  "date": "",
+  "partyAccountName": "",
+  "trackFromIndent": "",
+  "purchaseLedger": "",
+  "orderNumber": "",
+  "items": [
+  
+
+  ]
+})
+
+
+}
 
 
 
@@ -210,7 +325,12 @@ export default function PurchaseOrders() {
 
         <Dialog open={openMainDialog1} onOpenChange={setOpenMainDialog1}>
           <DialogTrigger asChild>
-            <Button onClick={() => setOpenMainDialog1(true)}>Add Order</Button>
+            <Button onClick={() => {setOpenMainDialog1(true)
+
+
+reset()
+
+            }}>Add Order</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
@@ -225,13 +345,9 @@ export default function PurchaseOrders() {
                        classNamePrefix='selectBox'
                        value={VoucherTypeselect}
                        onChange={(e)=>{
-
-
-                        
                         formdata.vouchered=e.value
                         setVouchertypeselect(e)
-                        funtypscript(e)
-
+                           funtypscript(e)
                        }}
                />
                          <Button type="submit" className=' ms-4  w-34 '   
@@ -281,18 +397,33 @@ export default function PurchaseOrders() {
                       onClick={(e) => {
                         if (e.target.checked) {
                           if (!indentAdded.includes(val._id)) {
-                            indentAddedselect.push(val)
+                            val.data.map((valll)=>{
+                               
+                              formdata.items.push({ "prodid": valll.product_id, "quantity": "", "rate": "", "amount": "",
+       "productdetails":[{"dueon":"","godown":"","quantity":"","rate":"","amount":""}
+       ] 
+ })
+                              
+                            })
                             indentAdded.push(val._id)
-                            setindentAddedselect([...indentAddedselect])
                             setindentAdded([...indentAdded])
                           }
 
                         }
                         else {
-                          indentAddedselect.splice(indentAdded.indexOf(val._id), 1)
-                          indentAdded.push(val._id)
-                          setindentAddedselect([...indentAddedselect])
-                          indentAdded.splice(indentAdded.indexOf(val._id), 1)
+
+
+                          val.data.map((valll)=>{
+                                let tmpfordata=[...formdata.items]
+                                tmpfordata.map((val2,iii)=>{
+                                  if(val2.prodid==valll.product_id){
+                                     tmpfordata.splice(iii,1)
+                                  }
+                                })
+                                formdata.items=[...tmpfordata]
+                            })
+
+                          indentAdded.splice(indentAdded.indexOf(val._id),1)
                           setindentAdded([...indentlist])
                         }
                       }} /></td>
@@ -315,21 +446,38 @@ export default function PurchaseOrders() {
 
           <DialogContent className="sm:max-w-[900px]">
             <DialogHeader>
-              <DialogTitle className='grid grid-cols-3 gap-4'>
+              <DialogTitle className='grid grid-cols-4 gap-1 '>
                 <div className='flex items-center gap-2'>
                   <div>Add Order</div>
                 </div>
+                <div className='flex items-center gap-2'>
+
+                    <div>{VoucherTypeselect.label}</div>
+                </div>
                 <div className="flex items-center gap-2">
+               
                   <Label htmlFor="poNumber" className="text-xs w-32">Purchase Order No</Label>
-                  <Input id="poNumber" className="h-6 text-xs flex-1" />
+                  <Input id="poNumber" className="h-6 text-xs flex-1"  
+                  
+                  value={formdata.purchaseOrderNo} 
+                   onChange={(e)=>{
+                     formdata.purchaseOrderNo=e.target.value
+                     setformdata({...formdata})
+                   }}
+                  
+                  />
                 </div>
                 <div className='flex items-center gap-2'>
                   <Label htmlFor="poNumber" className="text-xs w-32">Date</Label>
                   <Input
-                    type="text"
+                    type="date"
                     className="text-xs h-6 "
-                    style={{ width: '105px'}}
-                    value={'27-08-2025'}
+                    style={{ width: '155px'}}
+                     value={formdata.date} 
+                      onChange={(e)=>{
+                     formdata.date=e.target.value
+                     setformdata({...formdata})
+                   }}
                   />
                 </div>
               </DialogTitle>
@@ -343,6 +491,14 @@ export default function PurchaseOrders() {
                 <Select
                   options={vendorlist}
                   className=' text-xs w-100 flex-1'
+                  value={vendorlist.filter((val1)=>val1.value==formdata.partyAccountName)}
+                  onChange={(e)=>{
+                   
+                     formdata.partyAccountName=e.value
+                     setformdata({...formdata})
+                  
+                  }}
+
                 />
 
 
@@ -350,12 +506,18 @@ export default function PurchaseOrders() {
 
               <div className="flex items-center gap-2">
                 <Label className="text-xs w-32">Track From Indent</Label>
-                <RSelect onValueChange={(value) => {
+                <RSelect 
+                value={formdata.trackFromIndent}
+                
+                
+                onValueChange={(value) => {
+                  formdata.trackFromIndent=value
                   if (value == "yes") {
                     settrackfromindent(true)
                     setOpenMainDialog2(true)
                   }
                   else {
+                  
                     settrackfromindent(false)
                     setOpenMainDialog2(false)
 
@@ -375,9 +537,13 @@ export default function PurchaseOrders() {
                 <Label htmlFor="vendor" className="text-xs w-32">Purchase Ledger</Label>
 
                 <Select
+
+
                   options={ledgerlist}
                   value={ledgerselected}
                   onChange={(e) => {
+
+                    formdata.purchaseLedger=e.value
                     setledgerselected(e)
                   }}
                   className=' text-xs w-100 flex-1'
@@ -388,8 +554,16 @@ export default function PurchaseOrders() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Label htmlFor="amount" className="text-xs w-32">Order Number</Label>
-                <Input id="amount" type="number" className="h-6 text-xs flex-1" />
+                <Label htmlFor="amount" className="text-xs w-32" 
+                >Order Number</Label>
+                <Input id="amount" type="number" className="h-6 text-xs flex-1" 
+                  value={formdata.orderNumber} 
+                      onChange={(e)=>{
+                     formdata.orderNumber=e.target.value
+                     setformdata({...formdata})
+                   }}
+                
+                />
               </div>
 
               {/* Name Of Item dropdown that opens another modal on select */}
@@ -406,49 +580,83 @@ export default function PurchaseOrders() {
                 <div className='col-2'>Rate</div>
                 <div className='col-2'>Amount</div>
               </div>
-              {trackfromindent == true ? <div className='sm:max-h-[300px] overflow-auto'>
-                {indentAddedselect.map((val, i) => val.data.map((val1, i1) =>
-                  <div className='row mt-3'>
+              {<div className='sm:max-h-[300px] overflow-auto'>
+                { formdata.items.map((val1, i1) =><div className='row mt-3'>
                     <div className='col-1'>
-                      {((i * 10) + (i1 + 1))}
+                      {(i1 + 1)}
                     </div>
                     <div className='col-4'>
-                      {productlist.filter((val) => val1.product_id == val._id)?.[0]?.name || ""}
-                    </div>
-                    <div className='col-2'>
-                      <Input type='text' className='h-6 text-xs' value={val1.indent_qty} />
-                    </div>
-                    <div className='col-2'>
-                      <Input type='text' className='h-6 text-xs' value={productlist.filter((val) => val1.product_id == val._id)?.[0]?.rate || ""} />
-                    </div>
-                    <div className='col-2'>
-                      <Input type='text' className='h-6 text-xs' value={productlist.filter((val) => val1.product_id == val._id)?.[0]?.volume || ""} />
-                    </div>
-                  </div>
-
-                ))}
-              </div> : <div className='row mt-3'>
-                <div className='col-6'>
-                  <RSelect onValueChange={handleItemSelect}>
+                      <RSelect       onValueChange={(e)=>handleItemSelect(e,i1)} value={val1.prodid}>
                     <SelectTrigger className="h-6 text-xs flex-1">
                       <SelectValue placeholder="Select option" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="royal-green">Royal Green Premium</SelectItem>
-                      <SelectItem value="officer-choice">Officer's Choice Blue</SelectItem>
+                      {productlist.map((vall)=><SelectItem value={vall.value}>{vall.label}</SelectItem>)}
                     </SelectContent>
                   </RSelect>
-                </div>
-                <div className='col-2'>
-                  <Input type='text' className='h-6 text-xs' />
-                </div>
-                <div className='col-2'>
-                  <Input type='text' className='h-6 text-xs' />
-                </div>
-                <div className='col-2'>
-                  <Input type='text' className='h-6 text-xs' />
-                </div>
-              </div>}
+                    </div>
+                    <div className='col-2'>
+                      <Input type='text' className='h-6 text-xs' value={val1.quantity} onChange={((e)=>{
+                         formdata.items[i1].quantity=e.target.value
+                         setformdata({...formdata})
+                      })} />
+                    </div>
+                    <div className='col-2'>
+                      <Input type='text' className='h-6 text-xs' value={val1.rate}
+                      
+                      
+                      onChange={((e)=>{
+                         formdata.items[i1].rate=e.target.value
+                         setformdata({...formdata})
+                      })}
+                      />
+                    </div>
+                    <div className='col-2'>
+                      <Input type='text' className='h-6 text-xs' value={val1.amount} 
+                      
+                      onChange={((e)=>{
+                         formdata.items[i1].amount=e.target.value
+                         setformdata({...formdata})
+                      })}
+                      
+                      
+                      />
+                    </div>
+                  </div>)}
+                  <>
+                  <div className='d-flex flex-row mt-4 justifiy-content-end '>
+                   <svg
+                   style={{backgroundColor:"black",color:"white"}}
+                    onClick={() => {
+                      formdata.items.pop()
+                      setformdata({...formdata})
+                      
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi justifiy-content-end bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+                   style={{backgroundColor:"black",color:"white"}}
+
+
+                    onClick={() => {
+                                           formdata.items.push(defaultdataitem)
+                      setformdata({...formdata})
+
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    className="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+                  </div>
+                  
+                  </>
+                  </div>
+
+                  }
 
             </div>
 
@@ -456,7 +664,9 @@ export default function PurchaseOrders() {
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit">Add</Button>
+              <Button type="submit"   onClick={()=>{
+                addpurchaseupdate()
+              }}>Add</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -469,10 +679,10 @@ export default function PurchaseOrders() {
             </DialogHeader>
 
             <div className='row border-t border-b py-2'>
-              <div className='col-2'>
+              <div className='col-3'>
                 <div className='text-xs'>Due On</div>
               </div>
-              <div className='col-4'>
+              <div className='col-3'>
                 <div className='text-xs'>Godown</div>
               </div>
               <div className='col-2'>
@@ -485,30 +695,116 @@ export default function PurchaseOrders() {
                 <div className='text-xs'>Amount</div>
               </div>
             </div>
+{formdata.items[itemind]?.productdetails?.map((val1,i1)=><div className='row'>
+              <div className='col-3'>
+                   <Input type='date' className='text-xs h6' style={{ height: 26 }} 
+                   
+                   
+                   value={val1.dueon}
+                   onChange={(e)=>{
+                    formdata.items[itemind].productdetails[i1].dueon=e.target.value
+                    setformdata({...formdata})
 
-            <div className='row'>
-              <div className='col-2'>
-                <Input type='text' className='h6 text-xs' style={{ height: 26 }} />
+
+                   }}
+
+
+                   />
               </div>
-              <div className='col-4'>
-                <Input type='text' className='h6 text-xs' style={{ height: 26 }} />
+              <div className='col-3'>
+               <RSelect onValueChange={(e)=>{
+                formdata.items[itemind].productdetails[i1].godown=e
+                    setformdata({...formdata})
+               }} value={val1.godown}
+                
+                >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {depotlist.map((vall)=><SelectItem value={vall.value}>{vall.label}</SelectItem>)}
+                    </SelectContent>
+                    </RSelect>
               </div>
               <div className='col-2'>
-                <Input type='text' className='text-xs h6' style={{ height: 26 }} />
+                <Input type='text' className='text-xs h6' style={{ height: 26 }}
+                
+                
+                 value={val1.quantity}
+                   onChange={(e)=>{
+                    formdata.items[itemind].productdetails[i1].quantity=e.target.value
+                    setformdata({...formdata})
+
+
+                   }}
+                
+                />
               </div>
               <div className='col-2'>
-                <Input type='text' className='text-xs h6' style={{ height: 26 }} />
+                <Input type='text' className='text-xs h6' style={{ height: 26 }} 
+                
+                  value={val1.rate}
+                   onChange={(e)=>{
+                    formdata.items[itemind].productdetails[i1].rate=e.target.value
+                    setformdata({...formdata})
+                   }}
+                
+                />
               </div>
               <div className='col-2'>
-                <Input type='text' className='text-xs h6' style={{ height: 26 }} />
+                <Input type='text' className='text-xs h6' style={{ height: 26 }} 
+
+
+
+                   value={val1.amount}
+                   onChange={(e)=>{
+                    formdata.items[itemind].productdetails[i1].amount=e.target.value
+                    setformdata({...formdata})
+                   }}
+                
+                
+                
+                
+                />
               </div>
             </div>
+)}
+
+  <div className='d-flex flex-row mt-4 justifiy-content-end '>
+                   <svg
+                   style={{backgroundColor:"black",color:"white"}}
+                    onClick={() => {
+                      formdata.items[itemind].productdetails.pop()
+                      setformdata({...formdata})
+                    }}
+
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi justifiy-content-end bi-dash-lg" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+                  </svg>
+                  <svg
+
+
+                   style={{backgroundColor:"black",color:"white"}}
+                    onClick={() => {
+                      formdata.items[itemind].productdetails.push({"dueon":"","godown":"","quantity":"","rate":"","amount":""})
+                      setformdata({...formdata})
+                    }}
+
+                    xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    className="bi bi-plus ms-2 " viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                  </svg>
+                  </div>
+
+
+
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" onClick={() => setOpenItemDialog(false)}>Cancel</Button>
+                {/* <Button variant="outline" onClick={() => setOpenItemDialog(false)}>Cancel</Button> */}
               </DialogClose>
-              <Button type="submit">Save</Button>
+              {/* <Button type="submit">Save</Button> */}
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -524,19 +820,26 @@ export default function PurchaseOrders() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-2" style={{ width: '60%' }}>Name Of Item</th>
+                  <th className="text-left p-2" >Purchase Order no.</th>
+
+                  <th className="text-left p-2" >Name Of Item</th>
                   <th className="text-left p-2">Quantity</th>
                   <th className="text-left p-2">Rate</th>
                   <th className="text-left p-2">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
+{purchaseorderlist.map((val)=>
+<tr className="border-b">
+                  <td className="p-2">{val.purchaseOrderNo}</td>
+
+  
                   <td className="p-2">Royal Green Premium</td>
                   <td className="p-2">10</td>
                   <td className="p-2">₹1,000</td>
                   <td className="p-2">₹10,000</td>
                 </tr>
+)}
               </tbody>
             </table>
           </div>

@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MasterGet }  from "@/api/mastercontroller"
+import { useSelector, useDispatch } from 'react-redux'
 
 
 interface AccountingGroup {
@@ -50,6 +51,7 @@ interface AccountingGroup {
 }
 
 export default function IndentVoucherPreClosed() {
+  const companyid = useSelector((state) => state?.Store.companyid)
   const [groups, setGroups] = useState<AccountingGroup[]>([]);
   const [parentOptions, setParentOptions] = useState<AccountingGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -187,7 +189,7 @@ function formchagedate(tmpdate){
         getindent()
       
         
-    },[])
+    },[companyid])
   
   const [formData, setFormData] = useState({
     name: "",
@@ -205,7 +207,10 @@ function formchagedate(tmpdate){
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`
+        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`,{
+          method:"GET",
+          credentials:"include"
+        }
       );
       const result = await response.json();
       if (!response.ok)
@@ -277,6 +282,7 @@ function formchagedate(tmpdate){
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -314,6 +320,7 @@ function formchagedate(tmpdate){
     try {
       const response = await fetch(`${BASE_URL}delete_accountig_group/${id}`, {
         method: "DELETE",
+        credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchGroups();

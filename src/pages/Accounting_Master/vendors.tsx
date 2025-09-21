@@ -28,6 +28,12 @@ import {
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
 import { Country, State } from "country-state-city";
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
+
+
 
 interface Vendor {
   _id: string;
@@ -51,6 +57,8 @@ interface Group {
 }
 
 export function Vendors() {
+
+   const companyid = useSelector((state) => state?.Store.companyid)
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,7 +70,7 @@ export function Vendors() {
 
   const [formData, setFormData] = useState({
     masterId: "",
-    alterId: "",
+    alternateId: "",
     name: "",
     group: "no-group",
     mailingName: "",
@@ -96,8 +104,14 @@ export function Vendors() {
     setIsLoading(true);
     try {
       const [vendorsRes, groupsRes] = await Promise.all([
-        fetch(`${BASE_URL}vendor_list`),
-        fetch(`${BASE_URL}accountig_group_list_data`),
+        fetch(`${BASE_URL}vendor_list`,{
+          method:"GET",
+          credentials:"include"
+        }),
+        fetch(`${BASE_URL}accountig_group_list_data`,{
+          method:"GET",
+          credentials:"include"
+        }),
       ]);
 
       const [vendorsData, groupsData] = await Promise.all([
@@ -136,12 +150,12 @@ export function Vendors() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
       masterId: "",
-      alterId: "",
+      alternateId: "",
       name: "",
       group: "no-group",
       mailingName: "",
@@ -162,7 +176,7 @@ export function Vendors() {
   const handleEdit = (vendor: Vendor) => {
     setFormData({
       masterId: vendor.masterId || "",
-      alterId: vendor.alternateId || "",
+      alternateId: vendor.alternateId || "",
       name: vendor.name,
       group: vendor.group?._id || "no-group",
       mailingName: vendor.mailingName,
@@ -211,7 +225,7 @@ export function Vendors() {
       const payload = {
         ...formData,
         masterId: formData.masterId || undefined,
-        alternateId: formData.alterId || undefined,
+        alternateId: formData.alternateId || undefined,
         group: formData.group === "no-group" ? undefined : formData.group,
       };
 
@@ -219,6 +233,7 @@ export function Vendors() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -239,6 +254,7 @@ export function Vendors() {
     try {
       const response = await fetch(`${BASE_URL}vendor_delete/${id}`, {
         method: "DELETE",
+        credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchData();
@@ -281,17 +297,17 @@ export function Vendors() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
                     Alternate Id:
                   </Label>
                   <Input
-                    id="alterId"
-                    name="alterId"
+                    id="alternateId"
+                    name="alternateId"
                     placeholder="Alternate Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.alterId}
+                    value={formData.alternateId}
                     onChange={(e) =>
-                      setFormData({ ...formData, alterId: e.target.value })
+                      setFormData({ ...formData, alternateId: e.target.value })
                     }
                   />
                 </div>

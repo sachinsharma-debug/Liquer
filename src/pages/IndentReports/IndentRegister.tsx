@@ -41,7 +41,7 @@ import { MasterGet }  from "@/api/mastercontroller"
 import { addpurchase }  from "@/api/controllerpurchase"
 
 import transicon  from "../../Assets/transaction-history.png"
-
+import { useSelector, useDispatch } from 'react-redux'
 
 interface AccountingGroup {
   _id: string;
@@ -54,6 +54,8 @@ interface AccountingGroup {
 }
 
 export default function IndentRegister() {
+ const companyid = useSelector((state) => state?.Store.companyid)
+
   const [groups, setGroups] = useState<AccountingGroup[]>([]);
   const [parentOptions, setParentOptions] = useState<AccountingGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,26 +66,21 @@ export default function IndentRegister() {
   const [vendorlist,setvendorlist]=useState({})
   const [productlist,setproductlist]=useState({})
   const [translist,settranslist]=useState({})
-
+  const [expandedRows, setExpandedRows] = useState({});
 
   let datecurr=new Date()
 
   function formatDate(dateString) {
-  const date = new Date(dateString);
-
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0"); // Months start from 0
-  const yyyy = date.getFullYear();
-
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-
+    const date = new Date(dateString);
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
 
   const [fromdate,setfromdate]=useState(formatDate(datecurr.toISOString()))
   const [todate,settodate]=useState(formatDate(datecurr.toISOString()))
   const [ratePeriodDialogOpen,setRatePeriodDialogOpen]=useState(false)
-
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,13 +104,15 @@ export default function IndentRegister() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`
+        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`,{
+          method:"GET",
+          credentials:"include"
+        }
       );
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.message || "Failed to fetch groups");
 
-      // Transform parentGroup to consistent format
       const transformedGroups = result.data.map((group: any) => ({
         ...group,
         parentGroup:
@@ -134,110 +133,82 @@ export default function IndentRegister() {
     }
   };
 
-
   function getindent(){
     let  fromdate_:any=fromdate.split("-")
     let  todate_:any=todate.split("-")
-    // console.log(Number(todate_[0]),">>>>>>>>>>>>",)
     fromdate_=fromdate_[2]+"-"+(fromdate_[1]<10?"0"+Number(fromdate_[1]):fromdate_[1])+"-"+(fromdate_[0]<10?"0"+Number(fromdate_[0]):fromdate_[0])
     todate_=todate_[2]+"-"+(todate_[1]<10?"0"+Number(todate_[1]):todate_[1])+"-"+(todate_[0]<10?"0"+Number(todate_[0]):todate_[0])
-   let ddd=new Date(fromdate_)
-   let ddd2=new Date(todate_)
+    let ddd=new Date(fromdate_)
+    let ddd2=new Date(todate_)
 
     let wheretmp={
       indent_date: {
-      $gte:ddd,
-      $lte: ddd2
+        $gte:ddd,
+        $lte: ddd2
+      }
     }
-    }
-      MasterGet("indents?where="+JSON.stringify(wheretmp))
-       .then((response)=>{
-           setindentlist(response)
-        })
-      .catch(()=>{
-        
+    MasterGet("indents?where="+JSON.stringify(wheretmp))
+      .then((response)=>{
+        setindentlist(response)
       })
+      .catch(()=>{})
   }
 
   useEffect(()=>{
-     MasterGet("vendors")
-       .then((response)=>{
+    MasterGet("vendors")
+      .then((response)=>{
         let tmpstore={}
         response.map((val)=>{
           tmpstore[val._id]=val
         })
         setvendorlist(tmpstore)
-
-        })
-      .catch(()=>{
-        
       })
+      .catch(()=>{})
 
-
-        MasterGet("accountingledgers")
-       .then((response)=>{
+    MasterGet("accountingledgers")
+      .then((response)=>{
         let tmpstore={id:[],data:[]}
         response.map((val)=>{
-           tmpstore[val._id]=val.name
+          tmpstore[val._id]=val.name
         })
         setledger(tmpstore)
-
-        })
-      .catch(()=>{
-        
       })
+      .catch(()=>{})
 
-
-      
-
-
-
-
-       MasterGet("products")
-       .then((response)=>{
-          let tmpstore={}
+    MasterGet("products")
+      .then((response)=>{
+        let tmpstore={}
         response.map((val)=>{
           tmpstore[val._id]=val
           let tmpstore_={}
           let tmp2=0
           val.effectivedate.map((val1)=>{
             let tmp3:any=new Date(val1.date)
-                 tmp3=tmp3.getTime()
-           if(tmp2<tmp3){
-            tmp2=tmp3
-            tmpstore_={...val1}
-           }
+            tmp3=tmp3.getTime()
+            if(tmp2<tmp3){
+              tmp2=tmp3
+              tmpstore_={...val1}
+            }
           })
-
-// console.log(tmpstore_,"amount")
           tmpstore[val._id].effectivedate[0]={...tmpstore_,_amount:tmpstore_.data.amount[tmpstore_.data.description.indexOf("Landed Cost")]}
-
-          
         })
-
-        
-        
-
-
-
-
         setproductlist(tmpstore)
-        })
-      .catch(()=>{
-        
       })
+      .catch(()=>{})
 
-
-
-      getindent()
-    
-      
-  },[])
-
+    getindent()
+  },[companyid])
 
   useEffect(() => {
     fetchGroups();
   }, [currentPage, itemsPerPage]);
+
+  const toggleRowExpansion = (id) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   const resetForm = () => {
     setFormData({
@@ -271,7 +242,6 @@ export default function IndentRegister() {
         alias: formData.alias,
       };
 
-      // Only include parentGroup if it's a valid ID (not 'no-parent')
       if (formData.parentGroup && formData.parentGroup !== "no-parent") {
         requestBody.parentGroup = formData.parentGroup;
       }
@@ -280,6 +250,7 @@ export default function IndentRegister() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -317,6 +288,7 @@ export default function IndentRegister() {
     try {
       const response = await fetch(`${BASE_URL}delete_accountig_group/${id}`, {
         method: "DELETE",
+        credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchGroups();
@@ -330,7 +302,6 @@ export default function IndentRegister() {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
-  // Helper: get parent group name
   const getParentName = (
     parentGroup?: string | { _id: string; name: string }
   ) => {
@@ -343,95 +314,62 @@ export default function IndentRegister() {
     const parent = parentOptions.find((p) => p._id === parentGroup);
     return parent?.name || "-";
   };
+  
   function formchagedate(tmpdate){
-
-      const today = new Date(tmpdate);
-      const formattedDate = today.toLocaleDateString('en-GB');
-      return formattedDate
+    const today = new Date(tmpdate);
+    const formattedDate = today.toLocaleDateString('en-GB');
+    return formattedDate
   }
-
-
-
 
   async function addpurchse(id__,status__){
-
-
-
-
-
+    // Your purchase logic here
   }
-  
 
   return (
     <div className="">
-
-
-
-
-<Dialog
+      <Dialog
         open={ratePeriodDialogOpen}
         onOpenChange={setRatePeriodDialogOpen}
       >
         <DialogContent className="max-w-3xl" style={{ height: '400px', overflowY: 'auto' }}>
-         
           <div className="">
-          
-           
-     
-            <div className="">
-              <div className="grid grid-cols-5  text-xs font-medium text-gray-600 pb-2 border-b">
-                <div>Description</div>
-                <div>Formula</div>
-                <div className="text-center">Rate</div>
-                <div className="text-center">Amount</div>
-                <div className="text-center">Remarks</div>
-              </div>
-
-              {translist?.description?.map((val, i) => 
-                    <div className="grid grid-cols-5 gap-2 items-center border ">
-                     <p className=" border-e ">{ledger?.[val] || val }</p>
-                     <p className=" border-e " >{translist?.formula[i]||""}</p>
-                                         <p  className=" border-e ">{translist?.rate[i]||""}</p>
-                     <p className=" border-e ">{translist?.amount[i]||""}</p>
-                     <p >{translist?.remarks[i]||""}</p>
-
-
-
-                    </div>
-              )}
-
+            <div className="grid grid-cols-5  text-xs font-medium text-gray-600 pb-2 border-b">
+              <div>Description</div>
+              <div>Formula</div>
+              <div className="text-center">Rate</div>
+              <div className="text-center">Amount</div>
+              <div className="text-center">Remarks</div>
             </div>
 
-          
+            {translist?.description?.map((val, i) => 
+              <div className="grid grid-cols-5 gap-2 items-center border ">
+                <p className=" border-e ">{ledger?.[val] || val }</p>
+                <p className=" border-e " >{translist?.formula[i]||""}</p>
+                <p  className=" border-e ">{translist?.rate[i]||""}</p>
+                <p className=" border-e ">{translist?.amount[i]||""}</p>
+                <p >{translist?.remarks[i]||""}</p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
-
-
-
 
       <Card className="flex-1 flex flex-col">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle>Indent Register</CardTitle>
           <div className="flex items-center space-x-2">
             <Label htmlFor="itemsPerPage">From:</Label>
-            
             <Input type='text' value={fromdate} onChange={(e)=>{
               setfromdate(e.target.value)
-
             }} className='text-xs' placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
             <Label htmlFor="itemsPerPage">To :</Label>
             <Input type='text' className='text-xs'  
-            value={todate} onChange={(e)=>{
-              settodate(e.target.value)
-
-            }}
-            
-            placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
+              value={todate} onChange={(e)=>{
+                settodate(e.target.value)
+              }}
+              placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
             <button className="btn btn-primary " onClick={getindent}>ok</button>
             <button className="btn btn-primary  float-end ">Detailsh</button>
-
-            
           </div>
 
           <div className="flex items-center space-x-2">
@@ -478,54 +416,90 @@ export default function IndentRegister() {
                         <TableHead>Due On</TableHead>
                         <TableHead>Over Due</TableHead>
                         <TableHead>Action</TableHead>
-
                       </TableRow>
                     </TableHeader>
                     <TableBody>
- 
-                      {indentlist?.map((val)=><TableRow >
-                        <TableCell >{formchagedate(val.indent_date)}</TableCell>
-                        <TableCell >{val.indentvoucherno}</TableCell>
-                        <TableCell  colSpan={8}>
-
-                   <Table className="min-w-full">
-                   
-                    <TableBody>
-                      {val.data.map((valll)=>
-                      <TableRow>
-                       <TableCell >{vendorlist?.[productlist[valll.product_id]?.preferredSupplier]?.name || ""}</TableCell>
-                       <TableCell >{productlist?.[valll.product_id]?.name || ""}</TableCell>
-                       <TableCell >{valll?.indent_qty || ""}</TableCell>
-                       <TableCell >{productlist?.[valll.product_id]?.effectivedate[0]?._amount || ""}</TableCell>
-                       <TableCell >{productlist?.[valll.product_id]?.effectivedate[0]?._amount*valll?.indent_qty}</TableCell>
-                       <TableCell ></TableCell>
-                       <TableCell ></TableCell>
-                       <TableCell  >
-                        <div className="flex-1 flex flex-row gap-2">
-                     
-                        <img src={transicon} width={23} height={20} onClick={()=>{
-                        settranslist({...productlist?.[valll.product_id]?.effectivedate[0].data})
-                        setRatePeriodDialogOpen(true)
-                       }} />
-                       
-                       <input type="checkbox"   defaultChecked={valll?.purchasestatus || false} onClick={(e)=>{
-                        addpurchase(valll._id,e.target.checked)
-                       }}/>
-                       
-                       
-                       </div>
-                       
-                       
-                       </TableCell>
-
-                       </TableRow>
-                      )}
-                    </TableBody>
-                    </Table>
-                        </TableCell>
-                       
-                      </TableRow>)}
-
+                      {indentlist?.map((val) => {
+                        const isExpanded = expandedRows[val._id];
+                        return (
+                          <React.Fragment key={val._id}>
+                            <TableRow>
+                              <TableCell>{formchagedate(val.indent_date)}</TableCell>
+                              <TableCell 
+                                onClick={() => toggleRowExpansion(val._id)}
+                                style={{cursor: 'pointer', fontWeight: 'bold'}}
+                              >
+                                {val.indentvoucherno}
+                              </TableCell>
+                              {isExpanded ? (
+                                <>
+                                  <TableCell>{vendorlist?.[productlist[val.data[0]?.product_id]?.preferredSupplier]?.name || ""}</TableCell>
+                                  <TableCell>{productlist?.[val.data[0]?.product_id]?.name || ""}</TableCell>
+                                  <TableCell>{val.data[0]?.indent_qty || ""}</TableCell>
+                                  <TableCell>{productlist?.[val.data[0]?.product_id]?.effectivedate[0]?._amount || ""}</TableCell>
+                                  <TableCell>{productlist?.[val.data[0]?.product_id]?.effectivedate[0]?._amount * val.data[0]?.indent_qty}</TableCell>
+                                  <TableCell></TableCell>
+                                  <TableCell></TableCell>
+                                  <TableCell>
+                                    <div className="flex-1 flex flex-row gap-2">
+                                      <img 
+                                        src={transicon} 
+                                        width={23} 
+                                        height={20} 
+                                        onClick={() => {
+                                          settranslist({...productlist?.[val.data[0]?.product_id]?.effectivedate[0].data})
+                                          setRatePeriodDialogOpen(true)
+                                        }} 
+                                      />
+                                      <input 
+                                        type="checkbox"   
+                                        defaultChecked={val.data[0]?.purchasestatus || false} 
+                                        onClick={(e) => {
+                                          addpurchase(val.data[0]._id, e.target.checked)
+                                        }}
+                                      />
+                                    </div>
+                                  </TableCell>
+                                </>
+                              ) : (
+                                <TableCell colSpan={8}></TableCell>
+                              )}
+                            </TableRow>
+                            {isExpanded && val.data.slice(1).map((valll, index) => (
+                              <TableRow key={valll._id || index}>
+                                <TableCell colSpan={2}></TableCell>
+                                <TableCell>{vendorlist?.[productlist[valll.product_id]?.preferredSupplier]?.name || ""}</TableCell>
+                                <TableCell>{productlist?.[valll.product_id]?.name || ""}</TableCell>
+                                <TableCell>{valll?.indent_qty || ""}</TableCell>
+                                <TableCell>{productlist?.[valll.product_id]?.effectivedate[0]?._amount || ""}</TableCell>
+                                <TableCell>{productlist?.[valll.product_id]?.effectivedate[0]?._amount * valll?.indent_qty}</TableCell>
+                                <TableCell></TableCell>
+                                <TableCell></TableCell>
+                                <TableCell>
+                                  <div className="flex-1 flex flex-row gap-2">
+                                    <img 
+                                      src={transicon} 
+                                      width={23} 
+                                      height={20} 
+                                      onClick={() => {
+                                        settranslist({...productlist?.[valll.product_id]?.effectivedate[0].data})
+                                        setRatePeriodDialogOpen(true)
+                                      }} 
+                                    />
+                                    <input 
+                                      type="checkbox"   
+                                      defaultChecked={valll?.purchasestatus || false} 
+                                      onClick={(e) => {
+                                        addpurchase(valll._id, e.target.checked)
+                                      }}
+                                    />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </React.Fragment>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

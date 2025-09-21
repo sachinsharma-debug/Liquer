@@ -92,7 +92,10 @@ export default function LedgerManagement() {
     const fetchLedgers = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}ledger_list`);
+        const response = await fetch(`${BASE_URL}ledger_list`,{
+          method:"GET",
+             credentials: "include",
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch ledgers');
         }
@@ -178,6 +181,7 @@ export default function LedgerManagement() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+           credentials: "include",
       });
 
       if (!response.ok) {
@@ -185,7 +189,10 @@ export default function LedgerManagement() {
       }
 
       // Refresh the ledger list after successful operation
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
+        method:"GET",
+           credentials: "include",
+      });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setLedgers(refreshData.data || []);
@@ -216,6 +223,7 @@ export default function LedgerManagement() {
       setIsLoading(true);
       const response = await fetch(`${BASE_URL}delete_ledger/${ledgerToDelete}`, {
         method: 'DELETE',
+           credentials: "include",
       });
 
       if (!response.ok) {
@@ -223,7 +231,10 @@ export default function LedgerManagement() {
       }
 
       // Refresh the ledger list after successful deletion
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
+        method:"GET",
+           credentials: "include",
+      });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setLedgers(refreshData.data || []);

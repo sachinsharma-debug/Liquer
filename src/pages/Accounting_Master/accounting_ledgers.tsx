@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trash2, Edit, Save, Plus } from 'lucide-react';
 import { BASE_URL } from '@/api/BaseUrl';
-
+import { useSelector, useDispatch } from 'react-redux'
 interface AccountingLedger {
   _id: string;
   name: string;
@@ -35,6 +35,11 @@ interface ApiResponse {
 }
 
 export default function AccountingLedgersPage() {
+const companyid = useSelector((state) => state?.Store.companyid)
+
+
+
+
   const [ledgers, setLedgers] = useState<AccountingLedger[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [groups, setGroups] = useState<AccountingGroup[]>([]);
@@ -57,7 +62,11 @@ export default function AccountingLedgersPage() {
     setError(null);
     try {
       // Fetch ledgers
-      const ledgersResponse = await fetch(`${BASE_URL}accountingledger`);
+      
+      const ledgersResponse = await fetch(`${BASE_URL}accountingledger`,{
+        method: "GET",
+        credentials: "include",
+      });
       const ledgersResult: ApiResponse = await ledgersResponse.json();
       if (!ledgersResponse.ok || ledgersResult.status !== 200) {
         throw new Error(ledgersResult.message || 'Failed to fetch accounting ledgers');
@@ -71,7 +80,10 @@ export default function AccountingLedgersPage() {
       // }
 
       // Fetch groups
-      const groupsResponse = await fetch(`${BASE_URL}accountig_group_list`);
+      const groupsResponse = await fetch(`${BASE_URL}accountig_group_list`,{
+        method: "GET",
+        credentials: "include",
+      });
       const groupsResult: ApiResponse = await groupsResponse.json();
       if (!groupsResponse.ok || groupsResult.status !== 200) {
         throw new Error(groupsResult.message || 'Failed to fetch accounting groups');
@@ -94,7 +106,7 @@ export default function AccountingLedgersPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
 
@@ -147,6 +159,7 @@ export default function AccountingLedgersPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        credentials:"include"
       });
 
 
@@ -178,6 +191,7 @@ export default function AccountingLedgersPage() {
       try {
         const response = await fetch(`${BASE_URL}accountingledger/${id}`, {
           method: 'DELETE',
+          credentials:"include"
         });
 
         const result = await response.json();
@@ -203,7 +217,7 @@ export default function AccountingLedgersPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            {isEditing ? 'Edit Accounting Ledger' : 'Add New Accounting Ledger'}
+            {isEditing ? 'Edit Accounting Ledger' : 'Add New Accounting sadsadLedger'}
             {isEditing && (
               <Button variant="ghost" onClick={resetForm}>
                 <Plus className="h-4 w-4 mr-2" /> Add New
