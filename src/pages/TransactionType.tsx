@@ -29,6 +29,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
+
+
 import * as Rselect from "react-select"
 
 interface TransactionType {
@@ -48,6 +55,7 @@ interface TransactionType {
 }
 
 export function TransactionType() {
+  const companyid = useSelector((state) => state?.Store.companyid)
   // console.log(,"ksjfdksajdk ")
   const [isNumberingModalOpen, setIsNumberingModalOpen] = useState(false);
   const [transactionTypes, setTransactionTypes] = useState<TransactionType[]>([]);
@@ -84,7 +92,11 @@ suffix_details:[{applicable_from:"",particulars:""}],
   const fetchTransactionTypes = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}getTransactionTypes`);
+      const response = await fetch(`${BASE_URL}getTransactionTypes`,{
+        method: 'GET',
+             credentials: "include",
+
+      });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -111,7 +123,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
 
   useEffect(() => {
     fetchTransactionTypes();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
@@ -133,7 +145,6 @@ suffix_details:[{applicable_from:"",particulars:""}],
   };
 
 
-  console.log(voucherTypealteration)
 
 
 
@@ -185,6 +196,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
+         credentials: "include",
       });
 
       const result = await response.json();
@@ -224,6 +236,7 @@ suffix_details:[{applicable_from:"",particulars:""}],
     try {
       const response = await fetch(`${BASE_URL}deleteTransactionType/${id}`, {
         method: "DELETE",
+                     credentials: "include",
       });
 
       const result = await response.json();
@@ -364,19 +377,19 @@ suffix_details:[{applicable_from:"",particulars:""}],
                     </div>
                     <div className="flex items-center gap-2">
                       <Label
-                        htmlFor="alterId"
+                        htmlFor="alternateId"
                         className="text-xs w-32 text-right"
                       >
                         Alter Id:
                       </Label>
                       <Input
-                        id="alterId"
-                        name="alterId"
+                        id="alternateId"
+                        name="alternateId"
                         placeholder="Alter Id"
                         className="h-6 text-xs flex-1"
-                        value={formData.alterId}
+                        value={formData.alternateId}
                         onChange={(e) =>
-                          setFormData({ ...formData, alterId: e.target.value })
+                          setFormData({ ...formData, alternateId: e.target.value })
                         }
                       />
                     </div>

@@ -783,6 +783,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trash2, Edit, Save, Plus } from 'lucide-react';
 import { BASE_URL } from '@/api/BaseUrl';
 
+import { MasterAPI } from '@/api/mastercontroller';
 // Interfaces for all entities
 interface Account {
   _id: string;
@@ -923,12 +924,15 @@ export default function AccountingManagement() {
             return;
         }
 
-        const response = await fetch(`${BASE_URL}${endpoint}`);
-        const result: ApiResponse = await response.json();
+        // const response = await fetch(`${BASE_URL}${endpoint}`,
+        //   {
+        //   method: "GET",
+        //   credentials: "include",
+        // }
+        // );
+        const result: ApiResponse = await MasterAPI("GET",endpoint,{});
         
-        if (!response.ok || result.status !== 200) {
-          throw new Error(result.message || `Failed to fetch ${activeTab}`);
-        }
+      
 
         switch (activeTab) {
           case 'accounts':
@@ -1054,6 +1058,7 @@ export default function AccountingManagement() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       const result = await response.json();
@@ -1097,6 +1102,7 @@ export default function AccountingManagement() {
 
         const response = await fetch(`${BASE_URL}${endpoint}/${id}`, {
           method: 'DELETE',
+          credentials: "include",
         });
 
         const result = await response.json();

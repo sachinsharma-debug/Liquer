@@ -13,6 +13,8 @@ import IndentVoucherPreClosed from "./IndentVoucherPreClosed";
 // import { TransactionType } from "./TransactionType";
 
 export default function IndentReport() {
+
+  
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">

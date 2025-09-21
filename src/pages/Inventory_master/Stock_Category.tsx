@@ -22,6 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+
+import { useSelector, useDispatch } from 'react-redux'
+
+
 interface StockCategory {
   _id: string;
   name: string;
@@ -33,6 +37,8 @@ interface StockCategory {
 }
 
 export function StockCategoryPage() {
+  const companyid = useSelector((state) => state?.Store.companyid)
+
   const [categories, setCategories] = useState<StockCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +57,10 @@ export function StockCategoryPage() {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}stockcategory_list`);
+      const response = await fetch(`${BASE_URL}stockcategory_list`,{
+        method:"GET",
+        credentials: "include",
+      });
       const result = await response.json();
 
       if (!response.ok)
@@ -75,7 +84,7 @@ export function StockCategoryPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
@@ -130,6 +139,7 @@ export function StockCategoryPage() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       const result = await response.json();
@@ -163,6 +173,7 @@ export function StockCategoryPage() {
     try {
       const response = await fetch(`${BASE_URL}stockcategory_delete/${id}`, {
         method: "DELETE",
+           credentials: "include",
       });
 
       if (!response.ok) throw new Error("Delete failed");
@@ -228,8 +239,8 @@ export function StockCategoryPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="alterId">Alter Id:</Label>
-                  <Input id="alterId" name="alterId" placeholder="Alter Id" />
+                  <Label htmlFor="alternateId">Alter Id:</Label>
+                  <Input id="alternateId" name="alternateId" placeholder="Alter Id" />
                 </div>
                 <div>
                   <Label htmlFor="name">Name*</Label>

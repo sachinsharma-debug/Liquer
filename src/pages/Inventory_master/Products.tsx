@@ -29,6 +29,7 @@ import { Trash2, Edit, Save, Plus, Loader2, Calendar } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
 import { useToast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { useSelector, useDispatch } from 'react-redux'
 
 interface Category {
   _id: string;
@@ -127,6 +128,10 @@ interface ProductAllocation {
 }
 
 export function ProductPage() {
+
+const companyid = useSelector((state) => state?.Store.companyid)
+
+
   const [openingBalance, setOpeningBalance] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -200,7 +205,7 @@ export function ProductPage() {
 
   const [formData, setFormData] = useState({
     masterId: "",
-    alterId: "",
+    alternateId: "",
     name: "",
     category: "",
     group: "",
@@ -326,13 +331,34 @@ export function ProductPage() {
         groupsRes,
         ledgerRes,
       ] = await Promise.all([
-        fetch(`${BASE_URL}product_list`),
-        fetch(`${BASE_URL}stockcategory_list`),
-        fetch(`${BASE_URL}stockunit_list`),
-        fetch(`${BASE_URL}vendor_list`),
-        fetch(`${BASE_URL}get_depot`),
-        fetch(`${BASE_URL}stockgroup_list`),
-        fetch(`${BASE_URL}accountingledger/yes`),
+        fetch(`${BASE_URL}product_list`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}stockcategory_list`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}stockunit_list`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}vendor_list`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}get_depot`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}stockgroup_list`,{
+          method:"GET",
+             credentials: "include",
+        }),
+        fetch(`${BASE_URL}accountingledger/yes`,{
+          method:"GET",
+             credentials: "include",
+        }),
 
 
       ]);
@@ -392,7 +418,7 @@ export function ProductPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [companyid]);
 
   const fetchProductAllocations = async (productId: string) => {
     try {
@@ -450,7 +476,7 @@ export function ProductPage() {
   const resetForm = () => {
     setFormData({
       masterId: "",
-      alterId: "",
+      alternateId: "",
       name: "",
       category: "",
       group: "",
@@ -540,6 +566,7 @@ export function ProductPage() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include",
       });
 
       const result = await response.json();
@@ -573,6 +600,7 @@ export function ProductPage() {
     try {
       const response = await fetch(`${BASE_URL}product_delete/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) throw new Error("Delete failed");
@@ -823,17 +851,17 @@ console.log(formData,">>>>>>>>>>>>>>>>")
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
                     Alter Id:
                   </Label>
                   <Input
-                    id="alterId"
-                    name="alterId"
+                    id="alternateId"
+                    name="alternateId"
                     placeholder="Alter Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.alterId}
+                    value={formData.alternateId}
                     onChange={(e) =>
-                      setFormData({ ...formData, alterId: e.target.value })
+                      setFormData({ ...formData, alternateId: e.target.value })
                     }
                   />
                 </div>

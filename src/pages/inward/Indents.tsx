@@ -20,7 +20,13 @@ import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import * as Reselect from "react-select"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Value } from '@radix-ui/react-select';
+import { useSelector, useDispatch } from 'react-redux'
 export default function Indents() {
+const companyid = useSelector((state) => state?.Store.companyid)
+
+
+
+
   const { toast } = useToast();
   const [indents, setIndents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +87,10 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
 
    const fetchUnits = async () => {
       try {
-        const response = await fetch(`${BASE_URL}stockunit_list`);
+        const response = await fetch(`${BASE_URL}stockunit_list`,{
+          method:"GET",
+          credentials: "include",
+        });
         const result = await response.json();
   
         if (!response.ok)
@@ -106,7 +115,10 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
 
     const fetchTransuction = async () => {
       try {
-        const response = await fetch(`${BASE_URL}getTransactionTypes`);
+        const response = await fetch(`${BASE_URL}getTransactionTypes`,{
+          method:"GET",
+             credentials: "include",
+        });
         const result = await response.json();
         if (!response.ok)
           throw new Error(result.message || "Failed to fetch units");
@@ -170,6 +182,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+             credentials: "include",
         }
       );
 
@@ -195,6 +208,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+             credentials: "include",
         }
 
        )
@@ -208,6 +222,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+             credentials: "include",
         }
 
        )
@@ -232,7 +247,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
     fetchIndents();
     fetchUnits();
     fetchTransuction()
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage,companyid]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -260,6 +275,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+           credentials: "include",
       });
 
       const data = await response.json();
@@ -308,6 +324,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
           headers: {
             'Authorization': `Bearer ${token}`,
           },
+             credentials: "include",
         }
       );
 
@@ -440,6 +457,7 @@ if(errorfile!=""){
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ indents: showtabledata.data, dueon, backup }),
+           credentials: "include",
       }
     );
 
@@ -495,8 +513,8 @@ if(errorfile!=""){
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const [isDialogOpen1, setIsDialogOpen1] = useState(false);
 
-  let depotname=[...depot.map((val,i)=>val.Name)]
-  let productname=[...product.map((val,i)=>val.name)]
+  let depotname=[...depot?.map((val,i)=>val.Name)]
+  let productname=[...product?.map((val,i)=>val.name)]
 
 
   const checktmpdepot=(xxxxx)=>{
@@ -518,7 +536,7 @@ if(errorfile!=""){
   
 
 
-  console.log(transuctiontypelist,depot,product,">>>>>>>>>>>>>>>>>>",showtabledata)
+  // console.log(transuctiontypelist,depot,product,">>>>>>>>>>>>>>>>>>",showtabledata)
 
 const customStyles = {
   control: (base, state) => ({
@@ -631,16 +649,6 @@ const customStyles = {
 
             </DialogContent>
           </Dialog>
-
-
-
-
-
-
-
-
-
-
           <Dialog open={isDialogOpen1} onOpenChange={setIsDialogOpen1}>
             <DialogContent style={{ display: 'block' }}>
               <DialogHeader>
@@ -757,6 +765,13 @@ const customStyles = {
               </div>
             </DialogContent>
           </Dialog>
+
+
+
+
+
+
+
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
             <DialogTrigger asChild>
               <Button onClick={() => setIsDialogOpen(true)} disabled={loading}>
@@ -1184,7 +1199,7 @@ const customStyles = {
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2">Indent Date</th>
-                  <th className="text-left p-2">Depot</th>
+                  <th className="text-left p-2">Indent Voucher No.</th>
                   <th className="text-left p-2">Product</th>
                   <th className="text-left p-2">Pack Size</th>
                   <th className="text-left p-2">Quantity</th>
@@ -1205,7 +1220,7 @@ const customStyles = {
                   indents.map((indent) => (
                     <tr key={indent._id || indent.id} className="border-b">
                       <td className="p-2">{indent.indent_date?.split('T')[0] || indent.sofDate?.split('T')[0]}</td>
-                      <td className="p-2">{indent.depot_id || indent.depot}</td>
+                      <td className="p-2">{indent.indentvoucherno || indent.indentvoucherno}</td>
                       <td className="p-2">{indent.product_id || indent.productName}</td>
                       <td className="p-2">{indent.pack_size || indent.packSize}</td>
                       <td className="p-2">{indent.indent_qty || indent.indentQty}</td>

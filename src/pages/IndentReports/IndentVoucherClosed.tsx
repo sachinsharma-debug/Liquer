@@ -39,7 +39,7 @@ import {
 
 import { MasterGet }  from "@/api/mastercontroller"
 
-
+import { useSelector, useDispatch } from 'react-redux'
 interface AccountingGroup {
   _id: string;
   name: string;
@@ -51,6 +51,9 @@ interface AccountingGroup {
 }
 
 export default function IndentVoucherClosed() {
+
+   const companyid = useSelector((state) => state?.Store.companyid)
+
   const [groups, setGroups] = useState<AccountingGroup[]>([]);
   const [parentOptions, setParentOptions] = useState<AccountingGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,7 +104,11 @@ export default function IndentVoucherClosed() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`
+        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`,{
+          method:"GET",
+          credentials:"include"
+        }
+        
       );
       const result = await response.json();
       if (!response.ok)
@@ -225,7 +232,7 @@ export default function IndentVoucherClosed() {
       getindent()
     
       
-  },[])
+  },[companyid])
 
   useEffect(() => {
     fetchGroups();
@@ -272,6 +279,7 @@ export default function IndentVoucherClosed() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -309,6 +317,7 @@ export default function IndentVoucherClosed() {
     try {
       const response = await fetch(`${BASE_URL}delete_accountig_group/${id}`, {
         method: "DELETE",
+        credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchGroups();

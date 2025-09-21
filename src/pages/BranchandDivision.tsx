@@ -37,7 +37,7 @@
 //   Name: string;
 //   Parent: string;
 //   masterId?: string;
-//   alterId?: string;
+//   alternateId?: string;
 //   MAilingName?: string;
 //   address?: string;
 //   StateName?: string;
@@ -74,7 +74,7 @@
 //     Name: "",
 //     Parent: "Primary",
 //     masterId: "",
-//     alterId: "",
+//     alternateId: "",
 //     MAilingName: "",
 //     address: "",
 //     StateName: "",
@@ -144,7 +144,7 @@
 //       Name: "",
 //       Parent: "Primary",
 //       masterId: "",
-//       alterId: "",
+//       alternateId: "",
 //       MAilingName: "",
 //       address: "",
 //       StateName: "",
@@ -165,7 +165,7 @@
 //       Name: branchDivision.Name,
 //       Parent: branchDivision.Parent,
 //       masterId: branchDivision.masterId || "",
-//       alterId: branchDivision.alterId || "",
+//       alternateId: branchDivision.alternateId || "",
 //       MAilingName: branchDivision.MAilingName || "",
 //       address: branchDivision.address || "",
 //       StateName: branchDivision.StateName || "",
@@ -412,14 +412,14 @@
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alterId"
-//                 name="alterId"
-//                 value={formData.alterId}
-//                 onChange={(e) => handleInputChange("alterId", e.target.value)}
+//                 id="alternateId"
+//                 name="alternateId"
+//                 value={formData.alternateId}
+//                 onChange={(e) => handleInputChange("alternateId", e.target.value)}
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -650,14 +650,16 @@ import {
 import { Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { BASE_URL } from "@/api/BaseUrl";
+  import { useSelector, useDispatch } from 'react-redux'
+
 
 interface BranchandDivision {
   _id: string;
   depotId:string,
   Name: string;
   Parent: string;
-  Master_Id?: string;
-  Alter_id?: string;
+  masterId?: string;
+  alternateId?: string;
   MAilingName?: string;
   address?: string;
   StateName?: string;
@@ -669,6 +671,7 @@ interface BranchandDivision {
 }
 
 export default function BranchandDivision() {
+    const companyid = useSelector((state) => state?.Store.companyid)
   const { toast } = useToast();
   const [branchesAndDivisions, setBranchesAndDivisions] = useState<
     BranchandDivision[]
@@ -695,8 +698,8 @@ export default function BranchandDivision() {
     Name: "",
     depotId:"",
     Parent: "Primary",
-    Master_Id: "",
-    Alter_id: "",
+    masterId: "",
+    alternateId: "",
     MAilingName: "",
     address: "",
     StateName: "",
@@ -725,7 +728,10 @@ export default function BranchandDivision() {
     const fetchBranchesAndDivisions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}ledger_list`);
+        const response = await fetch(`${BASE_URL}ledger_list`,{
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch branches and divisions");
         }
@@ -745,7 +751,7 @@ export default function BranchandDivision() {
 
     fetchBranchesAndDivisions();
     fetchDepots()
-  }, []);
+  }, [companyid]);
 
   // Handle form input changes
   const handleInputChange = (
@@ -767,8 +773,8 @@ export default function BranchandDivision() {
       Name: "",
       depotId:"",
       Parent: "Primary",
-      Master_Id: "",
-      Alter_id: "",
+      masterId: "",
+      alternateId: "",
       MAilingName: "",
       address: "",
       StateName: "",
@@ -789,8 +795,8 @@ export default function BranchandDivision() {
       Name: branchDivision.Name,
       depotId:branchDivision.depotId,
       Parent: branchDivision.Parent,
-      Master_Id: branchDivision.Master_Id || "",
-      Alter_id: branchDivision.Alter_id || "",
+      masterId: branchDivision.masterId || "",
+      alternateId: branchDivision.alternateId || "",
       MAilingName: branchDivision.MAilingName || "",
       address: branchDivision.address || "",
       StateName: branchDivision.StateName || "",
@@ -822,9 +828,9 @@ export default function BranchandDivision() {
 
       // Prepare payload according to backend expectations
       const payload = {
-        Master_Id: formData.Master_Id,
+        masterId: formData.masterId,
         depotId:formData.depotId,
-        Alter_id: formData.Alter_id,
+        alternateId: formData.alternateId,
         Name: formData.Name,
         Parent: formData.Parent,
         MAilingName: formData.MAilingName,
@@ -846,6 +852,7 @@ export default function BranchandDivision() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -857,7 +864,10 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful operation
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
+          method: "GET",
+          credentials: "include",
+        });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -892,6 +902,7 @@ export default function BranchandDivision() {
         `${BASE_URL}delete_ledger/${branchDivisionToDelete}`,
         {
           method: "DELETE",
+          credentials: "include",
         }
       );
 
@@ -900,7 +911,10 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful deletion
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`);
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
+          method: "GET",
+          credentials: "include",
+        });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -942,7 +956,10 @@ export default function BranchandDivision() {
 
    async function fetchDepots(){
       try {
-        const response = await fetch(`${BASE_URL}get_depot`);
+        const response = await fetch(`${BASE_URL}get_depot`,{
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch depots");
         }
@@ -1079,27 +1096,27 @@ console.log(Depots,"lkkkkkkk");
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="Master_Id" className="text-xs w-20 text-right">
+              <Label htmlFor="masterId" className="text-xs w-20 text-right">
                 Master Id:
               </Label>
               <Input
-                id="Master_Id"
-                name="Master_Id"
-                value={formData.Master_Id}
-                onChange={(e) => handleInputChange("Master_Id", e.target.value)}
+                id="masterId"
+                name="masterId"
+                value={formData.masterId}
+                onChange={(e) => handleInputChange("masterId", e.target.value)}
                 placeholder="Master Id"
                 className="h-6 text-xs flex-1"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="Alter_id" className="text-xs w-20 text-right">
+              <Label htmlFor="alternateId" className="text-xs w-20 text-right">
                 Alter Id:
               </Label>
               <Input
-                id="Alter_id"
-                name="Alter_id"
-                value={formData.Alter_id}
-                onChange={(e) => handleInputChange("Alter_id", e.target.value)}
+                id="alternateId"
+                name="alternateId"
+                value={formData.alternateId}
+                onChange={(e) => handleInputChange("alternateId", e.target.value)}
                 placeholder="Alter Id"
                 className="h-6 text-xs flex-1"
               />

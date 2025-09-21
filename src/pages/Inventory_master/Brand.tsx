@@ -21,6 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
 
 interface StockCategory {
   _id: string;
@@ -35,6 +39,8 @@ interface StockCategory {
 }
 
 export function Brand() {
+  const companyid = useSelector((state) => state?.Store.companyid)
+
   const [categories, setCategories] = useState<StockCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +61,10 @@ export function Brand() {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}get_master/brand`);
+      const response = await fetch(`${BASE_URL}get_master/brand`,{
+        method:"GET",
+        credentials:"include"
+      });
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.message || "Failed to fetch categories");
@@ -77,7 +86,7 @@ export function Brand() {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
@@ -141,6 +150,7 @@ export function Brand() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -174,6 +184,7 @@ export function Brand() {
     try {
       const response = await fetch(`${BASE_URL}delete_master/${id}/brand`, {
         method: "DELETE",
+        credentials:"include"
       });
 
       if (!response.ok) throw new Error("Delete failed");
@@ -246,8 +257,8 @@ export function Brand() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="alterId">Alter Id:</Label>
-                  <Input id="alterId" name="alterId" placeholder="Alter Id"
+                  <Label htmlFor="alternateId">Alter Id:</Label>
+                  <Input id="alternateId" name="alternateId" placeholder="Alter Id"
                   
                   value={formData.alternateId}
                     onChange={(e) =>

@@ -353,12 +353,12 @@
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alterId"
-//                 name="alterId"
+//                 id="alternateId"
+//                 name="alternateId"
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -642,8 +642,8 @@ interface Depot {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  Master_Id?: string;
-  Alter_Id?: string;
+  masterId?: string;
+  alternateId?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -672,8 +672,8 @@ interface DepotFormData {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  Master_Id?: string;
-  Alter_Id?: string;
+  masterId?: string;
+  alternateId?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -719,8 +719,8 @@ export default function Integration() {
     Allow_Storage: "Yes",
     Our_Stock_With_Third_Party: "No",
     Third_Party_Stock_With_Us: "No",
-    Master_Id: "",
-    Alter_Id: "",
+    masterId: "",
+    alternateId: "",
     Address: "",
     State: "",
     Country: "",
@@ -754,7 +754,10 @@ partnerName:"",
   const fetchDepots = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}get_master/integration`);
+      const response = await fetch(`${BASE_URL}get_master/integration`,{
+        method:"GET",
+           credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch depots");
       }
@@ -796,8 +799,8 @@ partnerName:"",
       Allow_Storage: "Yes",
       Our_Stock_With_Third_Party: "No",
       Third_Party_Stock_With_Us: "No",
-      Master_Id: "",
-      Alter_Id: "",
+      masterId: "",
+      alternateId: "",
       Address: "",
       State: "",
       Country: "",
@@ -835,8 +838,8 @@ partnerName:"",
       Allow_Storage: depot.Allow_Storage,
       Our_Stock_With_Third_Party: depot.Our_Stock_With_Third_Party,
       Third_Party_Stock_With_Us: depot.Third_Party_Stock_With_Us,
-      Master_Id: depot.Master_Id || "",
-      Alter_Id: depot.Alter_Id || "",
+      masterId: depot.masterId || "",
+      alternateId: depot.alternateId || "",
       Address: depot.Address || "",
       State: depot.State || "",
       Country: depot.Country || "",
@@ -894,6 +897,7 @@ partnerName:depot.partnerName,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
+           credentials: "include",
       });
 
       const result = await response.json();
@@ -933,6 +937,7 @@ partnerName:depot.partnerName,
         `${BASE_URL}delete_master/${depotToDelete}/integration`,
         {
           method: "DELETE",
+             credentials: "include",
         }
       );
       const result = await response.json();
@@ -1070,17 +1075,17 @@ partnerName:depot.partnerName,
                 <Label htmlFor="masterId">Master Id:</Label>
                 <Input
                   id="masterId"
-                  value={formData.Master_Id}
-                  onChange={(e) => handleInputChange("Master_Id", e.target.value)}
+                  value={formData.masterId}
+                  onChange={(e) => handleInputChange("masterId", e.target.value)}
                   placeholder="Master Id"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="alterId">Alter Id:</Label>
+                <Label htmlFor="alternateId">Alter Id:</Label>
                 <Input
-                  id="alterId"
-                  value={formData.Alter_Id}
-                  onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
+                  id="alternateId"
+                  value={formData.alternateId}
+                  onChange={(e) => handleInputChange("alternateId", e.target.value)}
                   placeholder="Alter Id"
                 />
               </div>

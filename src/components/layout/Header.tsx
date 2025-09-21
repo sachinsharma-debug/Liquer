@@ -17,16 +17,18 @@ import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import { MasterGet }  from "@/api/mastercontroller"
 
+import { useSelector, useDispatch } from 'react-redux'
+import { setcompanyid } from '../../redux/storeSlice'
+import { BASE_URL } from '@/api/BaseUrl';
 
 export function Header() {
+  const companyid = useSelector((state) => state?.Store.companyid)
+  const dispatch = useDispatch()
   const { toast } = useToast();
   const { user, logout } = useAuth();
   const [companylist,setcompanylist]=useState([])
   const [companyselect,setcompanyselect]=useState({})
-
-
   const navigate = useNavigate();
-
   const handleNotificationClick = () => {
     toast({
       title: "Notifications",
@@ -53,44 +55,44 @@ export function Header() {
 
   async function setcompnayid(data){
  
+let response = await fetch(`${BASE_URL}setcookie`, {
+        method:"POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({companyid:data}),
+        credentials: "include"
+        
+      });
 
 
-   // In browser console or frontend JS
-  document.cookie = "companyid="+data+"; path=/; SameSite=None; Secure";
+
+   document.cookie = "companyid="+data+"; path=/; SameSite=None; Secure";
 
 
+
+                dispatch(setcompanyid(data))
 
 
   }
-
-
-
-
-useEffect(()=>{
-    MasterGet("companies")
-         .then((response)=>{
-          let tmpstorecompnay=[]
-        
-           response.map((val)=>{
+  const fetchCompanies = async () => {
+    
+      let response = await fetch(BASE_URL + "getcompany ");
+      response=await response.json()
+    
+         let tmpstorecompnay=[]
+           response.data.map((val)=>{
             tmpstorecompnay.push({label:val.Company_Name,value:val._id})
           })
-
           setcompanyselect(tmpstorecompnay[0])
           setcompnayid(tmpstorecompnay[0].value)
           setcompanyselect(tmpstorecompnay[0])
-             setcompanylist(tmpstorecompnay)
-          })
-        .catch(()=>{
-          
-        })
+         setcompanylist(tmpstorecompnay)
+  }
 
-
-
+useEffect(()=>{
+fetchCompanies()
 },[])
-
-
-
-
 
 
   return (
@@ -111,9 +113,12 @@ useEffect(()=>{
       <div className="flex items-center space-x-4">
         {user && (
           <div className="flex items-center space-x-2">
+            <div style={{fontSize:"11px",fontWeight:"bold"}}>
+                 Company:
+              </div>
             <div className=' me-4 '> 
 
-              <Select options={companylist}  
+           <Select options={companylist}  
               value={companyselect}
 
               classNamePrefix='compnayselectbox'

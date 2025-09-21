@@ -14,6 +14,10 @@ import {
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
 import { useToast } from "@/components/ui/use-toast";
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
 
 interface StockUnit {
   _id: string;
@@ -25,6 +29,11 @@ interface StockUnit {
 }
 
 export function StockUnitPage() {
+
+const companyid = useSelector((state) => state?.Store.companyid)
+
+
+
   const [units, setUnits] = useState<StockUnit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -44,7 +53,10 @@ export function StockUnitPage() {
   const fetchUnits = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}stockunit_list`);
+      const response = await fetch(`${BASE_URL}stockunit_list`,{
+        method:"GET",
+        credentials: "include",
+      });
       const result = await response.json();
 
       if (!response.ok)
@@ -68,7 +80,7 @@ export function StockUnitPage() {
 
   useEffect(() => {
     fetchUnits();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
@@ -131,6 +143,7 @@ export function StockUnitPage() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+           credentials: "include",
       });
 
       const result = await response.json();
@@ -165,6 +178,7 @@ export function StockUnitPage() {
     try {
       const response = await fetch(`${BASE_URL}stockunit_delete/${id}`, {
         method: "DELETE",
+           credentials: "include",
       });
 
       if (!response.ok) throw new Error("Delete failed");
@@ -225,8 +239,8 @@ export function StockUnitPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="alterId">Alter Id:</Label>
-                  <Input id="alterId" name="alterId" placeholder="Alter Id" />
+                  <Label htmlFor="alternateId">Alter Id:</Label>
+                  <Input id="alternateId" name="alternateId" placeholder="Alter Id" />
                 </div>
                 <div>
                   <Label htmlFor="symbol">Symbol*</Label>

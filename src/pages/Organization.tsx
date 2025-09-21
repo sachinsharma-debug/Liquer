@@ -22,7 +22,7 @@
 // //     CompanyID: "",
 // //     companyCode: "",
 // //     masterId: "",
-// //     alterId: "",
+// //     alternateId: "",
 // //     companyName: "",
 // //     mailingName: "",
 // //     address: "",
@@ -115,7 +115,7 @@
 // //       CompanyID: company._id || "",
 // //       companyCode: company.companyCode || "",
 // //       masterId: company.masterId || "",
-// //       alterId: company.alterId || "",
+// //       alternateId: company.alternateId || "",
 // //       companyName: company.Company_Name || "",
 // //       mailingName: company.Mailing_name || "",
 // //       address: company.Address || "",
@@ -275,15 +275,15 @@
 // //                   />
 // //                 </div>
 // //                 <div className="flex items-center gap-2">
-// //                   <Label htmlFor="alterId" className="text-xs w-32 text-right">
+// //                   <Label htmlFor="alternateId" className="text-xs w-32 text-right">
 // //                     Alter Id:
 // //                   </Label>
 // //                   <Input
-// //                     id="alterId"
-// //                     name="alterId"
+// //                     id="alternateId"
+// //                     name="alternateId"
 // //                     placeholder="Alter Id"
 // //                     className="h-6 text-xs flex-1"
-// //                     value={companyManagement.alterId}
+// //                     value={companyManagement.alternateId}
 // //                     onChange={handleChange}
 // //                   />
 // //                 </div>
@@ -610,7 +610,7 @@
 //     CompanyID: "",
 //     companyCode: "",
 //     masterId: "",
-//     alterId: "",
+//     alternateId: "",
 //     companyName: "",
 //     mailingName: "",
 //     address: "",
@@ -659,8 +659,8 @@
 //       Financial_Year: companyManagement.financialYear,
 //       Books_Beginning: companyManagement.booksBeginning,
 //       Company_Code: companyManagement.companyCode,
-//       Master_Id: companyManagement.masterId,
-//       Alter_Id: companyManagement.alterId,
+//       masterId: companyManagement.masterId,
+//       alternateId: companyManagement.alternateId,
 //     };
     
 //     try {
@@ -684,7 +684,7 @@
 //           CompanyID: "",
 //           companyCode: "",
 //           masterId: "",
-//           alterId: "",
+//           alternateId: "",
 //           companyName: "",
 //           mailingName: "",
 //           address: "",
@@ -728,8 +728,8 @@
 //     setCompanyManagement({
 //       CompanyID: company._id || "",
 //       companyCode: company.Company_Code || "",
-//       masterId: company.Master_Id || "",
-//       alterId: company.Alter_Id || "",
+//       masterId: company.masterId || "",
+//       alternateId: company.alternateId || "",
 //       companyName: company.Company_Name || "",
 //       mailingName: company.Mailing_name || "",
 //       address: company.Address || "",
@@ -889,15 +889,15 @@
 //                   />
 //                 </div>
 //                 <div className="flex items-center gap-2">
-//                   <Label htmlFor="alterId" className="text-xs w-32 text-right">
+//                   <Label htmlFor="alternateId" className="text-xs w-32 text-right">
 //                     Alter Id:
 //                   </Label>
 //                   <Input
-//                     id="alterId"
-//                     name="alterId"
+//                     id="alternateId"
+//                     name="alternateId"
 //                     placeholder="Alter Id"
 //                     className="h-6 text-xs flex-1"
-//                     value={companyManagement.alterId}
+//                     value={companyManagement.alternateId}
 //                     onChange={handleChange}
 //                   />
 //                 </div>
@@ -1200,7 +1200,7 @@
 //   );
 // }
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1224,7 +1224,7 @@ export default function Organization() {
     CompanyID: "",
     companyCode: "",
     masterId: "",
-    alterId: "",
+    alternateId: "",
     companyName: "",
     mailingName: "",
     address: "",
@@ -1252,6 +1252,31 @@ export default function Organization() {
     }));
   };
 
+
+
+  useEffect(() => {
+    // initialize select2 on the <select>
+      // initialize select2
+      if(modalOpen==true){
+setTimeout(()=>{
+ $(".hihi").chosen();
+      },500)
+      }
+      
+
+     
+
+    
+
+      // cleanup on unmount
+    //   return () => {
+    //     $(selectRef.current!).select2("destroy")
+    //   }
+    
+  },[modalOpen]);
+
+
+
   const handleManageCompany = async (managementType: any) => {
     const Company_Details = {
       Company_Name: companyManagement.companyName,
@@ -1269,8 +1294,8 @@ export default function Organization() {
       Financial_Year: companyManagement.financialYear,
       Books_Beginning: companyManagement.booksBeginning,
       Company_Code: companyManagement.companyCode,
-      Master_Id: companyManagement.masterId,
-      Alter_Id: companyManagement.alterId,
+      masterId: companyManagement.masterId,
+      alternateId: companyManagement.alternateId,
     };
     
     try {
@@ -1294,7 +1319,7 @@ export default function Organization() {
           CompanyID: "",
           companyCode: "",
           masterId: "",
-          alterId: "",
+          alternateId: "",
           companyName: "",
           mailingName: "",
           address: "",
@@ -1343,8 +1368,8 @@ export default function Organization() {
     setCompanyManagement({
       CompanyID: company._id || "",
       companyCode: company.Company_Code || "",
-      masterId: company.Master_Id || "",
-      alterId: company.Alter_Id || "",
+      masterId: company.masterId || "",
+      alternateId: company.alternateId || "",
       companyName: company.Company_Name || "",
       mailingName: company.Mailing_name || "",
       address: company.Address || "",
@@ -1406,7 +1431,10 @@ export default function Organization() {
   };
 
   return (
+    <>
+   
     <div className="space-y-6">
+       
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-gray-900">
           Organization Structure
@@ -1420,7 +1448,11 @@ export default function Organization() {
           Add Company
         </Button>
       </div>
-      <Dialog open={modalOpen} onOpenChange={(open) => setModalopen(open)}>
+      <Dialog open={modalOpen} 
+      
+      
+        
+      onOpenChange={(open) => setModalopen(open)}>
         <DialogTrigger asChild>
           {/* <Button>Add Company</Button> */}
         </DialogTrigger>
@@ -1466,15 +1498,15 @@ export default function Organization() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
                     Alter Id:
                   </Label>
                   <Input
-                    id="alterId"
-                    name="alterId"
+                    id="alternateId"
+                    name="alternateId"
                     placeholder="Alter Id"
                     className="h-6 text-xs flex-1"
-                    value={companyManagement.alterId}
+                    value={companyManagement.alternateId}
                     onChange={handleChange}
                   />
                 </div>
@@ -1523,6 +1555,12 @@ export default function Organization() {
                     onChange={handleChange}
                   />
                 </div>
+                <select   className='hihi'>
+                          <option value="">-- Select Ite --</option>
+                          <option value="ITM001">ITM001</option>
+                          <option value="ITM002">ITM002</option>
+                          <option value="ITM003">ITM003</option>
+                        </select>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
@@ -1540,6 +1578,7 @@ export default function Organization() {
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
+                 
                   <Input
                     id="country"
                     name="country"
@@ -1767,8 +1806,12 @@ export default function Organization() {
               ))}
             </tbody>
           </table>
+
         </div>
       )}
     </div>
+ 
+   
+</>
   );
 }

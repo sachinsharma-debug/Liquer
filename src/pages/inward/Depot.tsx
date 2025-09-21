@@ -353,12 +353,12 @@
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alterId"
-//                 name="alterId"
+//                 id="alternateId"
+//                 name="alternateId"
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -634,6 +634,7 @@ import {
 import { Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { BASE_URL } from "@/api/BaseUrl";
+import { useSelector, useDispatch } from 'react-redux'
 
 interface Depot {
   _id: string;
@@ -642,8 +643,8 @@ interface Depot {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  Master_Id?: string;
-  Alter_Id?: string;
+  masterId?: string;
+  alternateId?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -658,8 +659,8 @@ interface DepotFormData {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  Master_Id?: string;
-  Alter_Id?: string;
+  masterId?: string;
+  alternateId?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -668,7 +669,9 @@ interface DepotFormData {
   Telephone?: string;
 }
 
-export default function DepotManagement() {
+export default function DepotManagement(props) {
+   const companyid = useSelector((state) => state?.Store.companyid)
+   console.log(companyid,"sadasd")
   const { toast } = useToast();
   const [depots, setDepots] = useState<Depot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -691,8 +694,8 @@ export default function DepotManagement() {
     Allow_Storage: "Yes",
     Our_Stock_With_Third_Party: "No",
     Third_Party_Stock_With_Us: "No",
-    Master_Id: "",
-    Alter_Id: "",
+    masterId: "",
+    alternateId: "",
     Address: "",
     State: "",
     Country: "",
@@ -704,18 +707,23 @@ export default function DepotManagement() {
   // Fetch all depots
   useEffect(() => {
     fetchDepots();
-  }, []);
+  }, [companyid]);
 
   const fetchDepots = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}get_depot`);
+      const response = await fetch(`${BASE_URL}get_depot`,{
+        method:"GET",
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch depots");
       }
       const data = await response.json();
       setDepots(data.data || []);
     } catch (error) {
+      setDepots([]);
+
       setError(error.message);
       toast({
         variant: "destructive",
@@ -749,8 +757,8 @@ export default function DepotManagement() {
       Allow_Storage: "Yes",
       Our_Stock_With_Third_Party: "No",
       Third_Party_Stock_With_Us: "No",
-      Master_Id: "",
-      Alter_Id: "",
+      masterId: "",
+      alternateId: "",
       Address: "",
       State: "",
       Country: "",
@@ -772,8 +780,8 @@ export default function DepotManagement() {
       Allow_Storage: depot.Allow_Storage,
       Our_Stock_With_Third_Party: depot.Our_Stock_With_Third_Party,
       Third_Party_Stock_With_Us: depot.Third_Party_Stock_With_Us,
-      Master_Id: depot.Master_Id || "",
-      Alter_Id: depot.Alter_Id || "",
+      masterId: depot.masterId || "",
+      alternateId: depot.alternateId || "",
       Address: depot.Address || "",
       State: depot.State || "",
       Country: depot.Country || "",
@@ -807,6 +815,7 @@ export default function DepotManagement() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
+           credentials: "include",
       });
 
       const result = await response.json();
@@ -846,6 +855,7 @@ export default function DepotManagement() {
         `${BASE_URL}delete_depot/${depotToDelete}`,
         {
           method: "DELETE",
+             credentials: "include",
         }
       );
 
@@ -987,17 +997,17 @@ export default function DepotManagement() {
                 <Label htmlFor="masterId">Master Id:</Label>
                 <Input
                   id="masterId"
-                  value={formData.Master_Id}
-                  onChange={(e) => handleInputChange("Master_Id", e.target.value)}
+                  value={formData.masterId}
+                  onChange={(e) => handleInputChange("masterId", e.target.value)}
                   placeholder="Master Id"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="alterId">Alter Id:</Label>
+                <Label htmlFor="alternateId">Alter Id:</Label>
                 <Input
-                  id="alterId"
-                  value={formData.Alter_Id}
-                  onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
+                  id="alternateId"
+                  value={formData.alternateId}
+                  onChange={(e) => handleInputChange("alternateId", e.target.value)}
                   placeholder="Alter Id"
                 />
               </div>

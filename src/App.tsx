@@ -2,6 +2,8 @@ import { Toaster } from 'react-hot-toast';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import "bootstrap-icons/font/bootstrap-icons";
+
+
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -44,23 +46,24 @@ import InvoiceReport from './pages/Reports/InvoiceReport';
 import DeliveryReport from './pages/Reports/DeliveryReport';
 import StockAdjustmentReport from './pages/Reports/StockAdjustmentReport';
 import AnalyticsReports from './pages/Reports/AnalyticsReports';
-
-
+import { Provider } from 'react-redux'
+import { store } from './redux/store'
 const queryClient = new QueryClient();
 
 function AppRoutes() {
 
 
+
+
+
+
   const { user, logout } = useAuth();
   const { isAuthenticated } = useAuth();
-
- 
-
   if (!isAuthenticated) {
     return <Login />;
   }
-
   return (
+
     <Layout>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -69,13 +72,12 @@ function AppRoutes() {
        <Route path="/genral_setting" element={<Genral_Setting />} />
           <Route path="/master_setting" element={<Master_setting />} />
            <Route path="/inventory_setting" element={<Inventory_setting />} />
-          
         <Route path="/organization" element={<Organization />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/inward/indents" element={<Indents />} />
         <Route path="/inward/purchase-orders" element={<PurchaseOrders />} />
-         <Route path="/inward/depot" element={<Depot />} />
+         <Route path="/inward/depot" element={<Depot/>} />
          <Route path="/inward/ledger" element={<Ledger />} />
          <Route path="/indent-report" element={<IndentReport />} />
          <Route path="/indent-purchase-report" element={<PurchaseAllOrders />} />
@@ -101,11 +103,15 @@ function AppRoutes() {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <h1>
+        v2
+      </h1>
     </Layout>
   );
 }
 
 const App = () => (
+  <Provider store={store}>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster position='top-right' />
@@ -117,6 +123,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
+  </Provider>
 );
 
 export default App;

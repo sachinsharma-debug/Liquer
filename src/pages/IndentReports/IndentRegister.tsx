@@ -41,7 +41,7 @@ import { MasterGet }  from "@/api/mastercontroller"
 import { addpurchase }  from "@/api/controllerpurchase"
 
 import transicon  from "../../Assets/transaction-history.png"
-
+import { useSelector, useDispatch } from 'react-redux'
 
 interface AccountingGroup {
   _id: string;
@@ -54,6 +54,10 @@ interface AccountingGroup {
 }
 
 export default function IndentRegister() {
+ const companyid = useSelector((state) => state?.Store.companyid)
+
+
+
   const [groups, setGroups] = useState<AccountingGroup[]>([]);
   const [parentOptions, setParentOptions] = useState<AccountingGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,7 +111,11 @@ export default function IndentRegister() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`
+        `${BASE_URL}accountig_group_list?page=${currentPage}&limit=${itemsPerPage}`,{
+          method:"GET",
+          credentials:"include"
+        }
+        
       );
       const result = await response.json();
       if (!response.ok)
@@ -232,7 +240,7 @@ export default function IndentRegister() {
       getindent()
     
       
-  },[])
+  },[companyid])
 
 
   useEffect(() => {
@@ -280,6 +288,7 @@ export default function IndentRegister() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -317,6 +326,7 @@ export default function IndentRegister() {
     try {
       const response = await fetch(`${BASE_URL}delete_accountig_group/${id}`, {
         method: "DELETE",
+        credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchGroups();

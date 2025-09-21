@@ -27,6 +27,11 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
+import { useSelector, useDispatch } from 'react-redux'
+
+
+
+
 
 interface Customer {
   _id: string;
@@ -50,6 +55,10 @@ interface Group {
 }
 
 export function CustomersPage() {
+
+
+
+  const companyid = useSelector((state) => state?.Store.companyid)
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,8 +86,14 @@ export function CustomersPage() {
     setIsLoading(true);
     try {
       const [customersRes, groupsRes] = await Promise.all([
-        fetch(`${BASE_URL}customer_list`),
-        fetch(`${BASE_URL}accountig_group_list_data`),
+        fetch(`${BASE_URL}customer_list`,{
+method:"GET",
+          credentials:"include"
+        }),
+        fetch(`${BASE_URL}accountig_group_list_data`,{
+          method:"GET",
+          credentials:"include"
+        }),
       ]);
 
       const [customersData, groupsData] = await Promise.all([
@@ -104,7 +119,7 @@ export function CustomersPage() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [companyid]);
 
   const resetForm = () => {
     setFormData({
@@ -165,6 +180,7 @@ export function CustomersPage() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials:"include"
       });
 
       const result = await response.json();
@@ -185,7 +201,7 @@ export function CustomersPage() {
 
     try {
       const response = await fetch(`${BASE_URL}customer_delete/${id}`, {
-        method: "DELETE",
+        method: "DELETE",credentials:"include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchData();
