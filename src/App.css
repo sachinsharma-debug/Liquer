@@ -11,3 +11,13 @@
 .read-the-docs {
   color: #888;
 }
+
+.chosen-container-single .chosen-single{
+  height: 40px;
+  padding: 6px 14px !important;
+  background: none !important;
+  border-color: #e5e7eb !important;
+}
+.chosen-container{
+  width: 100% !important;
+}

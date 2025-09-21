@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
+import { Country, State } from "country-state-city";
 
 interface Customer {
   _id: string;
@@ -49,6 +50,17 @@ interface Group {
   name: string;
 }
 
+interface CountryType {
+  name: string;
+  isoCode: string;
+}
+
+interface StateType {
+  name: string;
+  isoCode: string;
+  countryCode: string;
+}
+
 export function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -57,6 +69,10 @@ export function CustomersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+
+  // Country-State data
+  const [countries, setCountries] = useState<CountryType[]>([]);
+  const [states, setStates] = useState<StateType[]>([]);
 
   const [formData, setFormData] = useState({
     masterId: "",
@@ -72,6 +88,32 @@ export function CustomersPage() {
     email: "",
     isActive: true,
   });
+
+  // Load countries on component mount
+  useEffect(() => {
+    const countryData = Country.getAllCountries().map(country => ({
+      name: country.name,
+      isoCode: country.isoCode
+    }));
+    setCountries(countryData);
+  }, []);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      const country = countries.find(c => c.name === formData.country);
+      if (country) {
+        const stateData = State.getStatesOfCountry(country.isoCode).map(state => ({
+          name: state.name,
+          isoCode: state.isoCode,
+          countryCode: state.countryCode
+        }));
+        setStates(stateData);
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.country, countries]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -144,6 +186,29 @@ export function CustomersPage() {
     setIsEditing(true);
     setCurrentId(customer._id);
     setIsDialogOpen(true);
+  };
+
+  // Handle country change
+  const handleCountryChange = (value: string) => {
+    const country = countries.find(c => c.isoCode === value);
+    if (country) {
+      setFormData(prev => ({
+        ...prev,
+        country: country.name,
+        state: "" // Reset state when country changes
+      }));
+    }
+  };
+
+  // Handle state change
+  const handleStateChange = (value: string) => {
+    const state = states.find(s => s.isoCode === value);
+    if (state) {
+      setFormData(prev => ({
+        ...prev,
+        state: state.name
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -309,29 +374,42 @@ export function CustomersPage() {
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                    placeholder="Country"
-                    className="h-6 text-xs flex-1"
-                  />
+                  <Select
+                    value={countries.find(c => c.name === formData.country)?.isoCode || ""}
+                    onValueChange={handleCountryChange}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select Country" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {countries.map((country) => (
+                        <SelectItem key={country.isoCode} value={country.isoCode}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
                   </Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) =>
-                      setFormData({ ...formData, state: e.target.value })
-                    }
-                    placeholder="State"
-                    className="h-6 text-xs flex-1"
-                  />
+                  <Select
+                    value={states.find(s => s.name === formData.state)?.isoCode || ""}
+                    onValueChange={handleStateChange}
+                    disabled={!formData.country}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select State" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {states.map((state) => (
+                        <SelectItem key={state.isoCode} value={state.isoCode}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="address" className="text-xs w-32 text-right">
@@ -460,6 +538,8 @@ export function CustomersPage() {
                       <TableHead>Group</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Mobile</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>State</TableHead>
                       <TableHead>Address</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -476,14 +556,15 @@ export function CustomersPage() {
                         <TableCell>{customer.group?.name || "-"}</TableCell>
                         <TableCell>{customer.email || "-"}</TableCell>
                         <TableCell>{customer.mobile || "-"}</TableCell>
+                        <TableCell>{customer.country || "-"}</TableCell>
+                        <TableCell>{customer.state || "-"}</TableCell>
                         <TableCell>{customer.address || "-"}</TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              customer.isActive
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive
                                 ? "bg-green-100 text-green-800"
                                 : "bg-gray-100 text-gray-800"
-                            }`}
+                              }`}
                           >
                             {customer.isActive ? "Active" : "Inactive"}
                           </span>

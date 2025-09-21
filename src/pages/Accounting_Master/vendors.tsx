@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
+import { Country, State } from "country-state-city";
 
 interface Vendor {
   _id: string;
@@ -57,6 +58,7 @@ export function Vendors() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const [states, setStates] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     masterId: "",
@@ -72,6 +74,23 @@ export function Vendors() {
     email: "",
     isActive: true,
   });
+
+  // Get all countries
+  const countries = Country.getAllCountries();
+
+  // Update states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      const countryCode = formData.country;
+      const countryStates = State.getStatesOfCountry(countryCode);
+      setStates(countryStates);
+      
+      // Reset state when country changes
+      setFormData(prev => ({ ...prev, state: "" }));
+    } else {
+      setStates([]);
+    }
+  }, [formData.country]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -96,11 +115,11 @@ export function Vendors() {
         group:
           typeof v.group === "string"
             ? {
-                _id: v.group,
-                name:
-                  groupsData.data.find((g: any) => g._id === v.group)?.name ||
-                  "",
-              }
+              _id: v.group,
+              name:
+                groupsData.data.find((g: any) => g._id === v.group)?.name ||
+                "",
+            }
             : v.group,
       }));
 
@@ -137,6 +156,7 @@ export function Vendors() {
     setIsEditing(false);
     setCurrentId(null);
     setIsDialogOpen(false);
+    setStates([]);
   };
 
   const handleEdit = (vendor: Vendor) => {
@@ -157,6 +177,25 @@ export function Vendors() {
     setIsEditing(true);
     setCurrentId(vendor._id);
     setIsDialogOpen(true);
+    
+    // Load states for the vendor's country
+    if (vendor.country) {
+      const countryStates = State.getStatesOfCountry(vendor.country);
+      setStates(countryStates);
+    }
+  };
+
+  const handleCountryChange = (countryCode: string) => {
+    const selectedCountry = countries.find(c => c.isoCode === countryCode);
+    setFormData({ 
+      ...formData, 
+      country: countryCode,
+      state: "" // Reset state when country changes
+    });
+  };
+
+  const handleStateChange = (stateName: string) => {
+    setFormData({ ...formData, state: stateName });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -218,7 +257,7 @@ export function Vendors() {
               <Plus className="h-4 w-4 mr-2" /> Add Vendor
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {isEditing ? "Edit Vendor" : "Create New Vendor"}
@@ -315,29 +354,42 @@ export function Vendors() {
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
-                  <Input
-                    id="country"
+                  <Select
                     value={formData.country}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                    placeholder="Country"
-                    className="h-6 text-xs flex-1"
-                  />
+                    onValueChange={handleCountryChange}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select Country" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {countries.map((country) => (
+                        <SelectItem key={country.isoCode} value={country.isoCode}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
                   </Label>
-                  <Input
-                    id="state"
+                  <Select
                     value={formData.state}
-                    onChange={(e) =>
-                      setFormData({ ...formData, state: e.target.value })
-                    }
-                    placeholder="State"
-                    className="h-6 text-xs flex-1"
-                  />
+                    onValueChange={handleStateChange}
+                    disabled={!formData.country}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder={formData.country ? "Select State" : "Select Country First"} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60 overflow-y-auto">
+                      {states.map((state) => (
+                        <SelectItem key={state.isoCode} value={state.name}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="address" className="text-xs w-32 text-right">
@@ -466,7 +518,8 @@ export function Vendors() {
                       <TableHead>Group</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Mobile</TableHead>
-                      <TableHead>Address</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>State</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -482,14 +535,18 @@ export function Vendors() {
                         <TableCell>{vendor.group?.name || "-"}</TableCell>
                         <TableCell>{vendor.email || "-"}</TableCell>
                         <TableCell>{vendor.mobile || "-"}</TableCell>
-                        <TableCell>{vendor.address || "-"}</TableCell>
+                        <TableCell>
+                          {vendor.country ? 
+                            countries.find(c => c.isoCode === vendor.country)?.name || vendor.country 
+                            : "-"}
+                        </TableCell>
+                        <TableCell>{vendor.state || "-"}</TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              vendor.isActive
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vendor.isActive
                                 ? "bg-green-100 text-green-800"
                                 : "bg-gray-100 text-gray-800"
-                            }`}
+                              }`}
                           >
                             {vendor.isActive ? "Active" : "Inactive"}
                           </span>
