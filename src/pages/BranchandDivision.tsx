@@ -650,8 +650,8 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { BASE_URL } from "@/api/BaseUrl";
-  import { useSelector, useDispatch } from 'react-redux'
+import { BASE_URL, globalsearchcountry, globalsearchstate } from "@/api/BaseUrl";
+import { useSelector, useDispatch } from 'react-redux'
 
 
 interface BranchandDivision {
@@ -672,7 +672,7 @@ interface BranchandDivision {
 }
 
 export default function BranchandDivision() {
-    const companyid = useSelector((state) => state?.Store.companyid)
+  const companyid = useSelector((state) => state?.Store.companyid)
   const { toast } = useToast();
   const [branchesAndDivisions, setBranchesAndDivisions] = useState<
     BranchandDivision[]
@@ -747,12 +747,45 @@ export default function BranchandDivision() {
     }
   }, [formData.CountryName, countries]);
 
+
+  useEffect(() => {
+
+    if (formData.CountryName) {
+      const countryCode = countries.find(c => c.name === formData.CountryName)?.isoCode;
+      if (countryCode) {
+        const stateData = State.getStatesOfCountry(countryCode).map(state => ({
+          name: state.name,
+          isoCode: state.isoCode
+        }));
+        setStates(stateData);
+
+
+        globalsearchstate(isModalOpen, ".statete", handleStateChange)
+
+
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.CountryName, countries]);
+
+  useEffect(() => {
+    // initialize select2 on the <select>
+    // initialize select2
+
+
+    globalsearchcountry(isModalOpen, ".sachin", ".statete", handleCountryChange)
+
+
+
+  }, [isModalOpen]);
+
   // Fetch all branches and divisions
   useEffect(() => {
     const fetchBranchesAndDivisions = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${BASE_URL}ledger_list`,{
+        const response = await fetch(`${BASE_URL}ledger_list`, {
           method: "GET",
           credentials: "include",
         });
@@ -876,7 +909,7 @@ export default function BranchandDivision() {
       // Prepare payload according to backend expectations
       const payload = {
         masterId: formData.masterId,
-        depotId:formData.depotId,
+        depotId: formData.depotId,
         alternateId: formData.alternateId,
         Name: formData.Name,
         Parent: formData.Parent,
@@ -911,10 +944,10 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful operation
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
-          method: "GET",
-          credentials: "include",
-        });
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`, {
+        method: "GET",
+        credentials: "include",
+      });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -958,10 +991,10 @@ export default function BranchandDivision() {
       }
 
       // Refresh the branch and division list after successful deletion
-      const refreshResponse = await fetch(`${BASE_URL}ledger_list`,{
-          method: "GET",
-          credentials: "include",
-        });
+      const refreshResponse = await fetch(`${BASE_URL}ledger_list`, {
+        method: "GET",
+        credentials: "include",
+      });
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         setBranchesAndDivisions(refreshData.data || []);
@@ -1018,36 +1051,35 @@ export default function BranchandDivision() {
     );
   }
 
-   async function fetchDepots(){
-      try {
-        const response = await fetch(`${BASE_URL}get_depot`,{
-          method: "GET",
-          credentials: "include",
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch depots");
-        }
-        const data = await response.json();
-        setDepots(data.data || []);
-
-
-
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message,
-        });
-      } finally {
+  async function fetchDepots() {
+    try {
+      const response = await fetch(`${BASE_URL}get_depot`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch depots");
       }
-    };
-    
+      const data = await response.json();
+      setDepots(data.data || []);
+
+
+
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    } finally {
+    }
+  };
+
 
   // useEffect(()=>{
   // },[])
 
 
-console.log(Depots,"lkkkkkkk");
 
 
 
@@ -1254,43 +1286,38 @@ console.log(Depots,"lkkkkkkk");
               <Label htmlFor="country" className="text-xs w-20 text-right">
                 Country:
               </Label>
-              <Select
+              <select className="sachin h-6 text-xs flex-1 "
+
                 value={countries.find(c => c.name === formData.CountryName)?.isoCode || ""}
-                onValueChange={handleCountryChange}
               >
-                <SelectTrigger className="h-6 text-xs flex-1">
-                  <SelectValue placeholder="Select Country" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {countries.map((country) => (
-                    <SelectItem key={country.isoCode} value={country.isoCode}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option>Select...</option>
+
+                {countries.map((country) => (
+                  <option key={country.isoCode} value={country.isoCode}>
+                    {country.name}
+                  </option>
+                ))}
+
+
+              </select>
             </div>
 
             <div className="flex items-center gap-2">
               <Label htmlFor="state" className="text-xs w-20 text-right">
                 State:
               </Label>
-              <Select
-                value={states.find(s => s.name === formData.StateName)?.isoCode || ""}
-                onValueChange={handleStateChange}
-                disabled={!formData.CountryName}
+              <select className=" statete h-6 text-xs flex-1 "
+                onChange={(e) => {
+                  handleStateChange(e.target.value)
+                }} value={states.find(s => s.name === formData.StateName)?.isoCode || ""}
+              // disabled={!formData.clientCountry}
               >
-                <SelectTrigger className="h-6 text-xs flex-1">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {states.map((state) => (
-                    <SelectItem key={state.isoCode} value={state.isoCode}>
-                      {state.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {states.map((state) => (
+                  <option key={state.isoCode} value={state.isoCode}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex items-center gap-2">

@@ -102,9 +102,6 @@ function AppRoutes() {
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <h1>
-        v2
-      </h1>
     </Layout>
   );
 }

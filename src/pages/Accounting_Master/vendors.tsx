@@ -26,7 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
-import { BASE_URL } from "@/api/BaseUrl";
+import { BASE_URL, globalsearchcountry, globalsearchstate } from "@/api/BaseUrl";
 import { Country, State } from "country-state-city";
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -58,7 +58,7 @@ interface Group {
 
 export function Vendors() {
 
-   const companyid = useSelector((state) => state?.Store.companyid)
+  const companyid = useSelector((state) => state?.Store.companyid)
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +92,7 @@ export function Vendors() {
       const countryCode = formData.country;
       const countryStates = State.getStatesOfCountry(countryCode);
       setStates(countryStates);
-      
+globalsearchstate(isDialogOpen,".statete",handleStateChange)
       // Reset state when country changes
       setFormData(prev => ({ ...prev, state: "" }));
     } else {
@@ -100,17 +100,31 @@ export function Vendors() {
     }
   }, [formData.country]);
 
+
+  
+
+  useEffect(() => {
+    // initialize select2 on the <select>
+    // initialize select2
+
+
+    globalsearchcountry(isDialogOpen, ".sachin", ".statete", handleCountryChange)
+
+
+
+  }, [isDialogOpen]);
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const [vendorsRes, groupsRes] = await Promise.all([
-        fetch(`${BASE_URL}vendor_list`,{
-          method:"GET",
-          credentials:"include"
+        fetch(`${BASE_URL}vendor_list`, {
+          method: "GET",
+          credentials: "include"
         }),
-        fetch(`${BASE_URL}accountig_group_list_data`,{
-          method:"GET",
-          credentials:"include"
+        fetch(`${BASE_URL}accountig_group_list_data`, {
+          method: "GET",
+          credentials: "include"
         }),
       ]);
 
@@ -191,7 +205,7 @@ export function Vendors() {
     setIsEditing(true);
     setCurrentId(vendor._id);
     setIsDialogOpen(true);
-    
+
     // Load states for the vendor's country
     if (vendor.country) {
       const countryStates = State.getStatesOfCountry(vendor.country);
@@ -201,8 +215,8 @@ export function Vendors() {
 
   const handleCountryChange = (countryCode: string) => {
     const selectedCountry = countries.find(c => c.isoCode === countryCode);
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       country: countryCode,
       state: "" // Reset state when country changes
     });
@@ -233,7 +247,7 @@ export function Vendors() {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials:"include"
+        credentials: "include"
       });
 
       const result = await response.json();
@@ -254,7 +268,7 @@ export function Vendors() {
     try {
       const response = await fetch(`${BASE_URL}vendor_delete/${id}`, {
         method: "DELETE",
-        credentials:"include"
+        credentials: "include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchData();
@@ -370,42 +384,39 @@ export function Vendors() {
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
-                  <Select
-                    value={formData.country}
-                    onValueChange={handleCountryChange}
+                  <select className=" sachin h-6 text-xs flex-1 "
+                              onChange={(e) =>
+                      setFormData({ ...formData, country: e.target.value })
+                    }
+                    value={countries.find(c => c.name === formData.country)?.isoCode || ""}
                   >
-                    <SelectTrigger className="h-6 text-xs flex-1">
-                      <SelectValue placeholder="Select Country" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">
-                      {countries.map((country) => (
-                        <SelectItem key={country.isoCode} value={country.isoCode}>
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option>Select...</option>
+
+                    {countries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </option>
+                    ))}
+
+
+                  </select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
                   </Label>
-                  <Select
-                    value={formData.state}
-                    onValueChange={handleStateChange}
-                    disabled={!formData.country}
+                  <select className=" statete h-6 text-xs flex-1 "
+                    onChange={(e) => {
+                      handleStateChange(e.target.value)
+                    }} value={states.find(s => s.name === formData.state)?.isoCode || ""}
+                  // disabled={!formData.clientCountry}
                   >
-                    <SelectTrigger className="h-6 text-xs flex-1">
-                      <SelectValue placeholder={formData.country ? "Select State" : "Select Country First"} />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60 overflow-y-auto">
-                      {states.map((state) => (
-                        <SelectItem key={state.isoCode} value={state.name}>
-                          {state.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {states.map((state) => (
+                      <option key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="address" className="text-xs w-32 text-right">
@@ -552,16 +563,16 @@ export function Vendors() {
                         <TableCell>{vendor.email || "-"}</TableCell>
                         <TableCell>{vendor.mobile || "-"}</TableCell>
                         <TableCell>
-                          {vendor.country ? 
-                            countries.find(c => c.isoCode === vendor.country)?.name || vendor.country 
+                          {vendor.country ?
+                            countries.find(c => c.isoCode === vendor.country)?.name || vendor.country
                             : "-"}
                         </TableCell>
                         <TableCell>{vendor.state || "-"}</TableCell>
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vendor.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
                               }`}
                           >
                             {vendor.isActive ? "Active" : "Inactive"}

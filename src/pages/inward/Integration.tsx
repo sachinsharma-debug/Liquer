@@ -634,7 +634,7 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { BASE_URL } from "@/api/BaseUrl";
+import { BASE_URL,globalsearchstate,globalsearchcountry } from "@/api/BaseUrl";
 
 interface Depot {
   _id: string;
@@ -769,6 +769,14 @@ export default function Integration() {
   }, []);
 
   // Update states when country changes
+
+
+
+
+
+
+
+
   useEffect(() => {
     
     if (formData.Country) {
@@ -778,18 +786,12 @@ export default function Integration() {
           name: state.name,
           isoCode: state.isoCode
         }));
-        console.log(stateData,"lasdsadasdlllll")
         setStates(stateData);
-          if (isModalOpen == true) {
-        setTimeout(() => {
-          $(".statete").chosen();
-           $(".statete").on("change",function(e){
-            // console.log(e.target.value,"lllll")
-            //          handleCountryChange(e.target.value)
-                     
-      })
-        }, 500)
-      }
+
+
+             globalsearchstate(isModalOpen,".statete",handleStateChange)
+
+      
       }
     } else {
       setStates([]);
@@ -802,18 +804,8 @@ export default function Integration() {
       // initialize select2
 
       
+      globalsearchcountry(isModalOpen,".sachin",".statete",handleCountryChange)
       
-      if (isModalOpen == true) {
-        setTimeout(() => {
-          $(".sachin").chosen();
-           $(".sachin").on("change",function(e){
-            console.log(e.target.value,"lllll")
-                     handleCountryChange(e.target.value)
-                      $(".statete").chosen("destroy");
-                     
-      })
-        }, 500)
-      }
      
   
   }, [isModalOpen]);
@@ -1264,6 +1256,8 @@ export default function Integration() {
                    
                      value={countries.find(c => c.name === formData.clientCountry)?.isoCode || ""}
                 >
+                  <option>Select...</option>
+
                   {countries.map((country) => (
                       <option key={country.isoCode} value={country.isoCode}>
                         {country.name}
@@ -1367,6 +1361,7 @@ export default function Integration() {
                    
                      value={countries.find(c => c.name === formData.clientCountry)?.isoCode || ""}
                 >
+                  <option>Select...</option>
                   {countries.map((country) => (
                       <option key={country.isoCode} value={country.isoCode}>
                         {country.name}
