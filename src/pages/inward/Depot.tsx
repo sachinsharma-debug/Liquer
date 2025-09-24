@@ -342,23 +342,23 @@
 
 //           <form onSubmit={handleSubmit} className="space-y-1">
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="masterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Master_Id" className="text-xs w-20 text-right">
 //                 Master Id:
 //               </Label>
 //               <Input
-//                 id="masterId"
-//                 name="masterId"
+//                 id="Master_Id"
+//                 name="Master_Id"
 //                 placeholder="Master Id"
 //                 className="h-6 text-xs flex-1"
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Alter_Id" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alternateId"
-//                 name="alternateId"
+//                 id="Alter_Id"
+//                 name="Alter_Id"
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -616,6 +616,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Country, State, City } from "country-state-city";
 import {
   Select,
   SelectContent,
@@ -643,8 +644,8 @@ interface Depot {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -659,8 +660,8 @@ interface DepotFormData {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -687,6 +688,10 @@ export default function DepotManagement(props) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentDepotId, setCurrentDepotId] = useState<string | null>(null);
 
+  // Country and State data
+  const [countries, setCountries] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+
   // Form states
   const [formData, setFormData] = useState<DepotFormData>({
     Name: "",
@@ -694,8 +699,8 @@ export default function DepotManagement(props) {
     Allow_Storage: "Yes",
     Our_Stock_With_Third_Party: "No",
     Third_Party_Stock_With_Us: "No",
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     Address: "",
     State: "",
     Country: "",
@@ -703,6 +708,25 @@ export default function DepotManagement(props) {
     Mobile: "",
     Telephone: ""
   });
+
+  // Load countries on component mount
+  useEffect(() => {
+    const countryData = Country.getAllCountries();
+    setCountries(countryData);
+  }, []);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (formData.Country) {
+      const countryCode = countries.find(c => c.name === formData.Country)?.isoCode;
+      if (countryCode) {
+        const stateData = State.getStatesOfCountry(countryCode);
+        setStates(stateData);
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.Country, countries]);
 
   // Fetch all depots
   useEffect(() => {
@@ -746,6 +770,29 @@ export default function DepotManagement(props) {
     }));
   };
 
+  // Handle country change
+  const handleCountryChange = (isoCode: string) => {
+    const country = countries.find(c => c.isoCode === isoCode);
+    if (country) {
+      setFormData((prev) => ({
+        ...prev,
+        Country: country.name,
+        State: "" // Reset state when country changes
+      }));
+    }
+  };
+
+  // Handle state change
+  const handleStateChange = (isoCode: string) => {
+    const state = states.find(s => s.isoCode === isoCode);
+    if (state) {
+      setFormData((prev) => ({
+        ...prev,
+        State: state.name
+      }));
+    }
+  };
+
   // Open modal for creating new depot
   const handleCreateDepot = () => {
     setCurrentDepotId(null);
@@ -757,8 +804,8 @@ export default function DepotManagement(props) {
       Allow_Storage: "Yes",
       Our_Stock_With_Third_Party: "No",
       Third_Party_Stock_With_Us: "No",
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       Address: "",
       State: "",
       Country: "",
@@ -780,8 +827,8 @@ export default function DepotManagement(props) {
       Allow_Storage: depot.Allow_Storage,
       Our_Stock_With_Third_Party: depot.Our_Stock_With_Third_Party,
       Third_Party_Stock_With_Us: depot.Third_Party_Stock_With_Us,
-      masterId: depot.masterId || "",
-      alternateId: depot.alternateId || "",
+      Master_Id: depot.Master_Id || "",
+      Alter_Id: depot.Alter_Id || "",
       Address: depot.Address || "",
       State: depot.State || "",
       Country: depot.Country || "",
@@ -994,20 +1041,20 @@ export default function DepotManagement(props) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="masterId">Master Id:</Label>
+                <Label htmlFor="Master_Id">Master Id:</Label>
                 <Input
-                  id="masterId"
-                  value={formData.masterId}
-                  onChange={(e) => handleInputChange("masterId", e.target.value)}
+                  id="Master_Id"
+                  value={formData.Master_Id}
+                  onChange={(e) => handleInputChange("Master_Id", e.target.value)}
                   placeholder="Master Id"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="alternateId">Alter Id:</Label>
+                <Label htmlFor="Alter_Id">Alter Id:</Label>
                 <Input
-                  id="alternateId"
-                  value={formData.alternateId}
-                  onChange={(e) => handleInputChange("alternateId", e.target.value)}
+                  id="Alter_Id"
+                  value={formData.Alter_Id}
+                  onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
                   placeholder="Alter Id"
                 />
               </div>
@@ -1055,22 +1102,41 @@ export default function DepotManagement(props) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="state">State:</Label>
-                <Input
-                  id="state"
-                  value={formData.State}
-                  onChange={(e) => handleInputChange("State", e.target.value)}
-                  placeholder="Company State"
-                />
+                <Label htmlFor="country">Country:</Label>
+                <Select
+                  value={countries.find(c => c.name === formData.Country)?.isoCode || ""}
+                  onValueChange={handleCountryChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Country" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {countries.map((country) => (
+                      <SelectItem key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="country">Country:</Label>
-                <Input
-                  id="country"
-                  value={formData.Country}
-                  onChange={(e) => handleInputChange("Country", e.target.value)}
-                  placeholder="Country"
-                />
+                <Label htmlFor="state">State:</Label>
+                <Select
+                  value={states.find(s => s.name === formData.State)?.isoCode || ""}
+                  onValueChange={handleStateChange}
+                  disabled={!formData.Country}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {states.map((state) => (
+                      <SelectItem key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

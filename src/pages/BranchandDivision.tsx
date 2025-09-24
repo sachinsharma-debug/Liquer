@@ -36,8 +36,8 @@
 //   _id: string;
 //   Name: string;
 //   Parent: string;
-//   masterId?: string;
-//   alternateId?: string;
+//   Master_Id?: string;
+//   Alter_Id?: string;
 //   MAilingName?: string;
 //   address?: string;
 //   StateName?: string;
@@ -73,8 +73,8 @@
 //   const [formData, setFormData] = useState<Omit<BranchandDivision, "_id">>({
 //     Name: "",
 //     Parent: "Primary",
-//     masterId: "",
-//     alternateId: "",
+//     Master_Id: "",
+//     Alter_Id: "",
 //     MAilingName: "",
 //     address: "",
 //     StateName: "",
@@ -143,8 +143,8 @@
 //     setFormData({
 //       Name: "",
 //       Parent: "Primary",
-//       masterId: "",
-//       alternateId: "",
+//       Master_Id: "",
+//       Alter_Id: "",
 //       MAilingName: "",
 //       address: "",
 //       StateName: "",
@@ -164,8 +164,8 @@
 //     setFormData({
 //       Name: branchDivision.Name,
 //       Parent: branchDivision.Parent,
-//       masterId: branchDivision.masterId || "",
-//       alternateId: branchDivision.alternateId || "",
+//       Master_Id: branchDivision.Master_Id || "",
+//       Alter_Id: branchDivision.Alter_Id || "",
 //       MAilingName: branchDivision.MAilingName || "",
 //       address: branchDivision.address || "",
 //       StateName: branchDivision.StateName || "",
@@ -399,27 +399,27 @@
 
 //           <form onSubmit={handleSubmit} className="space-y-4">
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="masterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Master_Id" className="text-xs w-20 text-right">
 //                 Master Id:
 //               </Label>
 //               <Input
-//                 id="masterId"
-//                 name="masterId"
-//                 value={formData.masterId}
-//                 onChange={(e) => handleInputChange("masterId", e.target.value)}
+//                 id="Master_Id"
+//                 name="Master_Id"
+//                 value={formData.Master_Id}
+//                 onChange={(e) => handleInputChange("Master_Id", e.target.value)}
 //                 placeholder="Master Id"
 //                 className="h-6 text-xs flex-1"
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Alter_Id" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alternateId"
-//                 name="alternateId"
-//                 value={formData.alternateId}
-//                 onChange={(e) => handleInputChange("alternateId", e.target.value)}
+//                 id="Alter_Id"
+//                 name="Alter_Id"
+//                 value={formData.Alter_Id}
+//                 onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -632,6 +632,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Country, State, City } from "country-state-city";
 import {
   Select,
   SelectContent,
@@ -655,11 +656,11 @@ import { BASE_URL } from "@/api/BaseUrl";
 
 interface BranchandDivision {
   _id: string;
-  depotId:string,
+  depotId: string,
   Name: string;
   Parent: string;
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   MAilingName?: string;
   address?: string;
   StateName?: string;
@@ -682,7 +683,7 @@ export default function BranchandDivision() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [Depots,setDepots]=useState([])
+  const [Depots, setDepots] = useState([])
 
   // Current branch and division states
   const [branchDivisionToDelete, setBranchDivisionToDelete] = useState<
@@ -693,13 +694,17 @@ export default function BranchandDivision() {
     string | null
   >(null);
 
+  // Country and State data
+  const [countries, setCountries] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+
   // Form states
   const [formData, setFormData] = useState<Omit<BranchandDivision, "_id">>({
     Name: "",
-    depotId:"",
+    depotId: "",
     Parent: "Primary",
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     MAilingName: "",
     address: "",
     StateName: "",
@@ -722,6 +727,25 @@ export default function BranchandDivision() {
     "Finance Division",
     "Marketing Division",
   ];
+
+  // Load countries on component mount
+  useEffect(() => {
+    const countryData = Country.getAllCountries();
+    setCountries(countryData);
+  }, []);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (formData.CountryName) {
+      const countryCode = countries.find(c => c.name === formData.CountryName)?.isoCode;
+      if (countryCode) {
+        const stateData = State.getStatesOfCountry(countryCode);
+        setStates(stateData);
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.CountryName, countries]);
 
   // Fetch all branches and divisions
   useEffect(() => {
@@ -765,16 +789,39 @@ export default function BranchandDivision() {
     }));
   };
 
+  // Handle country change
+  const handleCountryChange = (isoCode: string) => {
+    const country = countries.find(c => c.isoCode === isoCode);
+    if (country) {
+      setFormData((prev) => ({
+        ...prev,
+        CountryName: country.name,
+        StateName: "" // Reset state when country changes
+      }));
+    }
+  };
+
+  // Handle state change
+  const handleStateChange = (isoCode: string) => {
+    const state = states.find(s => s.isoCode === isoCode);
+    if (state) {
+      setFormData((prev) => ({
+        ...prev,
+        StateName: state.name
+      }));
+    }
+  };
+
   // Open modal for creating new branch and division
   const handleCreateBranchDivision = () => {
     setCurrentBranchDivisionId(null);
     setIsEditMode(false);
     setFormData({
       Name: "",
-      depotId:"",
+      depotId: "",
       Parent: "Primary",
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       MAilingName: "",
       address: "",
       StateName: "",
@@ -793,10 +840,10 @@ export default function BranchandDivision() {
     setIsEditMode(true);
     setFormData({
       Name: branchDivision.Name,
-      depotId:branchDivision.depotId,
+      depotId: branchDivision.depotId,
       Parent: branchDivision.Parent,
-      masterId: branchDivision.masterId || "",
-      alternateId: branchDivision.alternateId || "",
+      Master_Id: branchDivision.Master_Id || "",
+      Alter_Id: branchDivision.Alter_Id || "",
       MAilingName: branchDivision.MAilingName || "",
       address: branchDivision.address || "",
       StateName: branchDivision.StateName || "",
@@ -828,9 +875,9 @@ export default function BranchandDivision() {
 
       // Prepare payload according to backend expectations
       const payload = {
-        masterId: formData.masterId,
+        Master_Id: formData.Master_Id,
         depotId:formData.depotId,
-        alternateId: formData.alternateId,
+        Alter_Id: formData.Alter_Id,
         Name: formData.Name,
         Parent: formData.Parent,
         MAilingName: formData.MAilingName,
@@ -934,6 +981,23 @@ export default function BranchandDivision() {
       setIsLoading(false);
       setIsDeleteModalOpen(false);
       setBranchDivisionToDelete(null);
+    }
+  };
+
+  async function fetchDepots() {
+    try {
+      const response = await fetch(`${BASE_URL}get_depot`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch depots");
+      }
+      const data = await response.json();
+      setDepots(data.data || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
     }
   };
 
@@ -1041,11 +1105,10 @@ console.log(Depots,"lkkkkkkk");
                     <TableCell>{branchDivision.MAilingName || "-"}</TableCell>
                     <TableCell>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          branchDivision.isActive !== false
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                        className={`px-2 py-1 rounded-full text-xs ${branchDivision.isActive !== false
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {branchDivision.isActive !== false
                           ? "Active"
@@ -1096,27 +1159,27 @@ console.log(Depots,"lkkkkkkk");
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="masterId" className="text-xs w-20 text-right">
+              <Label htmlFor="Master_Id" className="text-xs w-20 text-right">
                 Master Id:
               </Label>
               <Input
-                id="masterId"
-                name="masterId"
-                value={formData.masterId}
-                onChange={(e) => handleInputChange("masterId", e.target.value)}
+                id="Master_Id"
+                name="Master_Id"
+                value={formData.Master_Id}
+                onChange={(e) => handleInputChange("Master_Id", e.target.value)}
                 placeholder="Master Id"
                 className="h-6 text-xs flex-1"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="alternateId" className="text-xs w-20 text-right">
+              <Label htmlFor="Alter_Id" className="text-xs w-20 text-right">
                 Alter Id:
               </Label>
               <Input
-                id="alternateId"
-                name="alternateId"
-                value={formData.alternateId}
-                onChange={(e) => handleInputChange("alternateId", e.target.value)}
+                id="Alter_Id"
+                name="Alter_Id"
+                value={formData.Alter_Id}
+                onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
                 placeholder="Alter Id"
                 className="h-6 text-xs flex-1"
               />
@@ -1186,34 +1249,50 @@ console.log(Depots,"lkkkkkkk");
                 className="h-6 text-xs flex-1"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="state" className="text-xs w-20 text-right">
-                State:
-              </Label>
-              <Input
-                id="state"
-                name="state"
-                value={formData.StateName}
-                onChange={(e) => handleInputChange("StateName", e.target.value)}
-                placeholder="Company State"
-                className="h-6 text-xs flex-1"
-              />
-            </div>
+
             <div className="flex items-center gap-2">
               <Label htmlFor="country" className="text-xs w-20 text-right">
                 Country:
               </Label>
-              <Input
-                id="country"
-                name="country"
-                value={formData.CountryName}
-                onChange={(e) =>
-                  handleInputChange("CountryName", e.target.value)
-                }
-                placeholder="Country"
-                className="h-6 text-xs flex-1"
-              />
+              <Select
+                value={countries.find(c => c.name === formData.CountryName)?.isoCode || ""}
+                onValueChange={handleCountryChange}
+              >
+                <SelectTrigger className="h-6 text-xs flex-1">
+                  <SelectValue placeholder="Select Country" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {countries.map((country) => (
+                    <SelectItem key={country.isoCode} value={country.isoCode}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Label htmlFor="state" className="text-xs w-20 text-right">
+                State:
+              </Label>
+              <Select
+                value={states.find(s => s.name === formData.StateName)?.isoCode || ""}
+                onValueChange={handleStateChange}
+                disabled={!formData.CountryName}
+              >
+                <SelectTrigger className="h-6 text-xs flex-1">
+                  <SelectValue placeholder="Select State" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {states.map((state) => (
+                    <SelectItem key={state.isoCode} value={state.isoCode}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex items-center gap-2">
               <Label htmlFor="pinCode" className="text-xs w-20 text-right">
                 PinCode:
@@ -1227,6 +1306,7 @@ console.log(Depots,"lkkkkkkk");
                 className="h-6 text-xs flex-1"
               />
             </div>
+
             <div className="flex items-center gap-2">
               <Label htmlFor="mobile" className="text-xs w-20 text-right">
                 Mobile:
@@ -1240,6 +1320,7 @@ console.log(Depots,"lkkkkkkk");
                 className="h-6 text-xs flex-1"
               />
             </div>
+
             <div className="flex items-center gap-2">
               <Label htmlFor="telephone" className="text-xs w-20 text-right">
                 TelePhone:
@@ -1254,26 +1335,24 @@ console.log(Depots,"lkkkkkkk");
               />
             </div>
 
-
-
             <div className="flex items-center gap-2">
-              <Label htmlFor="telephone" className="text-xs w-20 text-right">
-              Depo:
+              <Label htmlFor="depot" className="text-xs w-20 text-right">
+                Depot:
               </Label>
-                <Select
+              <Select
                 value={formData.depotId}
                 onValueChange={(value) => handleInputChange("depotId", value)}
               >
                 <SelectTrigger className="h-6 text-xs flex-1">
-                  <SelectValue placeholder="Select parent group" />
+                  <SelectValue placeholder="Select depot" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem key={"askdlasklkasldkl"} value={"68b16974e6dc1871952e787d"}>
+                  <SelectItem key="not-applicable" value="68b16974e6dc1871952e787d">
                     Not Applicable
-                    </SelectItem>
-                  {Depots.map((group) => (
-                    <SelectItem key={group._id} value={group._id}>
-                      {group.Name}
+                  </SelectItem>
+                  {Depots.map((depot) => (
+                    <SelectItem key={depot._id} value={depot._id}>
+                      {depot.Name}
                     </SelectItem>
                   ))}
                 </SelectContent>

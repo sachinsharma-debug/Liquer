@@ -31,8 +31,8 @@ interface StockCategory {
   name: string;
   categoryId?: string; // ✅ linked category id
   categoryName?: string; // ✅ linked category name for display
-     masterId?:string;
-   alternateId?:string;
+     Master_Id?:string;
+   Alter_Id?:string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -53,8 +53,8 @@ export function Brand() {
   const [formData, setFormData] = useState({
     name: "",
     categoryId: "",
-       masterId:"",
-       alternateId:"",
+       Master_Id:"",
+       Alter_Id:"",
        isActive: true,
   });
 
@@ -92,8 +92,8 @@ export function Brand() {
     setFormData({
       name: "",
       categoryId: "",
-         masterId:"",
-         alternateId:"",
+         Master_Id:"",
+         Alter_Id:"",
       isActive: true,
     });
     setIsEditing(false);
@@ -110,8 +110,8 @@ export function Brand() {
       name: category.name,
       categoryId: category.categoryId || "",
       isActive: category.isActive,
-      masterId:category.masterId,
-      alternateId:category.alternateId
+      Master_Id:category.Master_Id,
+      Alter_Id:category.Alter_Id
 
     });
     setIsEditing(true);
@@ -242,27 +242,27 @@ export function Brand() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <Label htmlFor="masterId">Master Id:</Label>
+                  <Label htmlFor="Master_Id">Master Id:</Label>
                   <Input
-                    id="masterId"
-                    name="masterId"
+                    id="Master_Id"
+                    name="Master_Id"
                     placeholder="Master Id"
                     
                  
-                     value={formData.masterId}
+                     value={formData.Master_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, masterId: e.target.value })
+                      setFormData({ ...formData, Master_Id: e.target.value })
                     }
                   
                   />
                 </div>
                 <div>
-                  <Label htmlFor="alternateId">Alter Id:</Label>
-                  <Input id="alternateId" name="alternateId" placeholder="Alter Id"
+                  <Label htmlFor="Alter_Id">Alter Id:</Label>
+                  <Input id="Alter_Id" name="Alter_Id" placeholder="Alter Id"
                   
-                  value={formData.alternateId}
+                  value={formData.Alter_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, alternateId: e.target.value })
+                      setFormData({ ...formData, Alter_Id: e.target.value })
                     }
                   
                   />

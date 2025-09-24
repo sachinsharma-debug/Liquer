@@ -591,16 +591,16 @@ export function StockGroupPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <Label htmlFor="masterId">Master Id:</Label>
+                  <Label htmlFor="Master_Id">Master Id:</Label>
                   <Input
-                    id="masterId"
-                    name="masterId"
+                    id="Master_Id"
+                    name="Master_Id"
                     placeholder="Master Id"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="alternateId">Alter Id:</Label>
-                  <Input id="alternateId" name="alternateId" placeholder="Alter Id" />
+                  <Label htmlFor="Alter_Id">Alter Id:</Label>
+                  <Input id="Alter_Id" name="Alter_Id" placeholder="Alter Id" />
                 </div>
                 <div>
                   <Label htmlFor="name">Name*</Label>

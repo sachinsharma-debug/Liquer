@@ -342,23 +342,23 @@
 
 //           <form onSubmit={handleSubmit} className="space-y-1">
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="masterId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Master_Id" className="text-xs w-20 text-right">
 //                 Master Id:
 //               </Label>
 //               <Input
-//                 id="masterId"
-//                 name="masterId"
+//                 id="Master_Id"
+//                 name="Master_Id"
 //                 placeholder="Master Id"
 //                 className="h-6 text-xs flex-1"
 //               />
 //             </div>
 //             <div className="flex items-center gap-2">
-//               <Label htmlFor="alternateId" className="text-xs w-20 text-right">
+//               <Label htmlFor="Alter_Id" className="text-xs w-20 text-right">
 //                 Alter Id:
 //               </Label>
 //               <Input
-//                 id="alternateId"
-//                 name="alternateId"
+//                 id="Alter_Id"
+//                 name="Alter_Id"
 //                 placeholder="Alter Id"
 //                 className="h-6 text-xs flex-1"
 //               />
@@ -616,6 +616,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Country, State, City } from "country-state-city";
 import {
   Select,
   SelectContent,
@@ -642,38 +643,8 @@ interface Depot {
   Allow_Storage: "Yes" | "No";
   Our_Stock_With_Third_Party: "Yes" | "No";
   Third_Party_Stock_With_Us: "Yes" | "No";
-  masterId?: string;
-  alternateId?: string;
-  Address?: string;
-  State?: string;
-  Country?: string;
-  PinCode?: string;
-  Email?: string;
-  Mobile?: string;
-   clientName: string;
-  clientAddress?: string;
-  clientState?: string;
-  clientCountry?: string;
-  clientPinCode?: string;
-  clientEmail?: string;
-  clientMobile?: string;
-  tallyEdition?:string;
-tallySerialno?:string;
-validTill?:string;
-registrationDate?:string;
-partnerCode?:string;
-partnerName?:string;
-  Telephone?: string;
-}
-
-interface DepotFormData {
-  Name: string;
-  Parent: string;
-  Allow_Storage: "Yes" | "No";
-  Our_Stock_With_Third_Party: "Yes" | "No";
-  Third_Party_Stock_With_Us: "Yes" | "No";
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   Address?: string;
   State?: string;
   Country?: string;
@@ -687,16 +658,47 @@ interface DepotFormData {
   clientPinCode?: string;
   clientEmail?: string;
   clientMobile?: string;
-    tallyEdition?:string;
-tallySerialno?:string;
-validTill?:string;
-registrationDate?:string;
-partnerCode?:string;
-partnerName?:string;
+  tallyEdition?: string;
+  tallySerialno?: string;
+  validTill?: string;
+  registrationDate?: string;
+  partnerCode?: string;
+  partnerName?: string;
+  Telephone?: string;
+}
+
+interface DepotFormData {
+  Name: string;
+  Parent: string;
+  Allow_Storage: "Yes" | "No";
+  Our_Stock_With_Third_Party: "Yes" | "No";
+  Third_Party_Stock_With_Us: "Yes" | "No";
+  Master_Id?: string;
+  Alter_Id?: string;
+  Address?: string;
+  State?: string;
+  Country?: string;
+  PinCode?: string;
+  Email?: string;
+  Mobile?: string;
+  clientName: string;
+  clientAddress?: string;
+  clientState?: string;
+  clientCountry?: string;
+  clientPinCode?: string;
+  clientEmail?: string;
+  clientMobile?: string;
+  tallyEdition?: string;
+  tallySerialno?: string;
+  validTill?: string;
+  registrationDate?: string;
+  partnerCode?: string;
+  partnerName?: string;
   Telephone?: string;
 }
 
 export default function Integration() {
+  console.log(State,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
   const { toast } = useToast();
   const [depots, setDepots] = useState<Depot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -712,6 +714,12 @@ export default function Integration() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentDepotId, setCurrentDepotId] = useState<string | null>(null);
 
+  // Country-State-City data
+  const [countries, setCountries] = useState<any[]>([]);
+  const [states, setStates] = useState<any[]>([]);
+  const [modalOpen, setModalopen] = useState(false);
+  const [clientStates, setClientStates] = useState<any[]>([]);
+
   // Form states
   const [formData, setFormData] = useState<DepotFormData>({
     Name: "",
@@ -719,13 +727,13 @@ export default function Integration() {
     Allow_Storage: "Yes",
     Our_Stock_With_Third_Party: "No",
     Third_Party_Stock_With_Us: "No",
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     Address: "",
     State: "",
     Country: "",
     PinCode: "",
-    Email:"",
+    Email: "",
     Mobile: "",
 
     clientName: "",
@@ -733,23 +741,98 @@ export default function Integration() {
     clientState: "",
     clientCountry: "",
     clientPinCode: "",
-    clientEmail:"",
+    clientEmail: "",
     clientMobile: "",
 
-tallyEdition:"",
-tallySerialno:"",
-validTill:"",
-registrationDate:"",
-partnerCode:"",
-partnerName:"",
+    tallyEdition: "",
+    tallySerialno: "",
+    validTill: "",
+    registrationDate: "",
+    partnerCode: "",
+    partnerName: "",
 
     Telephone: ""
   });
+
+  // Load countries on component mount
+  useEffect(() => {
+    const countryData = Country.getAllCountries().map(country => ({
+      name: country.name,
+      isoCode: country.isoCode
+    }));
+    setCountries(countryData);
+  }, []);
 
   // Fetch all depots
   useEffect(() => {
     fetchDepots();
   }, []);
+
+  // Update states when country changes
+  useEffect(() => {
+    
+    if (formData.Country) {
+      const countryCode = countries.find(c => c.name === formData.Country)?.isoCode;
+      if (countryCode) {
+        const stateData = State.getStatesOfCountry(countryCode).map(state => ({
+          name: state.name,
+          isoCode: state.isoCode
+        }));
+        console.log(stateData,"lasdsadasdlllll")
+        setStates(stateData);
+          if (isModalOpen == true) {
+        setTimeout(() => {
+          $(".statete").chosen();
+           $(".statete").on("change",function(e){
+            // console.log(e.target.value,"lllll")
+            //          handleCountryChange(e.target.value)
+                     
+      })
+        }, 500)
+      }
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.Country, countries]);
+
+
+  useEffect(() => {
+      // initialize select2 on the <select>
+      // initialize select2
+
+      
+      
+      if (isModalOpen == true) {
+        setTimeout(() => {
+          $(".sachin").chosen();
+           $(".sachin").on("change",function(e){
+            console.log(e.target.value,"lllll")
+                     handleCountryChange(e.target.value)
+                      $(".statete").chosen("destroy");
+                     
+      })
+        }, 500)
+      }
+     
+  
+  }, [isModalOpen]);
+
+  // Update client states when client country changes
+  useEffect(() => {
+    if (formData.clientCountry) {
+      const countryCode = countries.find(c => c.name === formData.clientCountry)?.isoCode;
+      if (countryCode) {
+        const stateData = State.getStatesOfCountry(countryCode).map(state => ({
+          name: state.name,
+          isoCode: state.isoCode
+        }));
+        setClientStates(stateData);
+      }
+    } else {
+      setClientStates([]);
+    }
+  }, [formData.clientCountry, countries]);
 
   const fetchDepots = async () => {
     try {
@@ -762,7 +845,7 @@ partnerName:"",
         throw new Error("Failed to fetch depots");
       }
       const data = await response.json();
-      console.log(data,"test")
+      console.log(data, "test")
 
       setDepots(data.data || []);
     } catch (error) {
@@ -788,6 +871,50 @@ partnerName:"",
     }));
   };
 
+  // Handle country change for company
+  const handleCountryChange = (countryCode: string) => {
+    const country = countries.find(c => c.isoCode === countryCode);
+    if (country) {
+      setFormData(prev => ({
+        ...prev,
+        Country: country.name
+      }));
+    }
+  };
+
+  // Handle state change for company
+  const handleStateChange = (stateCode: string) => {
+    const state = states.find(s => s.isoCode === stateCode);
+    if (state) {
+      setFormData(prev => ({
+        ...prev,
+        State: state.name
+      }));
+    }
+  };
+
+  // Handle country change for client
+  const handleClientCountryChange = (countryCode: string) => {
+    const country = countries.find(c => c.isoCode === countryCode);
+    if (country) {
+      setFormData(prev => ({
+        ...prev,
+        clientCountry: country.name
+      }));
+    }
+  };
+
+  // Handle state change for client
+  const handleClientStateChange = (stateCode: string) => {
+    const state = clientStates.find(s => s.isoCode === stateCode);
+    if (state) {
+      setFormData(prev => ({
+        ...prev,
+        clientState: state.name
+      }));
+    }
+  };
+
   // Open modal for creating new depot
   const handleCreateDepot = () => {
     setCurrentDepotId(null);
@@ -799,28 +926,28 @@ partnerName:"",
       Allow_Storage: "Yes",
       Our_Stock_With_Third_Party: "No",
       Third_Party_Stock_With_Us: "No",
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       Address: "",
       State: "",
       Country: "",
       PinCode: "",
       Mobile: "",
-        clientName: "",
-    clientAddress: "",
-    clientState: "",
-    clientCountry: "",
-    clientPinCode: "",
-    clientMobile: "",
-    Email:"",
-    clientEmail:"",
+      clientName: "",
+      clientAddress: "",
+      clientState: "",
+      clientCountry: "",
+      clientPinCode: "",
+      clientMobile: "",
+      Email: "",
+      clientEmail: "",
 
-    tallyEdition:"",
-tallySerialno:"",
-validTill:"",
-registrationDate:"",
-partnerCode:"",
-partnerName:"",
+      tallyEdition: "",
+      tallySerialno: "",
+      validTill: "",
+      registrationDate: "",
+      partnerCode: "",
+      partnerName: "",
 
       Telephone: ""
     });
@@ -838,8 +965,8 @@ partnerName:"",
       Allow_Storage: depot.Allow_Storage,
       Our_Stock_With_Third_Party: depot.Our_Stock_With_Third_Party,
       Third_Party_Stock_With_Us: depot.Third_Party_Stock_With_Us,
-      masterId: depot.masterId || "",
-      alternateId: depot.alternateId || "",
+      Master_Id: depot.Master_Id || "",
+      Alter_Id: depot.Alter_Id || "",
       Address: depot.Address || "",
       State: depot.State || "",
       Country: depot.Country || "",
@@ -848,25 +975,20 @@ partnerName:"",
       Email: depot.Email || "",
       clientEmail: depot.clientEmail || "",
 
-    clientName: depot.clientName,
-    clientAddress: depot.clientAddress,
-    clientState: depot.clientState,
-    clientCountry: depot.clientCountry,
-    clientPinCode: depot.clientPinCode,
-    clientMobile: depot.clientMobile,
+      clientName: depot.clientName,
+      clientAddress: depot.clientAddress,
+      clientState: depot.clientState,
+      clientCountry: depot.clientCountry,
+      clientPinCode: depot.clientPinCode,
+      clientMobile: depot.clientMobile,
 
-
-    tallyEdition:depot.tallyEdition,
-tallySerialno:depot.tallySerialno,
-validTill:depot.validTill,
-registrationDate:depot.registrationDate,
-partnerCode:depot.partnerCode,
-partnerName:depot.partnerName,
+      tallyEdition: depot.tallyEdition,
+      tallySerialno: depot.tallySerialno,
+      validTill: depot.validTill,
+      registrationDate: depot.registrationDate,
+      partnerCode: depot.partnerCode,
+      partnerName: depot.partnerName,
       Telephone: depot.Telephone || ""
-
-
-
-
     });
     setIsModalOpen(true);
   };
@@ -886,10 +1008,10 @@ partnerName:depot.partnerName,
       const url = isEditMode
         ? `${BASE_URL}update_master/${currentDepotId}`
         : `${BASE_URL}create_master`;
-    let payload={
-         tablename:"integration",
-         data:formData
-    }
+      let payload = {
+        tablename: "integration",
+        data: formData
+      }
 
       const response = await fetch(url, {
         method,
@@ -1072,34 +1194,34 @@ partnerName:depot.partnerName,
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="masterId">Master Id:</Label>
+                <Label htmlFor="Master_Id">Master Id:</Label>
                 <Input
-                  id="masterId"
-                  value={formData.masterId}
-                  onChange={(e) => handleInputChange("masterId", e.target.value)}
+                  id="Master_Id"
+                  value={formData.Master_Id}
+                  onChange={(e) => handleInputChange("Master_Id", e.target.value)}
                   placeholder="Master Id"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="alternateId">Alter Id:</Label>
+                <Label htmlFor="Alter_Id">Alter Id:</Label>
                 <Input
-                  id="alternateId"
-                  value={formData.alternateId}
-                  onChange={(e) => handleInputChange("alternateId", e.target.value)}
+                  id="Alter_Id"
+                  value={formData.Alter_Id}
+                  onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
                   placeholder="Alter Id"
                 />
               </div>
               <div className="space-y-2">
-              <Label htmlFor="name">Company Name</Label>
-              <Input
-                id="name"
-                value={formData.Name}
-                onChange={(e) => handleInputChange("Name", e.target.value)}
-                placeholder="Enter depot name"
-                required
-              />
-            </div>
-             <div className="space-y-2">
+                <Label htmlFor="name">Company Name</Label>
+                <Input
+                  id="name"
+                  value={formData.Name}
+                  onChange={(e) => handleInputChange("Name", e.target.value)}
+                  placeholder="Enter depot name"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="mobile">Mobile:</Label>
                 <Input
                   id="mobile"
@@ -1109,7 +1231,7 @@ partnerName:depot.partnerName,
                 />
               </div>
             </div>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="Email">Email:</Label>
                 <Input
@@ -1119,26 +1241,72 @@ partnerName:depot.partnerName,
                   placeholder="Email"
                 />
               </div>
-            
-               <div className="space-y-2">
+
+              <div className="space-y-2">
                 <Label htmlFor="country">Country:</Label>
-                <Input
-                  id="country"
-                  value={formData.Country}
-                  onChange={(e) => handleInputChange("Country", e.target.value)}
-                  placeholder="Country"
-                />
+                {/* <Select
+                  value={countries.find(c => c.name === formData.Country)?.isoCode || ""}
+                  onValueChange={handleCountryChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Country" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {countries.map((country) => (
+                      <SelectItem key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select> */}
+                <div>
+                <select className="sachin h-6 text-xs flex-1 "
+                   
+                     value={countries.find(c => c.name === formData.clientCountry)?.isoCode || ""}
+                >
+                  {countries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </option>
+                    ))}
+
+
+                </select>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="state">State:</Label>
-                <Input
-                  id="state"
-                  value={formData.State}
-                  onChange={(e) => handleInputChange("State", e.target.value)}
-                  placeholder="Company State"
-                />
+                <div>
+                <select className=" statete h-6 text-xs flex-1 "
+                  onChange={(e) => {
+                      handleStateChange(e.target.value)
+                    }}value={states.find(s => s.name === formData.State)?.isoCode || ""}
+                    // disabled={!formData.clientCountry}
+                >
+                  {states.map((state) => (
+                      <option key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </option>
+                    ))}
+                </select>
+                </div>
+                {/* <Select
+                
+                  
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {states.map((state) => (
+                      <SelectItem key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select> */}
               </div>
-                <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="pinCode">PinCode:</Label>
                 <Input
                   id="pinCode"
@@ -1147,28 +1315,7 @@ partnerName:depot.partnerName,
                   placeholder="Pincode"
                 />
               </div>
-             
             </div>
-            
-
-            {/* <div className="space-y-2">
-              <Label htmlFor="parent">Parent:</Label>
-              <Select
-                value={formData.Parent}
-                onValueChange={(value) => handleInputChange("Parent", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select parent depot" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getParentOptions().map((parent) => (
-                    <SelectItem key={parent} value={parent}>
-                      {parent}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
 
             <div className="space-y-2">
               <Label htmlFor="address">Address:</Label>
@@ -1180,151 +1327,180 @@ partnerName:depot.partnerName,
               />
             </div>
 
-          
-<hr/>
+            <hr />
             <div className="grid grid-cols-2 gap-4">
-              
-               <div className="space-y-2">
-              <Label htmlFor="name">Client Details</Label>
-              <Input 
-                id="name"
-                value={formData.clientName}
-                onChange={(e) => handleInputChange("clientName", e.target.value)}
-                placeholder="Enter depot name"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="mobile">Mobile:</Label>
+              <div className="space-y-2">
+                <Label htmlFor="clientName">Client Name</Label>
                 <Input
-                  id="mobile"
+                  id="clientName"
+                  value={formData.clientName}
+                  onChange={(e) => handleInputChange("clientName", e.target.value)}
+                  placeholder="Enter client name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="clientMobile">Mobile:</Label>
+                <Input
+                  id="clientMobile"
                   value={formData.clientMobile}
                   onChange={(e) => handleInputChange("clientMobile", e.target.value)}
                   placeholder="+91 9876543210"
                 />
               </div>
 
-               <div className="space-y-2">
-                <Label htmlFor="Email">Email:</Label>
+              <div className="space-y-2">
+                <Label htmlFor="clientEmail">Email:</Label>
                 <Input
-                  id="Email"
+                  id="clientEmail"
                   value={formData.clientEmail}
                   onChange={(e) => handleInputChange("clientEmail", e.target.value)}
                   placeholder="Email"
                 />
               </div>
-            
-               <div className="space-y-2">
-                <Label htmlFor="country">Country:</Label>
-                <Input
-                  id="country"
-                  value={formData.clientCountry}
-                  onChange={(e) => handleInputChange("clientCountry", e.target.value)}
-                  placeholder="Country"
-                />
+
+              <div className="space-y-2">
+                <Label htmlFor="clientCountry">Country:</Label>
+                <div>
+                <select className="sachin h-6 text-xs flex-1 "
+                   
+                     value={countries.find(c => c.name === formData.clientCountry)?.isoCode || ""}
+                >
+                  {countries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </option>
+                    ))}
+
+
+                </select>
+                </div>
+                {/* <Select
+                  value={countries.find(c => c.(name === formData.clientCountry)?.isoCode || ""}
+                  onValueChange={handleClientCountryChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Country" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {countries.map((country) => (
+                      <SelectItem key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select> */}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="state">State:</Label>
-                <Input
-                  id="state"
-                  value={formData.clientState}
-                  onChange={(e) => handleInputChange("clientState", e.target.value)}
-                  placeholder="Company State"
-                />
+                <Label htmlFor="clientState">State:</Label>
+                <select className=" statete h-6 text-xs flex-1 "
+                  onChange={(e) => {
+                      handleClientStateChange(e.target.value)
+                    }}value={states.find(s => s.name === formData.State)?.isoCode || ""}
+                    // disabled={!formData.clientCountry}
+                >
+                  {states.map((state) => (
+                      <option key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </option>
+                    ))}
+                </select>
+                {/* <Select
+                  value={clientStates.find(s => s.name === formData.clientState)?.isoCode || ""}
+                  onValueChange={handleClientStateChange}
+                  // disabled={!formData.clientCountry}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {clientStates.map((state) => (
+                      <SelectItem key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select> */}
               </div>
-                <div className="space-y-2">
-                <Label htmlFor="pinCode">PinCode:</Label>
+              <div className="space-y-2">
+                <Label htmlFor="clientPinCode">PinCode:</Label>
                 <Input
-                  id="pinCode"
+                  id="clientPinCode"
                   value={formData.clientPinCode}
                   onChange={(e) => handleInputChange("clientPinCode", e.target.value)}
                   placeholder="Pincode"
                 />
               </div>
+            </div>
 
-               </div>
-                <div className="space-y-2">
-              <Label htmlFor="address">Address:</Label>
+            <div className="space-y-2">
+              <Label htmlFor="clientAddress">Address:</Label>
               <Textarea
-                id="address"
+                id="clientAddress"
                 value={formData.clientAddress}
                 onChange={(e) => handleInputChange("clientAddress", e.target.value)}
-                placeholder="Company Address"
+                placeholder="Client Address"
               />
             </div>
 
-          
-             <hr/>
-               <div className="grid grid-cols-2 gap-4">   
+            <hr />
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="Partner">Partner Name:</Label>
+                <Label htmlFor="partnerName">Partner Name:</Label>
                 <Input
-                  id="Partner"
+                  id="partnerName"
                   type="text"
                   value={formData.partnerName}
                   onChange={(e) => handleInputChange("partnerName", e.target.value)}
-
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Partner">Partner Code:</Label>
+                <Label htmlFor="partnerCode">Partner Code:</Label>
                 <Input
-                  id="Partner"
+                  id="partnerCode"
                   type="text"
-
-                   value={formData.partnerCode}
-                   onChange={(e) => handleInputChange("partnerCode", e.target.value)}
-
-
+                  value={formData.partnerCode}
+                  onChange={(e) => handleInputChange("partnerCode", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Partner">Registration Date:</Label>
+                <Label htmlFor="registrationDate">Registration Date:</Label>
                 <Input
-                  id="Partner"
+                  id="registrationDate"
                   type="text"
-
-                  
-                   value={formData.registrationDate}
-                   onChange={(e) => handleInputChange("registrationDate", e.target.value)}
+                  value={formData.registrationDate}
+                  onChange={(e) => handleInputChange("registrationDate", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Partner">Valid Till:</Label>
+                <Label htmlFor="validTill">Valid Till:</Label>
                 <Input
-                  id="Partner"
+                  id="validTill"
                   type="text"
-                   value={formData.validTill}
-                   onChange={(e) => handleInputChange("validTill", e.target.value)}
+                  value={formData.validTill}
+                  onChange={(e) => handleInputChange("validTill", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Partner">Tally Serial No:</Label>
+                <Label htmlFor="tallySerialno">Tally Serial No:</Label>
                 <Input
-                  id="Partner"
+                  id="tallySerialno"
                   type="text"
-                   value={formData.tallySerialno}
-                   onChange={(e) => handleInputChange("tallySerialno", e.target.value)}
+                  value={formData.tallySerialno}
+                  onChange={(e) => handleInputChange("tallySerialno", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="Partner">Tally Edition:</Label>
+                <Label htmlFor="tallyEdition">Tally Edition:</Label>
                 <Input
-                  id="Partner"
+                  id="tallyEdition"
                   type="text"
-
-                   value={formData.tallyEdition}
-                   onChange={(e) => handleInputChange("tallyEdition", e.target.value)}
-
-
+                  value={formData.tallyEdition}
+                  onChange={(e) => handleInputChange("tallyEdition", e.target.value)}
                 />
               </div>
             </div>
-
-            
-
-            
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>

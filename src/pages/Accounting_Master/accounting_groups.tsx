@@ -41,8 +41,8 @@ interface AccountingGroup {
   name: string;
   parentGroup?: string | { _id: string; name: string };
   isActive: boolean;
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   alias?: string;
 }
 
@@ -65,8 +65,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
     name: "",
     parentGroup: "no-parent",
     isActive: true,
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     alias: "",
   });
 
@@ -119,8 +119,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
       name: "",
       parentGroup: "no-parent",
       isActive: true,
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       alias: "",
     });
     setIsEditing(false);
@@ -141,8 +141,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
       const requestBody: any = {
         name: formData.name,
         isActive: formData.isActive,
-        masterId: formData.masterId,
-        alternateId: formData.alternateId,
+        Master_Id: formData.Master_Id,
+        Alter_Id: formData.Alter_Id,
         alias: formData.alias,
       };
 
@@ -178,8 +178,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
           ? group.parentGroup?._id
           : group.parentGroup || "no-parent",
       isActive: group.isActive,
-      masterId: group.masterId || "",
-      alternateId: group.alternateId || "",
+      Master_Id: group.Master_Id || "",
+      Alter_Id: group.Alter_Id || "",
       alias: group.alias || "",
     });
     setIsEditing(true);
@@ -241,28 +241,28 @@ const companyid = useSelector((state) => state?.Store.companyid)
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="masterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Master_Id" className="text-xs w-32 text-right">
                     Master Id:
                   </Label>
                   <Input
-                    id="masterId"
-                    value={formData.masterId}
+                    id="Master_Id"
+                    value={formData.Master_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, masterId: e.target.value })
+                      setFormData({ ...formData, Master_Id: e.target.value })
                     }
                     placeholder="Master Id"
                     className="h-6 text-xs flex-1"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Alter_Id" className="text-xs w-32 text-right">
                     Alternate Id:
                   </Label>
                   <Input
-                    id="alternateId"
-                    value={formData.alternateId}
+                    id="Alter_Id"
+                    value={formData.Alter_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, alternateId: e.target.value })
+                      setFormData({ ...formData, Alter_Id: e.target.value })
                     }
                     placeholder="Alternate Id"
                     className="h-6 text-xs flex-1"
@@ -423,8 +423,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
                           <TableCell className="font-medium">
                             {group.name}
                           </TableCell>
-                          <TableCell>{group.masterId || "-"}</TableCell>
-                          <TableCell>{group.alternateId || "-"}</TableCell>
+                          <TableCell>{group.Master_Id || "-"}</TableCell>
+                          <TableCell>{group.Alter_Id || "-"}</TableCell>
                           <TableCell>
                             {getParentName(group.parentGroup)}
                           </TableCell>

@@ -23,8 +23,8 @@ interface Product {
   Name: string;
   Parent: string;
   Unit: string;
-  masterId: string;
-  alternateId: string;
+  Master_Id: string;
+  Alter_Id: string;
   Category: string;
   GstApplicable: string;
   Item_Code: string;
@@ -70,8 +70,8 @@ export default function Inventory() {
     Name: "",
     Parent: "Primary",
     Unit: "",
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     Category: "Primary",
     GstApplicable: "Applicable",
     Item_Code: "",
@@ -256,8 +256,8 @@ export default function Inventory() {
       Name: "",
       Parent: "Primary",
       Unit: "",
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       Category: "Primary",
       GstApplicable: "Applicable",
       Item_Code: "",
@@ -438,8 +438,8 @@ export default function Inventory() {
               <Label>Master ID</Label>
               <Input
                 placeholder="Enter master ID"
-                value={currentProduct.masterId}
-                onChange={(e) => handleInputChange("masterId", e.target.value)}
+                value={currentProduct.Master_Id}
+                onChange={(e) => handleInputChange("Master_Id", e.target.value)}
               />
             </div>
 
@@ -447,8 +447,8 @@ export default function Inventory() {
               <Label>Alter ID</Label>
               <Input
                 placeholder="Enter alter ID"
-                value={currentProduct.alternateId}
-                onChange={(e) => handleInputChange("alternateId", e.target.value)}
+                value={currentProduct.Alter_Id}
+                onChange={(e) => handleInputChange("Alter_Id", e.target.value)}
               />
             </div>
 

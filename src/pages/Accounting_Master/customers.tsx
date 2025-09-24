@@ -29,7 +29,7 @@ import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
 import { BASE_URL } from "@/api/BaseUrl";
 import { useSelector, useDispatch } from 'react-redux'
 
-
+import { Country, State, City }  from 'country-state-city';
 
 
 
@@ -45,13 +45,24 @@ interface Customer {
   mobile: string;
   email: string;
   isActive: boolean;
-  masterId: string;
-  alternateId: string;
+  Master_Id: string;
+  Alter_Id: string;
 }
 
 interface Group {
   _id: string;
   name: string;
+}
+
+interface CountryType {
+  name: string;
+  isoCode: string;
+}
+
+interface StateType {
+  name: string;
+  isoCode: string;
+  countryCode: string;
 }
 
 export function CustomersPage() {
@@ -67,9 +78,13 @@ export function CustomersPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
 
+  // Country-State data
+  const [countries, setCountries] = useState<CountryType[]>([]);
+  const [states, setStates] = useState<StateType[]>([]);
+
   const [formData, setFormData] = useState({
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     name: "",
     group: "no-group",
     mailingName: "",
@@ -81,6 +96,32 @@ export function CustomersPage() {
     email: "",
     isActive: true,
   });
+
+  // Load countries on component mount
+  useEffect(() => {
+    const countryData = Country.getAllCountries().map(country => ({
+      name: country.name,
+      isoCode: country.isoCode
+    }));
+    setCountries(countryData);
+  }, []);
+
+  // Update states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      const country = countries.find(c => c.name === formData.country);
+      if (country) {
+        const stateData = State.getStatesOfCountry(country.isoCode).map(state => ({
+          name: state.name,
+          isoCode: state.isoCode,
+          countryCode: state.countryCode
+        }));
+        setStates(stateData);
+      }
+    } else {
+      setStates([]);
+    }
+  }, [formData.country, countries]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -123,8 +164,8 @@ method:"GET",
 
   const resetForm = () => {
     setFormData({
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       name: "",
       group: "no-group",
       mailingName: "",
@@ -143,8 +184,8 @@ method:"GET",
 
   const handleEdit = (customer: Customer) => {
     setFormData({
-      masterId: customer.masterId || "",
-      alternateId: customer.alternateId || "",
+      Master_Id: customer.Master_Id || "",
+      Alter_Id: customer.Alter_Id || "",
       name: customer.name,
       group: customer.group?._id || "no-group",
       mailingName: customer.mailingName,
@@ -159,6 +200,29 @@ method:"GET",
     setIsEditing(true);
     setCurrentId(customer._id);
     setIsDialogOpen(true);
+  };
+
+  // Handle country change
+  const handleCountryChange = (value: string) => {
+    const country = countries.find(c => c.isoCode === value);
+    if (country) {
+      setFormData(prev => ({
+        ...prev,
+        country: country.name,
+        state: "" // Reset state when country changes
+      }));
+    }
+  };
+
+  // Handle state change
+  const handleStateChange = (value: string) => {
+    const state = states.find(s => s.isoCode === value);
+    if (state) {
+      setFormData(prev => ({
+        ...prev,
+        state: state.name
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -237,32 +301,32 @@ method:"GET",
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="masterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Master_Id" className="text-xs w-32 text-right">
                     Master Id:
                   </Label>
                   <Input
-                    id="masterId"
-                    name="masterId"
+                    id="Master_Id"
+                    name="Master_Id"
                     placeholder="Master Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.masterId}
+                    value={formData.Master_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, masterId: e.target.value })
+                      setFormData({ ...formData, Master_Id: e.target.value })
                     }
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Alter_Id" className="text-xs w-32 text-right">
                     Alternate Id:
                   </Label>
                   <Input
-                    id="alternateId"
-                    name="alternateId"
+                    id="Alter_Id"
+                    name="Alter_Id"
                     placeholder="Alternate Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.alternateId}
+                    value={formData.Alter_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, alternateId: e.target.value })
+                      setFormData({ ...formData, Alter_Id: e.target.value })
                     }
                   />
                 </div>
@@ -325,29 +389,42 @@ method:"GET",
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                    placeholder="Country"
-                    className="h-6 text-xs flex-1"
-                  />
+                  <Select
+                    value={countries.find(c => c.name === formData.country)?.isoCode || ""}
+                    onValueChange={handleCountryChange}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select Country" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {countries.map((country) => (
+                        <SelectItem key={country.isoCode} value={country.isoCode}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
                   </Label>
-                  <Input
-                    id="state"
-                    value={formData.state}
-                    onChange={(e) =>
-                      setFormData({ ...formData, state: e.target.value })
-                    }
-                    placeholder="State"
-                    className="h-6 text-xs flex-1"
-                  />
+                  <Select
+                    value={states.find(s => s.name === formData.state)?.isoCode || ""}
+                    onValueChange={handleStateChange}
+                    disabled={!formData.country}
+                  >
+                    <SelectTrigger className="h-6 text-xs flex-1">
+                      <SelectValue placeholder="Select State" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {states.map((state) => (
+                        <SelectItem key={state.isoCode} value={state.isoCode}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="address" className="text-xs w-32 text-right">
@@ -476,6 +553,8 @@ method:"GET",
                       <TableHead>Group</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Mobile</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>State</TableHead>
                       <TableHead>Address</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -484,22 +563,23 @@ method:"GET",
                   <TableBody>
                     {customers.map((customer) => (
                       <TableRow key={customer._id}>
-                        <TableCell>{customer.masterId || "-"}</TableCell>
-                        <TableCell>{customer.alternateId || "-"}</TableCell>
+                        <TableCell>{customer.Master_Id || "-"}</TableCell>
+                        <TableCell>{customer.Alter_Id || "-"}</TableCell>
                         <TableCell className="font-medium">
                           {customer.name}
                         </TableCell>
                         <TableCell>{customer.group?.name || "-"}</TableCell>
                         <TableCell>{customer.email || "-"}</TableCell>
                         <TableCell>{customer.mobile || "-"}</TableCell>
+                        <TableCell>{customer.country || "-"}</TableCell>
+                        <TableCell>{customer.state || "-"}</TableCell>
                         <TableCell>{customer.address || "-"}</TableCell>
                         <TableCell>
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              customer.isActive
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive
                                 ? "bg-green-100 text-green-800"
                                 : "bg-gray-100 text-gray-800"
-                            }`}
+                              }`}
                           >
                             {customer.isActive ? "Active" : "Inactive"}
                           </span>

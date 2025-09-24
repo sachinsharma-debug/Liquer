@@ -204,8 +204,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
 
 
   const [formData, setFormData] = useState({
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     name: "",
     category: "",
     group: "",
@@ -475,8 +475,8 @@ const companyid = useSelector((state) => state?.Store.companyid)
 
   const resetForm = () => {
     setFormData({
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       name: "",
       category: "",
       group: "",
@@ -836,32 +836,32 @@ console.log(formData,">>>>>>>>>>>>>>>>")
                   Basic
                 </h3>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="masterId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Master_Id" className="text-xs w-32 text-right">
                     Master Id:
                   </Label>
                   <Input
-                    id="masterId"
-                    name="masterId"
+                    id="Master_Id"
+                    name="Master_Id"
                     placeholder="Master Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.masterId}
+                    value={formData.Master_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, masterId: e.target.value })
+                      setFormData({ ...formData, Master_Id: e.target.value })
                     }
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="alternateId" className="text-xs w-32 text-right">
+                  <Label htmlFor="Alter_Id" className="text-xs w-32 text-right">
                     Alter Id:
                   </Label>
                   <Input
-                    id="alternateId"
-                    name="alternateId"
+                    id="Alter_Id"
+                    name="Alter_Id"
                     placeholder="Alter Id"
                     className="h-6 text-xs flex-1"
-                    value={formData.alternateId}
+                    value={formData.Alter_Id}
                     onChange={(e) =>
-                      setFormData({ ...formData, alternateId: e.target.value })
+                      setFormData({ ...formData, Alter_Id: e.target.value })
                     }
                   />
                 </div>

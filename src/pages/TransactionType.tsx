@@ -44,8 +44,8 @@ interface TransactionType {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   voucherType?: string;
   activateVoucherType?: boolean;
   voucherNumberingMethod?: string;
@@ -77,8 +77,8 @@ suffix_details:[{applicable_from:"",particulars:""}],
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     name: "",
     voucherType: "",
     activateVoucherType: true,
@@ -127,8 +127,8 @@ suffix_details:[{applicable_from:"",particulars:""}],
 
   const resetForm = () => {
     setFormData({
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       name: "",
       voucherType: "",
       activateVoucherType: true,
@@ -153,8 +153,8 @@ suffix_details:[{applicable_from:"",particulars:""}],
    setVouchertypealteration((transactionType.additionalNumberingMethod?transactionType.voucherTypealteration:{}))
 
     setFormData({
-      masterId: transactionType.masterId || "",
-      alternateId: transactionType.alternateId || "",
+      Master_Id: transactionType.Master_Id || "",
+      Alter_Id: transactionType.Alter_Id || "",
       name: transactionType.name,
       voucherType: transactionType.voucherType || "",
       activateVoucherType: transactionType.activateVoucherType ?? true,
@@ -359,37 +359,37 @@ suffix_details:[{applicable_from:"",particulars:""}],
                   <div className="space-y-3">
                      <div className="flex items-center gap-2">
                        <Label
-                        htmlFor="masterId"
+                        htmlFor="Master_Id"
                         className="text-xs w-32 text-right"
                       >
                         Master Id:
                       </Label>
                       <Input
-                        id="masterId"
-                        name="masterId"
+                        id="Master_Id"
+                        name="Master_Id"
                         placeholder="Master Id"
                         className="h-6 text-xs flex-1"
-                        value={formData.masterId}
+                        value={formData.Master_Id}
                         onChange={(e) =>
-                          setFormData({ ...formData, masterId: e.target.value })
+                          setFormData({ ...formData, Master_Id: e.target.value })
                         }
                       />
                     </div>
                     <div className="flex items-center gap-2">
                       <Label
-                        htmlFor="alternateId"
+                        htmlFor="Alter_Id"
                         className="text-xs w-32 text-right"
                       >
                         Alter Id:
                       </Label>
                       <Input
-                        id="alternateId"
-                        name="alternateId"
+                        id="Alter_Id"
+                        name="Alter_Id"
                         placeholder="Alter Id"
                         className="h-6 text-xs flex-1"
-                        value={formData.alternateId}
+                        value={formData.Alter_Id}
                         onChange={(e) =>
-                          setFormData({ ...formData, alternateId: e.target.value })
+                          setFormData({ ...formData, Alter_Id: e.target.value })
                         }
                       />
                     </div>
@@ -663,10 +663,10 @@ suffix_details:[{applicable_from:"",particulars:""}],
                           {transactionType.name}
                         </TableCell>
                         <TableCell>
-                          {transactionType.masterId || "-"}
+                          {transactionType.Master_Id || "-"}
                         </TableCell>
                         <TableCell>
-                          {transactionType.alternateId || "-"}
+                          {transactionType.Alter_Id || "-"}
                         </TableCell>
                         <TableCell>
                           {transactionType.voucherType || "-"}

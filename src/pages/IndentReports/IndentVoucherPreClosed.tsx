@@ -45,8 +45,8 @@ interface AccountingGroup {
   name: string;
   parentGroup?: string | { _id: string; name: string };
   isActive: boolean;
-  masterId?: string;
-  alternateId?: string;
+  Master_Id?: string;
+  Alter_Id?: string;
   alias?: string;
 }
 
@@ -195,8 +195,8 @@ function formchagedate(tmpdate){
     name: "",
     parentGroup: "no-parent",
     isActive: true,
-    masterId: "",
-    alternateId: "",
+    Master_Id: "",
+    Alter_Id: "",
     alias: "",
   });
 
@@ -246,8 +246,8 @@ function formchagedate(tmpdate){
       name: "",
       parentGroup: "no-parent",
       isActive: true,
-      masterId: "",
-      alternateId: "",
+      Master_Id: "",
+      Alter_Id: "",
       alias: "",
     });
     setIsEditing(false);
@@ -268,8 +268,8 @@ function formchagedate(tmpdate){
       const requestBody: any = {
         name: formData.name,
         isActive: formData.isActive,
-        masterId: formData.masterId,
-        alternateId: formData.alternateId,
+        Master_Id: formData.Master_Id,
+        Alter_Id: formData.Alter_Id,
         alias: formData.alias,
       };
 
@@ -305,8 +305,8 @@ function formchagedate(tmpdate){
           ? group.parentGroup?._id
           : group.parentGroup || "no-parent",
       isActive: group.isActive,
-      masterId: group.masterId || "",
-      alternateId: group.alternateId || "",
+      Master_Id: group.Master_Id || "",
+      Alter_Id: group.Alter_Id || "",
       alias: group.alias || "",
     });
     setIsEditing(true);
