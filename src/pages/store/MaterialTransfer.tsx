@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTrigger,
   DialogContent, DialogHeader, DialogTitle,
   DialogFooter, DialogClose
@@ -13,6 +13,15 @@ export default function MaterialTransfer() {
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openItemDialog, setOpenItemDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState('');
+
+
+  useEffect(()=>{
+   if(openMainDialog){
+         setTimeout(()=>{$(".sachin").chosen();},600)
+
+   }
+  },[openMainDialog])
+
 
   const handleItemSelect = (value) => {
     setSelectedItem(value);
@@ -71,15 +80,10 @@ export default function MaterialTransfer() {
               </div>
               <div className='row mt-3'>
                 <div className='col-6'>
-                  <Select onValueChange={handleItemSelect}>
-                    <SelectTrigger className="h-6 text-xs flex-1">
-                      <SelectValue placeholder="Select option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="royal-green">Royal Green Premium</SelectItem>
-                      <SelectItem value="officer-choice">Officer's Choice Blue</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select onChange={handleItemSelect} className=" sachin h-6 text-xs flex-1">
+                    <option>Royal Green Premium</option>
+                    <option>Officer's Choice Blue</option>
+                  </select>
                 </div>
                 <div className='col-2'>
                   <Input type='text' className='h-6 text-xs'/>

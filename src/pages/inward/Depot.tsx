@@ -455,7 +455,7 @@ export default function DepotManagement(props) {
 
       {/* Create/Edit Depot Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto my-drop">
           <DialogHeader>
             <DialogTitle>
               {isEditMode ? "Edit Depot" : "Create New Depot"}

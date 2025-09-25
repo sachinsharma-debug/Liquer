@@ -92,7 +92,7 @@ import { UserManagement } from '@/pages/UserManagement';
 
 export default function Settings() {
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-white rounded-2">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold text-gray-900">Security Settings</h1>
         <nav className="flex space-x-2 text-sm text-gray-500 mt-2">

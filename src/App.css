@@ -13,11 +13,16 @@
 }
 
 .chosen-container-single .chosen-single{
-  height: 40px;
-  padding: 6px 14px !important;
+  /* height: 40px;
+  padding: 6px 14px !important; */
   background: none !important;
   border-color: #e5e7eb !important;
 }
-.chosen-container{
+
+.my-drop .chosen-container-single .chosen-single{
+  height: 40px;
+  padding: 6px 14px !important;
+}
+.my-drop .chosen-container{
   width: 100% !important;
 }

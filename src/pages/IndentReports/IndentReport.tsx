@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import Accounting_Group from "@/pages/Accounting_Master/accounting_groups";
@@ -13,10 +13,24 @@ import IndentVoucherPreClosed from "./IndentVoucherPreClosed";
 // import { TransactionType } from "./TransactionType";
 
 export default function IndentReport() {
+  const [activeTab, setActiveTab] = useState('units');
+    const [keyMap, setKeyMap] = useState({
+      products: Date.now(),
+      stockgroups: Date.now(),
+      stockcategory: Date.now(),
+      unit: Date.now(),
+      brand: Date.now()
+    });
+  
+    const handleTabChange = (value: string) => {
+      setActiveTab(value);
+      // Update the key to force remount of the component
+      setKeyMap(prev => ({ ...prev, [value]: Date.now() }));
+    };
 
   
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-white rounded-2">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -25,8 +39,8 @@ export default function IndentReport() {
         </div>
       </div>
 
-      <Tabs defaultValue="transactiontype" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="IndentRegister">Indent Voucher Register</TabsTrigger>
           <TabsTrigger value="IndentVoucherPending">Indent Voucher Pending</TabsTrigger>
           <TabsTrigger value="IndentVoucherClosed">Indent Voucher Closed</TabsTrigger>
