@@ -12,7 +12,7 @@ import { Select as RSelect, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MasterGet } from "@/api/mastercontroller"
-import { BASE_URL } from '@/api/BaseUrl';
+import { BASE_URL,getvoucherresult} from '@/api/BaseUrl';
 import { useSelector, useDispatch } from 'react-redux'
 
 
@@ -33,7 +33,7 @@ function logiccode(allparameter) {
 export default function PurchaseOrders() {
 
  const companyid = useSelector((state) => state?.Store.companyid)
-  
+    const[voucherresult,setvoucherresult]=useState("")
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openMainDialog1, setOpenMainDialog1] = useState(false);
   const [openMainDialog2, setOpenMainDialog2] = useState(false);
@@ -301,8 +301,7 @@ setformdata({
 
 }
 
-
-
+formdata.purchaseOrderNo=voucherresult
 
   return (
     <div className="space-y-6">
@@ -346,6 +345,8 @@ reset()
                        value={VoucherTypeselect}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
+
+                        getvoucherresult(e.value,"purchaseOrderNo",setvoucherresult)
                         setVouchertypeselect(e)
                            funtypscript(e)
                        }}
@@ -449,17 +450,17 @@ reset()
           <DialogContent className="sm:max-w-[900px]">
             <DialogHeader>
               <DialogTitle className='grid grid-cols-4 gap-1 '>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center w-100 gap-2'>
                   <div>Add Order</div>
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center w-100 gap-2'>
 
                     <div>{VoucherTypeselect.label}</div>
                 </div>
                 <div className="flex items-center gap-2">
                
-                  <Label htmlFor="poNumber" className="text-xs w-32">Purchase Order No</Label>
-                  <Input id="poNumber" className="h-6 text-xs flex-1"  
+                  <Label htmlFor="poNumber" className="text-xs">Purchase Order No</Label>
+                  <Input id="poNumber" className="h-6 text-xs w-72 flex-1"  
                   
                   value={formdata.purchaseOrderNo} 
                    onChange={(e)=>{

@@ -12,8 +12,12 @@ import { Select as RSelect, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MasterGet } from "@/api/mastercontroller"
-import { BASE_URL } from '@/api/BaseUrl';
+import { BASE_URL,getvoucherresult } from '@/api/BaseUrl';
 import { useSelector, useDispatch } from 'react-redux'
+
+
+
+
 function logiccode(allparameter) {
   return {
   }
@@ -28,6 +32,7 @@ function logiccode(allparameter) {
 
 export default function Purchase() {
    const companyid = useSelector((state) => state?.Store.companyid)
+   const[voucherresult,setvoucherresult]=useState("")
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openMainDialog1, setOpenMainDialog1] = useState(false);
   const [openMainDialog2, setOpenMainDialog2] = useState(false);
@@ -97,7 +102,7 @@ async function purchaselist(){
       .then((response) => {
         let tmpstore = []
         response.map((val) => {
-          if (val.voucherType == "purchase-order") {
+          if (val.voucherType == "purchase") {
             tmpstore.push({ label: val.name, value: val._id })
           }
         })
@@ -268,7 +273,8 @@ purchaselist()
 
 
 
-
+formdata.supplierinovoiceno=voucherresult
+console.log("kkkkk",voucherresult)
   return (
     <div className="space-y-6">
       <style type='text/css'>
@@ -306,8 +312,8 @@ purchaselist()
                        value={VoucherTypeselect}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
+                        getvoucherresult(e.value,"supplierinovoiceno",setvoucherresult)
                         setVouchertypeselect(e)
-                           funtypscript(e)
                        }}
                />
                          <Button type="submit" className=' ms-4  w-34 '   
@@ -344,8 +350,7 @@ purchaselist()
                   <div>Purchase</div>
                   
                 </div>
-                                  <div className='flex items-center gap-2'>
-
+               <div className='flex items-center gap-2'>
                     <div>{VoucherTypeselect.label}</div>
                 </div>
 <div className="flex items-center gap-2">
@@ -386,10 +391,10 @@ purchaselist()
 
                 
 
-                  <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
                 <Label htmlFor="amount" className="text-xs w-32" 
                 >Supplier Invoice No</Label>
-                <Input id="amount" type="number" className="h-6 text-xs flex-1" 
+                <Input id="amount" type="text" className="h-6 text-xs flex-1" 
                   value={formdata.supplierinovoiceno} 
                       onChange={(e)=>{
                      formdata.supplierinovoiceno=e.target.value
@@ -404,7 +409,7 @@ purchaselist()
                 >Order no</Label>
                 <Input id="amount" type="number" className="h-6 text-xs flex-1" 
                   value={formdata.orderno} 
-                      onChange={(e)=>{
+                 onChange={(e)=>{
                      formdata.orderno=e.target.value
                      setformdata({...formdata})
                    }}

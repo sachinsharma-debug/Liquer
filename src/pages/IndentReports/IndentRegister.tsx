@@ -67,6 +67,7 @@ export default function IndentRegister() {
   const [productlist,setproductlist]=useState({})
   const [translist,settranslist]=useState({})
   const [expandedRows, setExpandedRows] = useState({});
+  const [showAllData, setShowAllData] = useState(false); // New state to track show all data mode
 
   let datecurr=new Date()
 
@@ -133,25 +134,47 @@ export default function IndentRegister() {
     }
   };
 
-  function getindent(){
-    let  fromdate_:any=fromdate.split("-")
-    let  todate_:any=todate.split("-")
-    fromdate_=fromdate_[2]+"-"+(fromdate_[1]<10?"0"+Number(fromdate_[1]):fromdate_[1])+"-"+(fromdate_[0]<10?"0"+Number(fromdate_[0]):fromdate_[0])
-    todate_=todate_[2]+"-"+(todate_[1]<10?"0"+Number(todate_[1]):todate_[1])+"-"+(todate_[0]<10?"0"+Number(todate_[0]):todate_[0])
-    let ddd=new Date(fromdate_)
-    let ddd2=new Date(todate_)
+  function getindent(showAll = false){
+    setIsLoading(true);
+    
+    let wheretmp = {};
+    
+    if (!showAll) {
+      let  fromdate_:any=fromdate.split("-")
+      let  todate_:any=todate.split("-")
+      fromdate_=fromdate_[2]+"-"+(fromdate_[1]<10?"0"+Number(fromdate_[1]):fromdate_[1])+"-"+(fromdate_[0]<10?"0"+Number(fromdate_[0]):fromdate_[0])
+      todate_=todate_[2]+"-"+(todate_[1]<10?"0"+Number(todate_[1]):todate_[1])+"-"+(todate_[0]<10?"0"+Number(todate_[0]):todate_[0])
+      let ddd=new Date(fromdate_)
+      let ddd2=new Date(todate_)
 
-    let wheretmp={
-      indent_date: {
-        $gte:ddd,
-        $lte: ddd2
+      wheretmp={
+        indent_date: {
+          $gte:ddd,
+          $lte: ddd2
+        }
       }
     }
-    MasterGet("indents?where="+JSON.stringify(wheretmp))
+    
+    // If showAll is true, wheretmp will be empty, fetching all data
+    MasterGet("indents" + (Object.keys(wheretmp).length > 0 ? "?where="+JSON.stringify(wheretmp) : ""))
       .then((response)=>{
         setindentlist(response)
+        setTotalItems(response.length)
+        setIsLoading(false)
       })
-      .catch(()=>{})
+      .catch(()=>{
+        setIsLoading(false)
+      })
+  }
+
+  function showAllDetails(){
+    setShowAllData(true);
+    getindent(true);
+  }
+
+  function showFilteredDetails(){
+    setShowAllData(false);
+    getindent(false);
   }
 
   useEffect(()=>{
@@ -196,7 +219,7 @@ export default function IndentRegister() {
       })
       .catch(()=>{})
 
-    getindent()
+    getindent(false)
   },[companyid])
 
   useEffect(() => {
@@ -325,6 +348,16 @@ export default function IndentRegister() {
     // Your purchase logic here
   }
 
+  // Get current items for pagination
+  const getCurrentItems = () => {
+    if (showAllData) {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return indentlist.slice(startIndex, endIndex);
+    }
+    return indentlist;
+  };
+
   return (
     <div className="">
       <Dialog
@@ -356,20 +389,29 @@ export default function IndentRegister() {
 
       <Card className="flex-1 flex flex-col">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle>Indent Register</CardTitle>
+          <CardTitle>Indent Register {showAllData && "(All Data)"}</CardTitle>
           <div className="flex items-center space-x-2">
-            <Label htmlFor="itemsPerPage">From:</Label>
-            <Input type='text' value={fromdate} onChange={(e)=>{
-              setfromdate(e.target.value)
-            }} className='text-xs' placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
-            <Label htmlFor="itemsPerPage">To :</Label>
-            <Input type='text' className='text-xs'  
-              value={todate} onChange={(e)=>{
-                settodate(e.target.value)
-              }}
-              placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
-            <button className="btn btn-primary " onClick={getindent}>ok</button>
-            <button className="btn btn-primary  float-end ">Detailsh</button>
+            {!showAllData && (
+              <>
+                <Label htmlFor="itemsPerPage">From:</Label>
+                <Input type='text' value={fromdate} onChange={(e)=>{
+                  setfromdate(e.target.value)
+                }} className='text-xs' placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
+                <Label htmlFor="itemsPerPage">To :</Label>
+                <Input type='text' className='text-xs'  
+                  value={todate} onChange={(e)=>{
+                    settodate(e.target.value)
+                  }}
+                  placeholder="dd-mm-yyyy" style={{height:26,width:150}}/>
+                <button className="btn btn-primary " onClick={showFilteredDetails}>Filter</button>
+              </>
+            )}
+            <button 
+              className="btn btn-primary float-end" 
+              onClick={showAllData ? showFilteredDetails : showAllDetails}
+            >
+              {showAllData ? "Show Filtered" : "Show All"}
+            </button>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -395,9 +437,9 @@ export default function IndentRegister() {
             <div className="flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
             </div>
-          ) : groups.length === 0 ? (
+          ) : indentlist.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No groups found. Create your first group above.
+              No indents found.
             </div>
           ) : (
             <>
@@ -419,7 +461,7 @@ export default function IndentRegister() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {indentlist?.map((val) => {
+                      {getCurrentItems()?.map((val) => {
                         const isExpanded = expandedRows[val._id];
                         return (
                           <React.Fragment key={val._id}>
@@ -508,6 +550,7 @@ export default function IndentRegister() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-sm text-gray-600">
                   Showing {startItem} to {endItem} of {totalItems} entries
+                  {showAllData && " (All Data)"}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button

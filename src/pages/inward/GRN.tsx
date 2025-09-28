@@ -12,7 +12,7 @@ import { Select as RSelect, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MasterGet } from "@/api/mastercontroller"
-import { BASE_URL } from '@/api/BaseUrl';
+import { BASE_URL,getvoucherresult } from '@/api/BaseUrl';
 import { useSelector, useDispatch } from 'react-redux'
 import * as XLSX from 'xlsx';
 import { Receipt } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function GRNComponent() {
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openMainDialog1, setOpenMainDialog1] = useState(false);
   const [openMainDialog2, setOpenMainDialog2] = useState(false);
-
+  const[voucherresult,setvoucherresult]=useState("")
 
 
   const [openMainDialog3, setOpenMainDialog3] = useState(false);
@@ -100,7 +100,7 @@ export default function GRNComponent() {
 
 
 
-let defaultdataitem= { "prodid": "", "quantity": "", "rate": "", "amount": "", "orderno": "", "godownwastge": "",
+let defaultdataitem= { "prodid": "","recieptinbotle":"", "quantity": "", "rate": "", "amount": "", "orderno": "", "godownwastge": "",
        "productdetails":[{"trackingno":"","orderno":"","godown":"","quantity":"","rate":"","amount":"","godownwastge":""}
        ] 
  }
@@ -118,7 +118,7 @@ let defaultdataitem= { "prodid": "", "quantity": "", "rate": "", "amount": "", "
   ]
 }
 )
-
+formdata.recieptno=voucherresult
 
 async function getgrns(){        
   
@@ -146,15 +146,15 @@ async function getgrns(){
       .then((response) => {
         let tmpstore = []
         response.map((val) => {
-          if (val.voucherType == "purchase-order") {
+          if (val.voucherType == "receipt-note") {
             tmpstore.push({ label: val.name, value: val._id })
           }
         })
         setVouchertype(tmpstore)
       })
       .catch(() => {
-
       })
+
 
 
 getgrns()
@@ -454,8 +454,13 @@ let date=new Date().toISOString()
 
             let indexgrn=tmpaccountid.indexOf(partyid)
             tmpdefaultdataitem.prodid=tmprod[val.__EMPTY_1]
+            tmpdefaultdataitem.godownwastge=tmprod[val.__EMPTY_8]
+            tmpdefaultdataitem.recieptinbotle=tmprod[val.__EMPTY_3]
+
+
             grncreationlist[indexgrn].partyAccountName=partyid
             grncreationlist[indexgrn].date=date
+            grncreationlist[indexgrn].recieptno=voucherresult.split("/")[0]+"/"+(indexgrn+voucherresult.split("/")[1])+"/"+voucherresult.split("/")[2]
             grncreationlist[indexgrn].vouchered=VoucherTypeselect1.value
             grncreationlist[indexgrn].items.push(tmpdefaultdataitem)         
            }
@@ -622,6 +627,7 @@ setOpenMainDialog4(false)
                        value={VoucherTypeselect1}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
+                        getvoucherresult(e.value,"recieptno",setvoucherresult)
                         setVouchertypeselect1(e)
                        }}
                />
@@ -775,6 +781,8 @@ setOpenMainDialog4(false)
                        value={VoucherTypeselect}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
+                        getvoucherresult(e.value,"recieptno",setvoucherresult)
+
                         setVouchertypeselect(e)
                            funtypscript(e)
                        }}

@@ -12,7 +12,7 @@ import { Select as RSelect, SelectContent, SelectItem, SelectTrigger, SelectValu
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MasterGet } from "@/api/mastercontroller"
-import { BASE_URL } from '@/api/BaseUrl';
+import { BASE_URL,getvoucherresult} from '@/api/BaseUrl';
 import { useSelector, useDispatch } from 'react-redux'
 
 
@@ -31,6 +31,7 @@ function logiccode(allparameter) {
 
 export default function PurchaseReturn() {
 
+  const[voucherresult,setvoucherresult]=useState("")
    const companyid = useSelector((state) => state?.Store.companyid)
   const [openMainDialog, setOpenMainDialog] = useState(false);
   const [openMainDialog1, setOpenMainDialog1] = useState(false);
@@ -96,18 +97,14 @@ let defaultdataitem= { "prodid": "", "quantity": "", "rate": "", "amount": "","o
 }
 )
 
-
-
-
-
-
+formdata.debitnoteno=voucherresult
 
   useEffect(() => {
     MasterGet("transactiontypes")
       .then((response) => {
         let tmpstore = []
         response.map((val) => {
-          if (val.voucherType == "purchase-order") {
+          if (val.voucherType == "debit-note") {
             tmpstore.push({ label: val.name, value: val._id })
           }
         })
@@ -291,6 +288,7 @@ getdata()
                        value={VoucherTypeselect}
                        onChange={(e)=>{
                         formdata.vouchered=e.value
+                        getvoucherresult(e.value,"debitnoteno",setvoucherresult)
                         setVouchertypeselect(e)
                            funtypscript(e)
                        }}

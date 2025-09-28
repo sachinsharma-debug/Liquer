@@ -103,7 +103,7 @@ function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <h1>
-        v3
+        v0.04
       </h1>
     </Layout>
   );

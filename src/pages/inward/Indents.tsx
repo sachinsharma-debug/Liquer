@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import * as XLSX from 'xlsx';
-import { BASE_URL } from '@/api/BaseUrl';
+import { BASE_URL,getvoucherresult } from '@/api/BaseUrl';
 import {
   Table,
   TableBody,
@@ -41,6 +41,9 @@ const companyid = useSelector((state) => state?.Store.companyid)
   const [totalItems, setTotalItems] = useState(0);
 
   // Form state
+
+  const [openMainDialog1, setOpenMainDialog1] = useState(false);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [excelviewerbox, Excelfileviewer] = useState(false);
@@ -72,7 +75,7 @@ const companyid = useSelector((state) => state?.Store.companyid)
     }],
     narration: "",
     indent_date: "",
-    transuctiontype:"",
+    vouchered:"",
     indentvoucherno: generatePONumber(),
     status: 'draft'
   });
@@ -83,6 +86,10 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
   const [viewingIndent, setViewingIndent] = useState(null);
 
 
+  const[voucherresult,setvoucherresult]=useState("")
+
+
+console.log(currentIndent,"LLLLLLLLLLLLLL")
 
 
    const fetchUnits = async () => {
@@ -129,7 +136,7 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
 
 
           if(val.voucherType=="indent"){
-                tmpstore.push({Value:val._id,label:val.name})
+                tmpstore.push({value:val._id,label:val.name})
           }
 
           
@@ -393,16 +400,16 @@ const [transuctiontype,settransuctiontype]=useState({Value:"",label:"Select"})
 
 
         const mappedData = jsonData.map((item) => {
-          if (!checkitme.includes(item["SOF NO"])) {
+          if (!checkitme.includes(item["SOF NO"])){
             checkitme.push(item["SOF NO"])
             // datafil[item["SOF NO"]] = []
             let date = excelDateToJSDate(item["SOF DATE"]);
             datafil.push({
               sofNo: item["SOF NO"], sofDate: date, data: [],
               narration: "",
-              indentvoucherno: generatePONumber(),
+              indentvoucherno: voucherresult.split("/")[0]+"/"+(checkitme.length+voucherresult.split("/")[1])+"/"+voucherresult.split("/")[2],
               status: 'draft',
-              transuctiontype:transuctiontype.value,
+              vouchered:transuctiontype.value,
               indent_date: new Date().toISOString().split('T')[0]
 
             })
@@ -495,6 +502,7 @@ if(errorfile!=""){
       }],
       narration: "",
       indent_date: "",
+      vouchered:"",
       indentvoucherno: generatePONumber(),
       status: 'draft'
     });
@@ -571,7 +579,7 @@ const customStyles = {
     fontStyle: "italic",
   }),
 };
-
+currentIndent.indentvoucherno=voucherresult
 
 
   return (
@@ -608,6 +616,7 @@ const customStyles = {
         <h1 className="text-2xl md:text-3xl font-bold">Indents Management</h1>
         <div className="flex flex-col sm:flex-row gap-2">
           <button type="button" className="btn-primary btn" onClick={() => setIsDialogOpen1(true)}>Import</button>
+          <button type="button" className="btn-primary btn" onClick={() => setOpenMainDialog1(true)}>Create Indent</button>
 
           <Dialog open={excelviewerbox} onOpenChange={Excelfileviewer}>
             <DialogContent className="max-w-[95vw] sm:max-w-[1500px]">
@@ -684,6 +693,7 @@ const customStyles = {
                        classNamePrefix='selectBox'
                        value={transuctiontype}
                        onChange={(e)=>{
+                        getvoucherresult(e.value,"indentvoucherno",setvoucherresult)
                         settransuctiontype(e)
                        }}
                />
@@ -770,14 +780,50 @@ const customStyles = {
 
 
 
+<Dialog open={openMainDialog1} onOpenChange={setOpenMainDialog1}>
+          
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className='d-flex justify-content-between'>
+                <div>Voucher Type Alteration</div>
+                
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid   ">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="poNumber" className="text-xs w-45 ">Voucher type</Label>
+             
+
+ 
+                   <Reselect.default styles={customStyles}  options={transuctiontypelist}
+                       classNamePrefix='selectBox'
+                       value={transuctiontype}
+                       onChange={(e)=>{
+                        getvoucherresult(e.value,"indentvoucherno",setvoucherresult) 
+                        setCurrentIndent(prev => ({ ...prev, vouchered: e.value }));
+                        settransuctiontype(e)
+                       }}
+               />
+
+
+                         <Button type="submit" className=' ms-4  w-34 '   
+                          onClick={(val)=>{
+                            setIsDialogOpen(true)
+                          }}
+                              
+                         >Add</Button>
+              </div>
+              <div className="flex items-center gap-2">
+              </div>
+            </div>
+
+
+          </DialogContent>
+        </Dialog>
 
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
-            <DialogTrigger asChild>
-              <Button onClick={() => setIsDialogOpen(true)} disabled={loading}>
-                Create Indent
-              </Button>
-            </DialogTrigger>
+           
             <DialogContent className="max-w-[95vw] md:max-w-[1200px]"
               style={{ maxHeight: 600, overflowY: 'auto' }} >
               <DialogHeader className='border-b pb-3'>

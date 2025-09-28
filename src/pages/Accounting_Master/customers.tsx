@@ -26,7 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Trash2, Edit, Save, Plus, Loader2 } from "lucide-react";
-import { BASE_URL } from "@/api/BaseUrl";
+import { BASE_URL, globalsearchcountry, globalsearchstate } from "@/api/BaseUrl";
 import { useSelector, useDispatch } from 'react-redux'
 
 import { Country, State, City }  from 'country-state-city';
@@ -97,6 +97,10 @@ export function CustomersPage() {
     isActive: true,
   });
 
+
+
+  
+
   // Load countries on component mount
   useEffect(() => {
     const countryData = Country.getAllCountries().map(country => ({
@@ -117,23 +121,39 @@ export function CustomersPage() {
           countryCode: state.countryCode
         }));
         setStates(stateData);
+
+        globalsearchstate(isDialogOpen, ".statete", handleStateChange)
       }
     } else {
       setStates([]);
     }
   }, [formData.country, countries]);
 
+
+
+  useEffect(() => {
+    // initialize select2 on the <select>
+    // initialize select2
+
+
+    globalsearchcountry(isDialogOpen, ".sachin", ".statete", handleCountryChange)
+
+
+
+  }, [isDialogOpen]);
+
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const [customersRes, groupsRes] = await Promise.all([
-        fetch(`${BASE_URL}customer_list`,{
-method:"GET",
-          credentials:"include"
+        fetch(`${BASE_URL}customer_list`, {
+          method: "GET",
+          credentials: "include"
         }),
-        fetch(`${BASE_URL}accountig_group_list_data`,{
-          method:"GET",
-          credentials:"include"
+        fetch(`${BASE_URL}accountig_group_list_data`, {
+          method: "GET",
+          credentials: "include"
         }),
       ]);
 
@@ -244,7 +264,7 @@ method:"GET",
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials:"include"
+        credentials: "include"
       });
 
       const result = await response.json();
@@ -265,7 +285,7 @@ method:"GET",
 
     try {
       const response = await fetch(`${BASE_URL}customer_delete/${id}`, {
-        method: "DELETE",credentials:"include"
+        method: "DELETE", credentials: "include"
       });
       if (!response.ok) throw new Error("Delete failed");
       await fetchData();
@@ -389,42 +409,37 @@ method:"GET",
                   <Label htmlFor="country" className="text-xs w-32 text-right">
                     Country:
                   </Label>
-                  <Select
+                  <select className="sachin h-6 text-xs flex-1 "
+
                     value={countries.find(c => c.name === formData.country)?.isoCode || ""}
-                    onValueChange={handleCountryChange}
                   >
-                    <SelectTrigger className="h-6 text-xs flex-1">
-                      <SelectValue placeholder="Select Country" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {countries.map((country) => (
-                        <SelectItem key={country.isoCode} value={country.isoCode}>
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option>Select...</option>
+
+                    {countries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </option>
+                    ))}
+
+
+                  </select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="state" className="text-xs w-32 text-right">
                     State:
                   </Label>
-                  <Select
-                    value={states.find(s => s.name === formData.state)?.isoCode || ""}
-                    onValueChange={handleStateChange}
-                    disabled={!formData.country}
+                  <select className=" statete h-6 text-xs flex-1 "
+                    onChange={(e) => {
+                      handleStateChange(e.target.value)
+                    }} value={states.find(s => s.name === formData.state)?.isoCode || ""}
+                  // disabled={!formData.clientCountry}
                   >
-                    <SelectTrigger className="h-6 text-xs flex-1">
-                      <SelectValue placeholder="Select State" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {states.map((state) => (
-                        <SelectItem key={state.isoCode} value={state.isoCode}>
-                          {state.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {states.map((state) => (
+                      <option key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex items-center gap-2">
                   <Label htmlFor="address" className="text-xs w-32 text-right">
@@ -577,8 +592,8 @@ method:"GET",
                         <TableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${customer.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
                               }`}
                           >
                             {customer.isActive ? "Active" : "Inactive"}
